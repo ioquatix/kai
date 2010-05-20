@@ -20,7 +20,7 @@ namespace Kai {
 
 	#pragma mark -
 	#pragma mark Value
-
+	
 	class Value : public gc {	
 		public:
 			virtual ~Value ();
@@ -51,10 +51,11 @@ namespace Kai {
 			virtual Value * evaluate (Frame * frame);
 			
 			static StringT toString (Value * value);
+			static bool toBoolean (Value * value);
 	};
 
-	#pragma mark -
-	#pragma mark Cell
+#pragma mark -
+#pragma mark Cell
 
 	class Cell : public Value {
 		private:
@@ -139,6 +140,10 @@ namespace Kai {
 			virtual void toCode (StringStreamT & buffer);
 			
 			virtual Value * evaluate (Frame * frame);
+			
+			static Symbol * nilSymbol ();
+			static Symbol * falseSymbol ();
+			static Symbol * trueSymbol ();
 	};
 
 	#pragma mark -
@@ -193,7 +198,9 @@ namespace Kai {
 		
 			virtual Value * invoke (Frame * frame);
 			virtual Value * lookup (Symbol * key);
-
+			
+			static Value * metaclass ();
+			
 		private:		
 			Table * m_prototype;
 			

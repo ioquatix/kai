@@ -59,6 +59,16 @@ namespace {
 		context->update(new Symbol("update"), KFunctionWrapper(Builtins::update));
 		context->update(new Symbol("head"), KFunctionWrapper(Builtins::head));
 		context->update(new Symbol("tail"), KFunctionWrapper(Builtins::tail));
+
+		context->update(new Symbol("caller"), KFunctionWrapper(Builtins::caller));
+
+		context->update(new Symbol("and"), KFunctionWrapper(Builtins::logicalAnd));
+		context->update(new Symbol("or"), KFunctionWrapper(Builtins::logicalOr));
+		context->update(new Symbol("not"), KFunctionWrapper(Builtins::logicalNot));
+		
+		context->update(new Symbol("with"), KFunctionWrapper(Builtins::with));
+		
+		context->update(new Symbol("Table"), Table::metaclass());
 		
 		return context;
 	}

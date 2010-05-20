@@ -29,7 +29,7 @@ namespace Kai {
 		public:
 			Frame (Value * caller);
 			Frame (Value * caller, Symbol * function, Cell * operands, Frame * previous);
-			
+						
 			Value * call (Cell * functionAndOperands);
 			Value * call (Symbol * function, Cell * operands = NULL);
 			Value * call (Value * caller, Value * target, Symbol * function, Cell * operands);

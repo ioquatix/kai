@@ -51,12 +51,23 @@ namespace Kai {
 		// Updates the value in the Table caller.
 		Value * update (Frame * frame);
 		
+		// Compares two given values
 		Symbol * compare (Frame * frame);
+		
+		// Returns the caller of the current frame
+		Value * caller (Frame * frame);
 		
 		// Extract values from a given Cell
 		Value * head (Frame * frame);
 		Value * tail (Frame * frame);
 
+		// Builtin Logical Operations
+		Value * logicalOr (Frame * frame);
+		Value * logicalAnd (Frame * frame);
+		Value * logicalNot (Frame * frame);
+		
+		// Processing
+		Value * with (Frame * frame);
 	};
 	
 }

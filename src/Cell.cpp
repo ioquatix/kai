@@ -14,6 +14,7 @@
 
 #include "Frame.h"
 #include "Exception.h"
+#include "Function.h"
 
 namespace Kai {
 
@@ -69,6 +70,16 @@ namespace Kai {
 		} else {
 			return "nil";
 		}
+	}
+	
+	bool Value::toBoolean (Value * value) {
+		if (value) {
+			if (value->compare(Symbol::falseSymbol()) != 0 && value->compare(Symbol::nilSymbol()) != 0) {
+				return true;
+			}
+		}
+		
+		return false;
 	}
 
 	#pragma mark -
@@ -226,7 +237,13 @@ namespace Kai {
 	}
 
 	int Symbol::compare (Symbol * other) {
-		return clampComparison(m_hash - other->m_hash);
+		int result = clampComparison(m_hash - other->m_hash);
+		
+		if (result == 0) {
+			return m_value.compare(other->m_value);
+		}		
+		
+		return result;
 	}
 
 	void Symbol::toCode (StringStreamT & buffer) {
@@ -239,6 +256,18 @@ namespace Kai {
 		} else {
 			return this;
 		}
+	}
+
+	Symbol * Symbol::nilSymbol () {
+		return new Symbol("nil");
+	}
+	
+	Symbol * Symbol::falseSymbol () {
+		return new Symbol("false");
+	}
+	
+	Symbol * Symbol::trueSymbol () {
+		return new Symbol("true");
 	}
 
 	#pragma mark -
@@ -273,6 +302,18 @@ namespace Kai {
 
 	Table::~Table () {
 
+	}
+	
+	Value * newTable (Frame * frame) {
+		return new Table;
+	}
+	
+	Value * Table::metaclass () {
+		Table * klass = new Table;
+		
+		klass->update(new Symbol("new"), KFunctionWrapper(newTable));
+		
+		return klass;
 	}
 
 	Table::Table (int size, bool allocate) {

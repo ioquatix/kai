@@ -95,8 +95,8 @@ namespace Kai {
 			
 			std::cerr << "Frame " << cur << ":" << std::endl;
 			
-			//if (cur->caller())
-			//	std::cerr << "\t Caller: " << Value::toString(cur->caller()) << std::endl;
+			if (cur->caller())
+				std::cerr << "\t Caller: " << Value::toString(cur->caller()) << std::endl;
 			
 			std::cerr << "\t Function: " << Value::toString(&cell) << std::endl;
 			
