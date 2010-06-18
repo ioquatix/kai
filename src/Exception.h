@@ -11,9 +11,12 @@
 #define _KEXCEPTION_H
 
 #include <exception>
-#include "Frame.h"
+#include "Kai.h"
 
 namespace Kai {
+
+	class Cell;
+	class Frame;
 
 	class Exception {
 		protected:

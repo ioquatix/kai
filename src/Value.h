@@ -1,5 +1,5 @@
 /*
- *  Cell.h
+ *  Value.h
  *  This file is part of the "Kai" project, and is licensed under the GNU GPLv3.
  *
  *  Created by Samuel Williams on 10/04/10.
@@ -7,16 +7,18 @@
  *
  */
  
-#ifndef _KCELL_H
-#define _KCELL_H
+#ifndef _KVALUE_H
+#define _KVALUE_H
 
 #include "Kai.h"
+#include "Exception.h"
 
 namespace Kai {
 	class InvalidComparison {};
 	class InvalidInvocation {};
 
 	struct Frame;
+	class Table;
 
 	#pragma mark -
 	#pragma mark Value
@@ -95,6 +97,40 @@ namespace Kai {
 			virtual void toCode (StringStreamT & buffer);
 			
 			virtual Value * evaluate (Frame * frame);
+			
+			class ArgumentExtractor {
+				Cell * m_current;
+				Frame * m_frame;
+				
+				public:
+					inline ArgumentExtractor(Frame * frame, Cell * current) : m_frame(frame), m_current(current) {
+					
+					}
+				
+					template <typename AnyT>
+					ArgumentExtractor operator[] (AnyT *& t) {
+						if (m_current == NULL) {
+							throw Exception("Argument Error", m_frame);
+						}
+						
+						t = m_current->headAs<AnyT>();
+						
+						return ArgumentExtractor(m_frame, m_current->tailAs<Cell>());
+					}
+					
+					inline operator Cell* () {
+						return m_current;
+					}
+			};
+			
+			inline ArgumentExtractor extract(Frame * frame) {
+				return ArgumentExtractor(frame, this);
+			}
+			
+			//% (prepend cell value) -> (cell value)
+			static Value * cell (Frame * frame);
+			
+			static void import (Table * context);
 	};
 
 	#pragma mark -
@@ -198,10 +234,28 @@ namespace Kai {
 		
 			virtual Value * invoke (Frame * frame);
 			virtual Value * lookup (Symbol * key);
+						
+			void setPrototype (Table * prototype);
+			Table * prototype ();
 			
-			static Value * metaclass ();
+			//% (table [key, value])
+			static Value * table (Frame * frame);
 			
-		private:		
+			//% (update table key value) -> old_value
+			static Value * update (Frame * frame);
+			
+			//% (lookup table key) -> value || nil
+			static Value * lookup (Frame * frame);
+			
+			// % (setPrototype table value)
+			static Value * setPrototype (Frame * frame);
+			
+			// % (prototype table) -> prototype
+			static Value * prototype (Frame * frame);
+			
+			static void import (Table *);
+			
+		private:
 			Table * m_prototype;
 			
 			unsigned m_size;

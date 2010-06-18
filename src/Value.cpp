@@ -1,5 +1,5 @@
 /*
- *  Cell.c
+ *  Value.cpp
  *  This file is part of the "Kai" project, and is licensed under the GNU GPLv3.
  *
  *  Created by Samuel Williams on 10/04/10.
@@ -7,7 +7,7 @@
  *
  */
 
-#include "Cell.h"
+#include "Value.h"
 #include <assert.h>
 #include <gc/gc_cpp.h>
 #include <iostream>
@@ -82,8 +82,8 @@ namespace Kai {
 		return false;
 	}
 
-	#pragma mark -
-	#pragma mark Cell
+#pragma mark -
+#pragma mark Cell
 
 	Cell::Cell (Value * head, Value * tail) : m_head(head), m_tail(tail) {
 		
@@ -166,6 +166,7 @@ namespace Kai {
 					cur = next;
 				} else {
 					cur->m_tail->toCode(buffer);
+					cur = NULL;
 				}
 			} else {
 				break;
@@ -179,8 +180,21 @@ namespace Kai {
 		return frame->call(this);
 	}
 
-	#pragma mark -
-	#pragma mark String
+	Value * Cell::cell (Frame * frame) {
+		Value * head = NULL;
+		Value * tail = NULL;
+		
+		frame->extract()[head][tail];
+		
+		return new Cell(head, tail);
+	}
+	
+	void Cell::import (Table * context) {
+		context->update(new Symbol("cell"), KFunctionWrapper(Cell::cell));
+	}
+
+#pragma mark -
+#pragma mark String
 
 	String::String (const StringT & value) : m_value(value) {
 		
@@ -252,7 +266,7 @@ namespace Kai {
 
 	Value * Symbol::evaluate (Frame * frame) {
 		if (m_value[0] != ':') {
-			return frame->call(this);
+			return frame->lookup(this);
 		} else {
 			return this;
 		}
@@ -304,18 +318,6 @@ namespace Kai {
 
 	}
 	
-	Value * newTable (Frame * frame) {
-		return new Table;
-	}
-	
-	Value * Table::metaclass () {
-		Table * klass = new Table;
-		
-		klass->update(new Symbol("new"), KFunctionWrapper(newTable));
-		
-		return klass;
-	}
-
 	Table::Table (int size, bool allocate) {
 		assert(size >= 1);
 		
@@ -464,5 +466,101 @@ namespace Kai {
 		}
 		
 		throw Exception("Invalid Invocation", frame);
+	}
+	
+	void Table::setPrototype (Table * prototype) {
+		m_prototype = prototype;
+	}
+	
+	Table * Table::prototype () {
+		return m_prototype;
+	}
+	
+#pragma mark Builtins
+	
+	Value * Table::table (Frame * frame) {
+		Table * table = new Table;
+		Cell * args = frame->unwrap();
+		
+		while (args) {
+			Symbol * key = NULL;
+			Value * value = NULL;
+			
+			args = args->extract(frame)[key][value];
+			
+			if (key == NULL) {
+				throw Exception("Invalid Key", frame);
+			}
+			
+			table->update(key, value);
+		}
+		
+		return table;
+	}
+
+	Value * Table::update (Frame * frame) {
+		Table * table = NULL;
+		Symbol * key = NULL;
+		Value * value = NULL;
+		
+		frame->extract()[table][key][value];
+		
+		if (table == NULL) {
+			throw Exception("Invalid Target", frame);
+		}
+		
+		if (key == NULL) {
+			throw Exception("Invalid Key", frame);
+		}
+		
+		std::cerr << "Updating " << Value::toString(key) << " to " << Value::toString(value) << std::endl;
+		
+		if (value == NULL)
+			return table->remove(key);
+		else
+			return table->update(key, value);
+	}
+	
+	Value * Table::lookup (Frame * frame) {
+		Table * table = NULL;
+		Symbol * key = NULL;
+		
+		frame->extract()[table][key];
+		
+		if (table == NULL) {
+			throw Exception("Invalid Target", frame);
+		}
+		
+		if (key == NULL) {
+			throw Exception("Invalid Key", frame);
+		}
+		
+		return table->lookup(key);
+	}
+	
+	Value * Table::setPrototype (Frame * frame) {
+		Table * table = NULL, * prototype = NULL;
+		
+		frame->extract()[table][prototype];
+		
+		table->setPrototype(prototype);
+		
+		return NULL;
+	}
+	
+	Value * Table::prototype (Frame * frame) {
+		Table * table = NULL;
+		
+		frame->extract()[table];
+		
+		return table->prototype();
+	}
+	
+	void Table::import (Table * context) {
+		context->update(new Symbol("table"), KFunctionWrapper(Table::table));
+		context->update(new Symbol("update"), KFunctionWrapper(Table::update));
+		context->update(new Symbol("lookup"), KFunctionWrapper(Table::lookup));
+		context->update(new Symbol("prototype="), KFunctionWrapper(Table::setPrototype));
+		context->update(new Symbol("prototype"), KFunctionWrapper(Table::prototype));
 	}
 }

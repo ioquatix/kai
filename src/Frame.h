@@ -10,9 +10,14 @@
 #ifndef _KFRAME_H
 #define _KFRAME_H
 
-#include "Cell.h"
+#include "Value.h"
 
 namespace Kai {
+	
+	class Value;
+	class Symbol;
+	class Cell;
+
 	class Frame : public gc {
 		private:
 			// Previous stack frame
@@ -29,7 +34,9 @@ namespace Kai {
 		public:
 			Frame (Value * caller);
 			Frame (Value * caller, Symbol * function, Cell * operands, Frame * previous);
-						
+			
+			Value * lookup (Symbol * identifier);
+			
 			Value * call (Cell * functionAndOperands);
 			Value * call (Symbol * function, Cell * operands = NULL);
 			Value * call (Value * caller, Value * target, Symbol * function, Cell * operands);
@@ -42,8 +49,9 @@ namespace Kai {
 			Cell * unwrap ();
 			Cell * arguments ();
 			
-			bool top ();
+			Cell::ArgumentExtractor extract();
 			
+			bool top ();
 			void debug ();
 	};
 }

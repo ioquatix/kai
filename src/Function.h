@@ -10,7 +10,7 @@
 #ifndef _KFUNCTION_H
 #define _KFUNCTION_H
 
-#include "Cell.h"
+#include "Value.h"
 
 namespace Kai {
 
@@ -47,9 +47,6 @@ namespace Kai {
 		
 		// Returns the arguments evaluated in the caller's context.
 		Cell * unwrap (Frame * frame);
-		
-		// Updates the value in the Table caller.
-		Value * update (Frame * frame);
 		
 		// Compares two given values
 		Symbol * compare (Frame * frame);

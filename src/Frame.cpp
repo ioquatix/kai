@@ -23,6 +23,15 @@ namespace Kai {
 	{
 
 	}
+	
+	Value * Frame::lookup (Symbol * identifier) {
+		Table * table = dynamic_cast<Table*>(m_caller);
+		
+		if (table)
+			return table->lookup(identifier);
+		else
+			return NULL;
+	}
 
 	Value * Frame::call (Cell * functionAndOperands)
 	{
@@ -69,7 +78,11 @@ namespace Kai {
 		Cell * cur = m_operands;
 		
 		while (cur) {
-			Value * value = cur->head()->evaluate(this);
+			Value * value = NULL;
+			
+			// If cur->head() == NULL, the result is also NULL.
+			if (cur->head())
+				value = cur->head()->evaluate(this);
 			
 			last = Cell::append(last, value, m_arguments);
 			
@@ -85,6 +98,16 @@ namespace Kai {
 
 	bool Frame::top () {
 		return this == m_previous;
+	}
+	
+	Cell::ArgumentExtractor Frame::extract() {
+		Cell * args = unwrap();
+		
+		if (args == NULL) {
+			throw Exception("No arguments provided!", this);
+		}
+		
+		return args->extract(this);
 	}
 
 	void Frame::debug () {

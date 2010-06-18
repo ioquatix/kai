@@ -56,11 +56,18 @@ namespace Kai {
 				value = parseString(begin, end);
 			} else if (isNumeric(begin) || *begin == '-') {
 				value = parseInteger(begin, end);
+			} else if (*begin == '#') {
+				while (*begin != '\n' && begin < end) {
+					++begin;
+				}
+				
+				continue;
 			} else {
 				value = parseSymbol(begin, end);
 			}
 			
-			assert(value != NULL);
+			// value != NULL -> empty list
+			// assert(value != NULL);
 			
 			//std::cout << "Appending: ";
 			//value->debug();
@@ -80,6 +87,8 @@ namespace Kai {
 		
 		StringStreamT characters;
 		
+		++begin;
+		
 		while (begin != end && *begin != '"') {
 			if (*begin == '\\') {
 				++begin;
@@ -93,7 +102,12 @@ namespace Kai {
 			}
 			
 			characters << *begin;
+			
+			++begin;
 		}
+
+		// Move to next character
+		++begin;
 
 		return new String(characters.str());
 	}

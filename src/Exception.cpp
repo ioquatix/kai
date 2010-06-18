@@ -8,6 +8,7 @@
  */
 
 #include "Exception.h"
+#include "Frame.h"
 
 namespace Kai {
 

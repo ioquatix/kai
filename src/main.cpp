@@ -17,7 +17,7 @@
 #include <gc/gc.h>
 #include <stdio.h>
 
-#include "Cell.h"
+#include "Value.h"
 #include "Parser.h"
 #include "Frame.h"
 #include "Function.h"
@@ -30,15 +30,30 @@ namespace {
 	using namespace Kai;
 
 	Value * runCode (Table * context, SourceCode & code, int & result) {
+		Cell * value = NULL;
+		Value * list = NULL;
+	
 		try {
 			Frame frame(context);
 		
-			Cell * value = Parser::parse(code.buffer());
-		
-			Value * result = value->evaluate(&frame);
+			value = Parser::parse(code.buffer());
 			
-			return result;
+			if (value) {
+				while (value) {
+					list = value->head()->evaluate(&frame);
+					
+					value = value->tailAs<Cell>();
+				}
+				
+				return list;
+			} else {
+				return NULL;
+			}
 		} catch (Exception & ex) {
+			if (value) {
+				std::cerr << "Executing : " << Value::toString(value) << std::endl;
+			}
+			
 			std::cerr << "Exception : " << ex.what() << std::endl;
 			
 			ex.top()->debug();
@@ -56,11 +71,10 @@ namespace {
 		context->update(new Symbol("wrap"), KFunctionWrapper(Builtins::wrap));
 		context->update(new Symbol("unwrap"), KFunctionWrapper(Builtins::unwrap));
 		
-		context->update(new Symbol("update"), KFunctionWrapper(Builtins::update));
 		context->update(new Symbol("head"), KFunctionWrapper(Builtins::head));
 		context->update(new Symbol("tail"), KFunctionWrapper(Builtins::tail));
 
-		context->update(new Symbol("caller"), KFunctionWrapper(Builtins::caller));
+		context->update(new Symbol("this"), KFunctionWrapper(Builtins::caller));
 
 		context->update(new Symbol("and"), KFunctionWrapper(Builtins::logicalAnd));
 		context->update(new Symbol("or"), KFunctionWrapper(Builtins::logicalOr));
@@ -68,11 +82,13 @@ namespace {
 		
 		context->update(new Symbol("with"), KFunctionWrapper(Builtins::with));
 		
-		context->update(new Symbol("Table"), Table::metaclass());
+		Cell::import(context);
+		Table::import(context);
 		
 		return context;
 	}
 }
+
 
 int main (int argc, const char * argv[]) {
 	using namespace Kai;
