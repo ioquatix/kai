@@ -8,6 +8,7 @@
  */
 
 #include "Frame.h"
+#include "Function.h"
 #include <iostream>
 
 namespace Kai {
@@ -129,4 +130,57 @@ namespace Kai {
 			cur = cur->previous();
 		} while (!cur->top());
 	}
+	
+	void Frame::import (Table * context) {
+		context->update(new Symbol("this"), KFunctionWrapper(Frame::caller));
+		context->update(new Symbol("trace"), KFunctionWrapper(Frame::trace));
+		context->update(new Symbol("unwrap"), KFunctionWrapper(Frame::unwrap));
+		context->update(new Symbol("wrap"), KFunctionWrapper(Frame::wrap)); 
+	}
+	
+	Value * Frame::caller (Frame * frame) {
+		return frame->caller();
+	}
+	
+	Value * Frame::trace (Frame * frame) {
+		Cell * arguments = frame->unwrap();
+		
+		std::cerr << Value::toString(arguments) << std::endl;
+		
+		return NULL;
+	}
+	
+	Value * Frame::unwrap (Frame * frame) {
+		return frame->unwrap();
+	}
+	
+	class Wrapper : public Value {
+		private:
+			Value * m_value;
+		
+		public:
+			Wrapper (Value * value) : m_value(value)
+			{
+			
+			}
+			
+			virtual Value * evaluate (Frame * frame) {
+				return m_value;
+			}
+			
+			virtual void toCode (StringStreamT & buffer) {
+				buffer << "(wrap ";
+				m_value->toCode(buffer);
+				buffer << ')';
+			}
+	};
+	
+	Value * Frame::wrap (Frame * frame) {
+		Value * value;
+		
+		frame->extract()[value];
+		
+		return new Wrapper(value);
+	}
+
 }

@@ -14,6 +14,13 @@
 #include "Exception.h"
 
 namespace Kai {
+	// Comparison Results
+	typedef std::ptrdiff_t ComparisonResult;
+	
+	const ComparisonResult COMPARISON_ASCENDING = 1;
+	const ComparisonResult COMPARISON_DESCENDING = -1;
+	const ComparisonResult COMPARISON_EQUAL = 0;
+
 	class InvalidComparison {};
 	class InvalidInvocation {};
 
@@ -54,6 +61,22 @@ namespace Kai {
 			
 			static StringT toString (Value * value);
 			static bool toBoolean (Value * value);
+			static int compare (Value * lhs, Value * rhs);
+			
+			// Converts the argument to a string value
+			static Value * toString (Frame * frame);
+			
+			// Converts the argument to a boolean symbol
+			static Value * toBoolean (Frame * frame);
+			
+			// Compares the given arguments
+			static Value * compare (Frame * frame);
+			
+			// Returns the arguments unevaluated
+			static Value * value (Frame * frame);
+			
+			// Builtins
+			static void import (Table * context);
 	};
 
 #pragma mark -
@@ -129,6 +152,8 @@ namespace Kai {
 			
 			//% (prepend cell value) -> (cell value)
 			static Value * cell (Frame * frame);
+			static Value * head (Frame * frame);
+			static Value * tail (Frame * frame);
 			
 			static void import (Table * context);
 	};

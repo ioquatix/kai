@@ -53,6 +53,20 @@ namespace Kai {
 			
 			bool top ();
 			void debug ();
+
+			static void import (Table * context);
+			
+			// Returns the caller of the current frame, similar to the "this" keyword.
+			static Value * caller (Frame * frame);
+			
+			// Marks a trace point in the stack frame, and prints out the given unwrapped arguments.
+			static Value * trace (Frame * frame);
+			
+			// Returns the arguments evaluated in the caller's context.
+			static Value * unwrap (Frame * frame);
+			
+			// Returns a function such that when evaluated, returns the arguments unevaluated.
+			static Value * wrap (Frame * frame);
 	};
 }
 

@@ -64,17 +64,8 @@ namespace {
 	
 	Table * buildContext () {
 		Table * context = new Table;
-		
-		context->update(new Symbol("trace"), KFunctionWrapper(Builtins::trace));
-		context->update(new Symbol("value"), KFunctionWrapper(Builtins::value));
+				
 
-		context->update(new Symbol("wrap"), KFunctionWrapper(Builtins::wrap));
-		context->update(new Symbol("unwrap"), KFunctionWrapper(Builtins::unwrap));
-		
-		context->update(new Symbol("head"), KFunctionWrapper(Builtins::head));
-		context->update(new Symbol("tail"), KFunctionWrapper(Builtins::tail));
-
-		context->update(new Symbol("this"), KFunctionWrapper(Builtins::caller));
 
 		context->update(new Symbol("and"), KFunctionWrapper(Builtins::logicalAnd));
 		context->update(new Symbol("or"), KFunctionWrapper(Builtins::logicalOr));
@@ -82,6 +73,8 @@ namespace {
 		
 		context->update(new Symbol("with"), KFunctionWrapper(Builtins::with));
 		
+		Frame::import(context);
+		Value::import(context);
 		Cell::import(context);
 		Table::import(context);
 		

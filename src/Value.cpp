@@ -81,6 +81,70 @@ namespace Kai {
 		
 		return false;
 	}
+	
+	int Value::compare (Value * lhs, Value * rhs) {
+		if (lhs && rhs) {
+			// Both values are non-NULL
+			return lhs->compare(rhs);
+		} else {
+			// One or both values are NULL
+			if (lhs == rhs) {
+				return COMPARISON_EQUAL;
+			} else if (lhs) {
+				return COMPARISON_DESCENDING;
+			} else if (rhs) {
+				return COMPARISON_ASCENDING;
+			}
+		}
+		
+		// We should never get here
+		throw InvalidComparison();
+	}
+
+#pragma mark Builtin Functions
+
+	void Value::import (Table * context) {
+		context->update(new Symbol("toString"), KFunctionWrapper(Value::toString));
+		context->update(new Symbol("toBoolean"), KFunctionWrapper(Value::toBoolean));
+		context->update(new Symbol("compare"), KFunctionWrapper(Value::compare));
+		context->update(new Symbol("value"), KFunctionWrapper(Value::value));
+	}	
+	
+	Value * Value::toString (Frame * frame) {
+		Value * value;
+		
+		frame->extract()[value];
+		
+		return new String(Value::toString(value));
+	}
+	
+	Value * Value::toBoolean (Frame * frame) {
+		Value * value;
+		
+		frame->extract()[value];
+		
+		if (Value::toBoolean(value)) {
+			return Symbol::trueSymbol();
+		} else {
+			return Symbol::falseSymbol();
+		}
+	}
+	
+	Value * Value::compare (Frame * frame) {
+		Value * lhs, * rhs;
+		
+		frame->extract()[lhs][rhs];
+
+		return new Integer(Value::compare(lhs, rhs));
+	}
+	
+	Value * Value::value (Frame * frame) {
+		if (frame->operands()) {
+			return frame->operands()->head();
+		} else {
+			return NULL;
+		}
+	}
 
 #pragma mark -
 #pragma mark Cell
@@ -189,8 +253,34 @@ namespace Kai {
 		return new Cell(head, tail);
 	}
 	
+	Value * Cell::head (Frame * frame) {
+		Cell * cell;
+		
+		frame->extract()[cell];
+		
+		if (!cell) {
+			throw Exception("Invalid Argument", frame);
+		}
+		
+		return cell->head();
+	}
+	
+	Value * Cell::tail (Frame * frame) {
+		Cell * cell;
+		
+		frame->extract()[cell];
+		
+		if (!cell) {
+			throw Exception("Invalid Argument", frame);
+		}
+		
+		return cell->tail();
+	}
+	
 	void Cell::import (Table * context) {
 		context->update(new Symbol("cell"), KFunctionWrapper(Cell::cell));
+		context->update(new Symbol("head"), KFunctionWrapper(Cell::head));
+		context->update(new Symbol("tail"), KFunctionWrapper(Cell::tail));		
 	}
 
 #pragma mark -

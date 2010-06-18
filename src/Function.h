@@ -14,13 +14,13 @@
 
 namespace Kai {
 
-	template <typename ResultT, ResultT (*FunctionT)(Frame *)>
-	class Function : public Value {
+	template <Value * (*FunctionT)(Frame *)>
+	class BuiltinFunction : public Value {
 		private:
 			const char * m_name;
 
 		public:
-			Function (const char * name) : m_name(name) {
+			BuiltinFunction (const char * name) : m_name(name) {
 			
 			}
 			
@@ -33,31 +33,9 @@ namespace Kai {
 			}
 	};
 
-	#define KFunctionWrapper(function) new Function<typeof(function((Frame*)0)), &function>(#function)
+	#define KFunctionWrapper(function) new BuiltinFunction<&function>(#function)
 
 	namespace Builtins {
-
-		Value * trace (Frame * frame);
-		
-		// Returns the arguments unevaluated
-		Value * value (Frame * frame);
-		
-		// Returns a function such that when evaluated, returns the arguments unevaluated.
-		Value * wrap (Frame * frame);
-		
-		// Returns the arguments evaluated in the caller's context.
-		Cell * unwrap (Frame * frame);
-		
-		// Compares two given values
-		Symbol * compare (Frame * frame);
-		
-		// Returns the caller of the current frame
-		Value * caller (Frame * frame);
-		
-		// Extract values from a given Cell
-		Value * head (Frame * frame);
-		Value * tail (Frame * frame);
-
 		// Builtin Logical Operations
 		Value * logicalOr (Frame * frame);
 		Value * logicalAnd (Frame * frame);
