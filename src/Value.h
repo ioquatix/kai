@@ -27,8 +27,8 @@ namespace Kai {
 	struct Frame;
 	class Table;
 
-	#pragma mark -
-	#pragma mark Value
+#pragma mark -
+#pragma mark Value
 	
 	class Value : public gc {	
 		public:
@@ -158,8 +158,8 @@ namespace Kai {
 			static void import (Table * context);
 	};
 
-	#pragma mark -
-	#pragma mark String
+#pragma mark -
+#pragma mark String
 
 	class String : public Value {
 		private:
@@ -177,8 +177,8 @@ namespace Kai {
 			virtual void toCode (StringStreamT & buffer);
 	};
 
-	#pragma mark -
-	#pragma mark Symbol
+#pragma mark -
+#pragma mark Symbol
 
 	class Symbol : public Value {
 		private:
@@ -207,8 +207,8 @@ namespace Kai {
 			static Symbol * trueSymbol ();
 	};
 
-	#pragma mark -
-	#pragma mark Integer
+#pragma mark -
+#pragma mark Integer
 
 	class Integer : public Value {
 		private:
@@ -226,8 +226,8 @@ namespace Kai {
 			virtual void toCode (StringStreamT & buffer);
 	};
 
-	#pragma mark -
-	#pragma mark Table
+#pragma mark -
+#pragma mark Table
 
 	class Table : public Value {
 		public:

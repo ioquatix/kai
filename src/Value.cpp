@@ -18,8 +18,8 @@
 
 namespace Kai {
 
-	#pragma mark -
-	#pragma mark Value
+#pragma mark -
+#pragma mark Value
 
 	template <typename ThisT>
 	inline static int derivedCompare (ThisT * lhs, Value * rhs) {
@@ -310,8 +310,8 @@ namespace Kai {
 		buffer << '"';
 	}
 
-	#pragma mark -
-	#pragma mark Symbol
+#pragma mark -
+#pragma mark Symbol
 
 	int Symbol::calculateHash (const StringT & string) {
 		int sum = 0;
@@ -374,8 +374,8 @@ namespace Kai {
 		return new Symbol("true");
 	}
 
-	#pragma mark -
-	#pragma mark Integer
+#pragma mark -
+#pragma mark Integer
 
 	Integer::Integer (int value) : m_value(value) {
 	}
@@ -395,8 +395,8 @@ namespace Kai {
 		buffer << m_value;
 	}
 
-	#pragma mark -
-	#pragma mark Table
+#pragma mark -
+#pragma mark Table
 
 	Table::Table (int size) : m_size(size) {
 		assert(size >= 1);
