@@ -648,4 +648,70 @@ namespace Kai {
 		context->update(new Symbol("lookup"), KFunctionWrapper(Table::lookup));
 		context->update(new Symbol("prototype="), KFunctionWrapper(Table::setPrototype));
 	}
+	
+#pragma mark -
+#pragma mark Lambda
+
+	Lambda::Lambda (Value * scope, Cell * arguments, Cell * code)
+		: m_scope(scope), m_arguments(arguments), m_code(code) {
+		
+	}
+	
+	Lambda::~Lambda () {
+		
+	}
+	
+	Value * Lambda::evaluate (Frame * frame) {
+		Table * locals = new Table;
+		locals->setPrototype(m_scope);
+		
+		Cell * names = m_arguments;
+		Cell * values = frame->unwrap();
+		while (names != NULL) {
+			if (values == NULL) {
+				throw Exception("Lambda Arity Mismatch", frame);
+			}
+			
+			locals->update(names->headAs<Symbol>(), values->head());
+			
+			names = names->tailAs<Cell>();
+			values = values->tailAs<Cell>();
+		}
+		
+		Frame * next = new Frame(locals, frame);
+		
+		return m_code->evaluate(next);
+	}
+	
+	void Lambda::toCode (StringStreamT & buffer) {
+		buffer << "(lambda ";
+		
+		m_arguments->toCode(buffer);
+		
+		buffer << " ";
+		
+		m_code->toCode(buffer);
+		
+		buffer << ")";
+	}
+	
+	Value * Lambda::lambda (Frame * frame) {
+		Cell * arguments, * code;
+		
+		frame->extract()[arguments][code];
+		
+		if (arguments == NULL) {
+			throw Exception("Invalid Argument List", frame);
+		}
+		
+		if (code == NULL) {
+			throw Exception("Invalid Lambda Body", frame);
+		}
+		
+		return new Lambda(frame->scope(), arguments, code);
+	}
+	
+	void Lambda::import (Table * context) {
+		context->update(new Symbol("lambda"), KFunctionWrapper(Lambda::lambda));
+	}
 }

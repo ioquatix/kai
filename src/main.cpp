@@ -73,6 +73,7 @@ namespace {
 		Value::import(global);
 		Cell::import(global);
 		Table::import(global);
+		Lambda::import(global);
 		
 		Table * context = new Table;
 		context->setPrototype(global);

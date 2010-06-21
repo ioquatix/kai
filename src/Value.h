@@ -291,5 +291,26 @@ namespace Kai {
 			unsigned m_size;
 			Bin ** m_bins;
 	};
+
+#pragma mark -
+#pragma mark Lambda
+
+	class Lambda : public Value {
+		private:
+			Value * m_scope;
+			Cell * m_arguments;
+			Cell * m_code;
+			
+		public:
+			Lambda (Value * scope, Cell * arguments, Cell * code);
+			virtual ~Lambda ();
+			
+			virtual Value * evaluate (Frame * frame);
+			
+			virtual void toCode (StringStreamT & buffer);
+			
+			static Value * lambda (Frame * frame);
+			static void import (Table *);
+	};
 }
 #endif
