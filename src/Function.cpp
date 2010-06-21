@@ -62,29 +62,5 @@ namespace Kai {
 			
 			return Symbol::trueSymbol();
 		}
-		
-		Value * with (Frame * frame) {
-			Cell * cur = frame->operands();
-			Value * caller = frame->caller();
-			
-			while (cur != NULL) {
-				Symbol * function = NULL;
-				Cell * operands = NULL;
-				
-				if (function = cur->headAs<Symbol>()) {
-					
-				} else {
-					function = cur->headAs<Cell>()->headAs<Symbol>();
-					operands = cur->headAs<Cell>()->tailAs<Cell>();
-				}
-				
-				frame = new Frame(caller, function, operands, frame);
-				caller = caller->invoke(frame);
-				
-				cur = cur->tailAs<Cell>();
-			}
-			
-			return caller;
-		}
 	}
 }

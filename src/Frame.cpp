@@ -13,70 +13,77 @@
 
 namespace Kai {
 
-	Frame::Frame (Value * caller)
-		: m_previous(this), m_caller(caller), m_function(NULL), m_operands(NULL), m_arguments(NULL)
-	{
-
-	}
-
-	Frame::Frame (Value * caller, Symbol * function, Cell * operands, Frame * previous)
-		: m_previous(previous), m_caller(caller), m_function(function), m_operands(operands), m_arguments(NULL)
+	Frame::Frame (Value * scope)
+		: m_previous(this), m_scope(scope), m_message(NULL), m_arguments(NULL), m_function(NULL)
 	{
 
 	}
 	
+	Frame::Frame (Value * scope, Frame * previous)
+		: m_previous(previous), m_scope(scope), m_message(previous->m_message), m_arguments(previous->m_arguments), 
+		m_function(m_previous->m_function)
+	{
+	
+	}
+
+	Frame::Frame (Value * scope, Cell * message, Frame * previous)
+		: m_previous(previous), m_scope(scope), m_message(message), m_arguments(NULL), m_function(NULL)
+	{
+		
+	}
+	
 	Value * Frame::lookup (Symbol * identifier) {
-		Table * table = dynamic_cast<Table*>(m_caller);
-		
-		if (table)
-			return table->lookup(identifier);
-		else
-			return NULL;
+		return m_scope->lookup(identifier);
 	}
 
-	Value * Frame::call (Cell * functionAndOperands)
-	{
-		Symbol * function = dynamic_cast<Symbol*>(functionAndOperands->head());
-		Cell * operands = dynamic_cast<Cell*>(functionAndOperands->tail());
-
-		return call(function, operands);
+	Value * Frame::apply () {
+		std::cerr << "-- " << Value::toString(m_message) << " <= " << Value::toString(m_scope) << std::endl;
+		
+		m_function = m_message->head()->evaluate(this);
+		
+		if (!m_function) {
+			throw Exception("Invalid Function", m_message->head(), this);
+		}
+		
+		return m_function->evaluate(this);
 	}
 
-	Value * Frame::call (Symbol * function, Cell * operands)
+	Value * Frame::call (Value * scope, Cell * message)
 	{
-		return call(m_caller, m_caller, function, operands);
-	}
-
-	Value * Frame::call (Value * caller, Value * target, Symbol * function, Cell * operands)
-	{
-		Frame * frame = new Frame(caller, function, operands, this);
+		if (scope == NULL) {
+			throw Exception("Invalid Scope", this);
+		}
 		
-		//std::cerr << "Calling " << Value::toString(frame->function()) << " with operands " << Value::toString(operands) << std::endl;
+		if (message == NULL) {
+			throw Exception("Invalid Message", this);
+		}
+	
+		Frame * frame = new Frame(scope, message, this);
 		
-		return target->invoke(frame);
+		return frame->apply();
 	}
 
 	Frame * Frame::previous () {
 		return m_previous;
 	}
 
-	Value * Frame::caller () {
-		return m_caller;
+	Value * Frame::scope () {
+		return m_scope;
 	}
 
-	Symbol * Frame::function () {
+	Value * Frame::function () {
 		return m_function;
 	}
 
 	Cell * Frame::operands () {
-		return m_operands;
+		return m_message->tailAs<Cell>();
 	}
 
 	Cell * Frame::unwrap () {
 		if (m_arguments != NULL) return m_arguments;
 		
 		Cell * last = NULL;
-		Cell * cur = m_operands;
+		Cell * cur = operands();
 		
 		while (cur) {
 			Value * value = NULL;
@@ -119,8 +126,8 @@ namespace Kai {
 			
 			std::cerr << "Frame " << cur << ":" << std::endl;
 			
-			if (cur->caller())
-				std::cerr << "\t Caller: " << Value::toString(cur->caller()) << std::endl;
+			if (cur->scope())
+				std::cerr << "\t Scope: " << Value::toString(cur->scope()) << std::endl;
 			
 			std::cerr << "\t Function: " << Value::toString(&cell) << std::endl;
 			
@@ -132,14 +139,15 @@ namespace Kai {
 	}
 	
 	void Frame::import (Table * context) {
-		context->update(new Symbol("this"), KFunctionWrapper(Frame::caller));
+		context->update(new Symbol("this"), KFunctionWrapper(Frame::scope));
 		context->update(new Symbol("trace"), KFunctionWrapper(Frame::trace));
 		context->update(new Symbol("unwrap"), KFunctionWrapper(Frame::unwrap));
-		context->update(new Symbol("wrap"), KFunctionWrapper(Frame::wrap)); 
+		context->update(new Symbol("wrap"), KFunctionWrapper(Frame::wrap));
+		context->update(new Symbol("with"), KFunctionWrapper(Frame::with));
 	}
 	
-	Value * Frame::caller (Frame * frame) {
-		return frame->caller();
+	Value * Frame::scope (Frame * frame) {
+		return frame->scope();
 	}
 	
 	Value * Frame::trace (Frame * frame) {
@@ -181,6 +189,19 @@ namespace Kai {
 		frame->extract()[value];
 		
 		return new Wrapper(value);
+	}
+	
+	Value * Frame::with (Frame * frame) {
+		Cell * cur = frame->operands();
+		Value * scope = frame->scope();
+		
+		while (cur != NULL) {
+			scope = frame->call(scope, cur->headAs<Cell>());
+			
+			cur = cur->tailAs<Cell>();
+		}
+		
+		return scope;
 	}
 
 }

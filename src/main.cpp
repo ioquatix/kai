@@ -63,25 +63,23 @@ namespace {
 	}
 	
 	Table * buildContext () {
-		Table * context = new Table;
+		Table * global = new Table;
+		
+		global->update(new Symbol("and"), KFunctionWrapper(Builtins::logicalAnd));
+		global->update(new Symbol("or"), KFunctionWrapper(Builtins::logicalOr));
+		global->update(new Symbol("not"), KFunctionWrapper(Builtins::logicalNot));
 				
-
-
-		context->update(new Symbol("and"), KFunctionWrapper(Builtins::logicalAnd));
-		context->update(new Symbol("or"), KFunctionWrapper(Builtins::logicalOr));
-		context->update(new Symbol("not"), KFunctionWrapper(Builtins::logicalNot));
+		Frame::import(global);
+		Value::import(global);
+		Cell::import(global);
+		Table::import(global);
 		
-		context->update(new Symbol("with"), KFunctionWrapper(Builtins::with));
-		
-		Frame::import(context);
-		Value::import(context);
-		Cell::import(context);
-		Table::import(context);
+		Table * context = new Table;
+		context->setPrototype(global);
 		
 		return context;
 	}
 }
-
 
 int main (int argc, const char * argv[]) {
 	using namespace Kai;

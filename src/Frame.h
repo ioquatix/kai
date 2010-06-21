@@ -23,27 +23,28 @@ namespace Kai {
 			// Previous stack frame
 			Frame * m_previous;
 			
-			// Typically an instance of Table
-			Value * m_caller;
+			Value * m_scope;
+						
+			Cell * m_message;
 			
-			Symbol * m_function;
-			
-			Cell * m_operands;
+			Value * m_function;
 			Cell * m_arguments;
+			
+			Value * apply ();
 
 		public:
-			Frame (Value * caller);
-			Frame (Value * caller, Symbol * function, Cell * operands, Frame * previous);
+			Frame (Value * scope);
+			Frame (Value * scope, Frame * previous);
+			Frame (Value * scope, Cell * message, Frame * previous);
 			
 			Value * lookup (Symbol * identifier);
 			
-			Value * call (Cell * functionAndOperands);
-			Value * call (Symbol * function, Cell * operands = NULL);
-			Value * call (Value * caller, Value * target, Symbol * function, Cell * operands);
+			// Should a message be restricted to a Cell, or is it suitable to be a Value ?
+			Value * call (Value * scope, Cell * message);
 			
 			Frame * previous ();
-			Value * caller ();
-			Symbol * function ();
+			Value * scope ();
+			Value * function ();
 			
 			Cell * operands ();
 			Cell * unwrap ();
@@ -57,7 +58,7 @@ namespace Kai {
 			static void import (Table * context);
 			
 			// Returns the caller of the current frame, similar to the "this" keyword.
-			static Value * caller (Frame * frame);
+			static Value * scope (Frame * frame);
 			
 			// Marks a trace point in the stack frame, and prints out the given unwrapped arguments.
 			static Value * trace (Frame * frame);
@@ -67,6 +68,9 @@ namespace Kai {
 			
 			// Returns a function such that when evaluated, returns the arguments unevaluated.
 			static Value * wrap (Frame * frame);
+			
+			// Processing
+			static Value * with (Frame * frame);
 	};
 }
 

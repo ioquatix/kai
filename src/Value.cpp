@@ -45,6 +45,20 @@ namespace Kai {
 	Value::~Value () {
 
 	}
+	
+	Value * Value::lookup (Symbol * identifier) {
+		Value * proto = prototype();
+		
+		if (proto) {
+			return proto->lookup(identifier);
+		}
+		
+		return NULL;
+	}
+	
+	Value * Value::prototype () {
+		return NULL;
+	}
 
 	int Value::compare (Value * other) {
 		throw InvalidComparison();
@@ -52,10 +66,6 @@ namespace Kai {
 
 	void Value::debug () {
 		std::cerr << toString(this) << std::endl;
-	}
-
-	Value * Value::invoke (Frame * frame) {
-		throw Exception("Invalid Invocation", frame);
 	}
 
 	Value * Value::evaluate (Frame * frame) {
@@ -107,6 +117,7 @@ namespace Kai {
 		context->update(new Symbol("toString"), KFunctionWrapper(Value::toString));
 		context->update(new Symbol("toBoolean"), KFunctionWrapper(Value::toBoolean));
 		context->update(new Symbol("compare"), KFunctionWrapper(Value::compare));
+		context->update(new Symbol("prototype"), KFunctionWrapper(Value::prototype));
 		context->update(new Symbol("value"), KFunctionWrapper(Value::value));
 	}	
 	
@@ -136,6 +147,14 @@ namespace Kai {
 		frame->extract()[lhs][rhs];
 
 		return new Integer(Value::compare(lhs, rhs));
+	}
+	
+	Value * Value::prototype (Frame * frame) {
+		Value * value = NULL;
+		
+		frame->extract()[value];
+		
+		return value->prototype();
 	}
 	
 	Value * Value::value (Frame * frame) {
@@ -241,7 +260,7 @@ namespace Kai {
 	}
 
 	Value * Cell::evaluate (Frame * frame) {
-		return frame->call(this);
+		return frame->call(frame->scope(), this);
 	}
 
 	Value * Cell::cell (Frame * frame) {
@@ -541,28 +560,12 @@ namespace Kai {
 
 		return NULL;
 	}
-
-	Value * Table::invoke (Frame * frame) {
-		Symbol * key = frame->function();
-
-		if (!key) {
-			throw Exception("Null Key", frame);
-		}
-		
-		Value * value = this->lookup(key);
-		
-		if (value) {
-			return value->evaluate(frame);
-		}
-		
-		throw Exception("Invalid Invocation", frame);
-	}
 	
-	void Table::setPrototype (Table * prototype) {
+	void Table::setPrototype (Value * prototype) {
 		m_prototype = prototype;
 	}
 	
-	Table * Table::prototype () {
+	Value * Table::prototype () {
 		return m_prototype;
 	}
 	
@@ -629,7 +632,8 @@ namespace Kai {
 	}
 	
 	Value * Table::setPrototype (Frame * frame) {
-		Table * table = NULL, * prototype = NULL;
+		Table * table = NULL;
+		Value * prototype = NULL;
 		
 		frame->extract()[table][prototype];
 		
@@ -638,19 +642,10 @@ namespace Kai {
 		return NULL;
 	}
 	
-	Value * Table::prototype (Frame * frame) {
-		Table * table = NULL;
-		
-		frame->extract()[table];
-		
-		return table->prototype();
-	}
-	
 	void Table::import (Table * context) {
 		context->update(new Symbol("table"), KFunctionWrapper(Table::table));
 		context->update(new Symbol("update"), KFunctionWrapper(Table::update));
 		context->update(new Symbol("lookup"), KFunctionWrapper(Table::lookup));
 		context->update(new Symbol("prototype="), KFunctionWrapper(Table::setPrototype));
-		context->update(new Symbol("prototype"), KFunctionWrapper(Table::prototype));
 	}
 }

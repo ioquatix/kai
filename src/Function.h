@@ -29,7 +29,7 @@ namespace Kai {
 			}
 			
 			virtual void toCode (StringStreamT & buffer) {
-				buffer << m_name;
+				buffer << "(builtin " << m_name << ")";
 			}
 	};
 
@@ -40,9 +40,6 @@ namespace Kai {
 		Value * logicalOr (Frame * frame);
 		Value * logicalAnd (Frame * frame);
 		Value * logicalNot (Frame * frame);
-		
-		// Processing
-		Value * with (Frame * frame);
 	};
 	
 }

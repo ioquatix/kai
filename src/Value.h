@@ -26,11 +26,14 @@ namespace Kai {
 
 	struct Frame;
 	class Table;
+	class Symbol;
 
 #pragma mark -
 #pragma mark Value
 	
-	class Value : public gc {	
+	//typedef Value * (*EvaluateFunctionT)(Frame *);
+	
+	class Value : public gc {
 		public:
 			virtual ~Value ();
 		
@@ -52,9 +55,12 @@ namespace Kai {
 			virtual void toCode (StringStreamT & buffer) = 0;
 			
 			void debug ();
+
+			// Lookup the given identifier. Defers to prototype.
+			virtual Value * lookup (Symbol * identifier);
 			
-			// Invoke a named function.
-			virtual Value * invoke (Frame * frame);
+			// A prototype specifies the behaviour of the current value.
+			virtual Value * prototype ();
 			
 			// Evaluate the current value in the given context.
 			virtual Value * evaluate (Frame * frame);
@@ -71,6 +77,9 @@ namespace Kai {
 			
 			// Compares the given arguments
 			static Value * compare (Frame * frame);
+			
+			// Returns a prototype for the given object.
+			static Value * prototype (Frame * frame);
 			
 			// Returns the arguments unevaluated
 			static Value * value (Frame * frame);
@@ -257,11 +266,10 @@ namespace Kai {
 			
 			virtual void toCode (StringStreamT & buffer);
 		
-			virtual Value * invoke (Frame * frame);
 			virtual Value * lookup (Symbol * key);
 						
-			void setPrototype (Table * prototype);
-			Table * prototype ();
+			void setPrototype (Value * prototype);
+			virtual Value * prototype ();
 			
 			//% (table [key, value])
 			static Value * table (Frame * frame);
@@ -275,13 +283,10 @@ namespace Kai {
 			// % (setPrototype table value)
 			static Value * setPrototype (Frame * frame);
 			
-			// % (prototype table) -> prototype
-			static Value * prototype (Frame * frame);
-			
 			static void import (Table *);
 			
 		private:
-			Table * m_prototype;
+			Value * m_prototype;
 			
 			unsigned m_size;
 			Bin ** m_bins;
