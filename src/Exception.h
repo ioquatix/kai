@@ -17,19 +17,22 @@ namespace Kai {
 
 	class Cell;
 	class Frame;
+	class Value;
 
 	class Exception {
 		protected:
 			Frame * m_frame;
 			Cell * m_arguments;
+			Value * m_value;
 			
 			StringT m_what;
 		
 		public:
-			Exception(StringT message, Frame * frame);
+			Exception(StringT what, Frame * frame);
+			Exception(StringT what, Value * value, Frame * frame);
 			
 			Frame * top ();
-			const StringT & what ();
+			StringT what ();
 	};
 
 }

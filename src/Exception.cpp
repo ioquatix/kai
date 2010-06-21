@@ -13,9 +13,15 @@
 namespace Kai {
 
 	Exception::Exception(StringT what, Frame * frame)
-		: m_what(what), m_frame(frame)
+		: m_what(what), m_value(NULL), m_frame(frame)
 	{
 
+	}
+	
+	Exception::Exception(StringT what, Value * value, Frame * frame) 
+		: m_what(what), m_value(value), m_frame(frame)
+	{
+	
 	}
 
 	Frame * Exception::top ()
@@ -23,9 +29,12 @@ namespace Kai {
 		return m_frame;
 	}
 
-	const StringT & Exception::what ()
+	StringT Exception::what ()
 	{
-		return m_what;
+		if (m_value)
+			return m_what + " : " + Value::toString(m_value);
+		else
+			return m_what;
 	}
 
 }
