@@ -34,13 +34,6 @@ namespace Kai {
 	};
 
 	#define KFunctionWrapper(function) new BuiltinFunction<&function>(#function)
-
-	namespace Builtins {
-		// Builtin Logical Operations
-		Value * logicalOr (Frame * frame);
-		Value * logicalAnd (Frame * frame);
-		Value * logicalNot (Frame * frame);
-	};
 	
 }
 

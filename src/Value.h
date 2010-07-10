@@ -31,9 +31,7 @@ namespace Kai {
 #pragma mark -
 #pragma mark Value
 	
-	//typedef Value * (*EvaluateFunctionT)(Frame *);
-	
-	class Value : public gc {
+	class Value : public gc_cleanup {
 		public:
 			virtual ~Value ();
 		
@@ -78,11 +76,20 @@ namespace Kai {
 			// Compares the given arguments
 			static Value * compare (Frame * frame);
 			
+			// Compares the given values and returns a true/false value
+			static Value * equal (Frame * frame);
+			
 			// Returns a prototype for the given object.
 			static Value * prototype (Frame * frame);
 			
 			// Returns the arguments unevaluated
 			static Value * value (Frame * frame);
+			
+			// Evalutes arguments one at a time in the scope of the previous.
+			static Value * lookup (Frame * frame);
+			
+			// Performs a method call with the given function.
+			static Value * with (Frame * frame);
 			
 			// Builtins
 			static void import (Table * context);
@@ -229,10 +236,18 @@ namespace Kai {
 			
 			int & value () { return m_value; }
 			
+			virtual Value * prototype ();
+			
 			virtual int compare (Value * other);
 			int compare (Integer * other);
 			
 			virtual void toCode (StringStreamT & buffer);
+			
+			static Value * sum (Frame * frame);
+			static Value * product (Frame * frame);
+			static Value * modulus (Frame * frame);
+			
+			static void import (Table * context);
 	};
 
 #pragma mark -
@@ -254,6 +269,8 @@ namespace Kai {
 			Table (int size, bool allocate);
 			
 		public:
+			static Value * globalPrototype ();
+			
 			// Inline table allocation
 			static Table * allocate (int size = 16);
 			
@@ -312,5 +329,29 @@ namespace Kai {
 			static Value * lambda (Frame * frame);
 			static void import (Table *);
 	};
+	
+#pragma mark -
+#pragma mark Logic
+
+	class Logic {			
+		public:
+			static Value * or_ (Frame * frame);
+			static Value * and_ (Frame * frame);
+			static Value * not_ (Frame * frame);
+		
+			static Value * when (Frame * frame);
+			static Value * if_ (Frame * frame);
+			
+			static Value * block (Frame * frame);
+			static Value * return_ (Frame * frame);
+			
+			static Value * trueValue ();
+			static Value * falseValue ();
+			static Value * anythingValue ();
+			static Value * nothingValue ();
+			
+			static void import (Table *);
+	};
+
 }
 #endif

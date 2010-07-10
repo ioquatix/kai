@@ -64,16 +64,15 @@ namespace {
 	
 	Table * buildContext () {
 		Table * global = new Table;
-		
-		global->update(new Symbol("and"), KFunctionWrapper(Builtins::logicalAnd));
-		global->update(new Symbol("or"), KFunctionWrapper(Builtins::logicalOr));
-		global->update(new Symbol("not"), KFunctionWrapper(Builtins::logicalNot));
+		global->setPrototype(Table::globalPrototype());
 				
+		Integer::import(global);
 		Frame::import(global);
 		Value::import(global);
 		Cell::import(global);
 		Table::import(global);
 		Lambda::import(global);
+		Logic::import(global);
 		
 		Table * context = new Table;
 		context->setPrototype(global);

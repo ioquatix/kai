@@ -29,7 +29,10 @@ namespace Kai {
 	typedef std::stringstream StringStreamT;
 	typedef StringT::value_type Character;
 	typedef StringT::const_iterator Iterator;
+
+	typedef double TimeT;
 	
+	TimeT systemTime ();
 }
 
 #endif

@@ -23,7 +23,7 @@ namespace Kai {
 
 	template <typename ThisT>
 	inline static int derivedCompare (ThisT * lhs, Value * rhs) {
-		ThisT * other = dynamic_cast<ThisT *>(other);
+		ThisT * other = dynamic_cast<ThisT *>(rhs);
 
 		if (other) {
 			return lhs->compare(other);
@@ -84,9 +84,7 @@ namespace Kai {
 	
 	bool Value::toBoolean (Value * value) {
 		if (value) {
-			if (value->compare(Symbol::falseSymbol()) != 0 && value->compare(Symbol::nilSymbol()) != 0) {
-				return true;
-			}
+			return true;
 		}
 		
 		return false;
@@ -114,12 +112,40 @@ namespace Kai {
 #pragma mark Builtin Functions
 
 	void Value::import (Table * context) {
-		context->update(new Symbol("toString"), KFunctionWrapper(Value::toString));
-		context->update(new Symbol("toBoolean"), KFunctionWrapper(Value::toBoolean));
+		context->update(new Symbol("string"), KFunctionWrapper(Value::toString));
+		context->update(new Symbol("boolean"), KFunctionWrapper(Value::toBoolean));
 		context->update(new Symbol("compare"), KFunctionWrapper(Value::compare));
+		context->update(new Symbol("equal"), KFunctionWrapper(Value::equal));
 		context->update(new Symbol("prototype"), KFunctionWrapper(Value::prototype));
 		context->update(new Symbol("value"), KFunctionWrapper(Value::value));
-	}	
+		
+		context->update(new Symbol("lookup"), KFunctionWrapper(Value::lookup));
+		context->update(new Symbol("with"), KFunctionWrapper(Value::with));
+	}
+	
+	Value * Value::with (Frame * frame) {
+		Cell * cur = frame->unwrap();
+		
+		return cur;
+	}
+	
+	Value * Value::lookup (Frame * frame) {
+		Cell * cur = frame->unwrap();
+		Value * value = NULL;
+		
+		while (cur != NULL) {
+			value = cur->head()->evaluate(frame);
+			
+			if (value == NULL) {
+				throw Exception("Invalid Name", cur->head(), frame);
+			}
+			
+			frame = new Frame(value, frame);
+			cur = cur->tailAs<Cell>();
+		}
+		
+		return value;
+	}
 	
 	Value * Value::toString (Frame * frame) {
 		Value * value;
@@ -145,8 +171,36 @@ namespace Kai {
 		Value * lhs, * rhs;
 		
 		frame->extract()[lhs][rhs];
-
-		return new Integer(Value::compare(lhs, rhs));
+		
+		ComparisonResult c = COMPARISON_EQUAL;
+		
+		try {
+			c = Value::compare(lhs, rhs);
+		} catch (InvalidComparison) {
+			throw Exception("Invalid Comparison", frame);
+		}
+		
+		return new Integer(c);
+	}
+	
+	Value * Value::equal (Frame * frame) {
+		Value * lhs, * rhs;
+		
+		frame->extract()[lhs][rhs];
+		
+		ComparisonResult c = COMPARISON_EQUAL;
+		
+		try {
+			c = Value::compare(lhs, rhs);
+		} catch (InvalidComparison) {
+			throw Exception("Invalid Comparison", frame);
+		}
+		
+		if (c == COMPARISON_EQUAL) {
+			return new Symbol("true");
+		} else {
+			return NULL;
+		}
 	}
 	
 	Value * Value::prototype (Frame * frame) {
@@ -160,9 +214,9 @@ namespace Kai {
 	Value * Value::value (Frame * frame) {
 		if (frame->operands()) {
 			return frame->operands()->head();
-		} else {
-			return NULL;
 		}
+		
+		return NULL;
 	}
 
 #pragma mark -
@@ -401,6 +455,72 @@ namespace Kai {
 
 	Integer::~Integer () {
 	}
+	
+	Value * Integer::sum (Frame * frame) {
+		int total = 0;
+		
+		Cell * args = frame->unwrap();
+		
+		while (args != NULL) {
+			Integer * integer = args->headAs<Integer>();
+			
+			if (integer) {
+				total += integer->value();
+			} else {
+				throw Exception("Invalid Integer Value", frame);
+			}
+			
+			args = args->tailAs<Cell>();
+		}
+		
+		return new Integer(total);
+	}
+	
+	Value * Integer::product (Frame * frame) {
+		int total = 1;
+		
+		Cell * args = frame->unwrap();
+		
+		while (args != NULL) {
+			Integer * integer = args->headAs<Integer>();
+			
+			if (integer) {
+				total *= integer->value();
+			} else {
+				throw Exception("Invalid Integer Value", frame);
+			}
+			
+			args = args->tailAs<Cell>();
+		}
+		
+		return new Integer(total);
+	}
+	
+	Value * Integer::modulus (Frame * frame) {
+		Integer * number, * base;
+		
+		frame->extract()[number][base];
+		
+		return new Integer(number->value() / base->value());
+	}
+	
+	Value * integerPrototype () {
+		static Table * prototype = NULL;
+		
+		if (!prototype) {
+			prototype = new Table;
+			
+			prototype->update(new Symbol("+"), KFunctionWrapper(Integer::sum));
+			prototype->update(new Symbol("*"), KFunctionWrapper(Integer::product));
+			prototype->update(new Symbol("%"), KFunctionWrapper(Integer::modulus));
+		}
+		
+		return prototype;
+	}
+	
+	Value * Integer::prototype () {		
+		return integerPrototype();
+	}
 
 	int Integer::compare (Value * other) {
 		return derivedCompare(this, other);
@@ -412,6 +532,10 @@ namespace Kai {
 
 	void Integer::toCode (StringStreamT & buffer) {
 		buffer << m_value;
+	}
+	
+	void Integer::import (Table * context) {
+		context->update(new Symbol("Integer"), integerPrototype());
 	}
 
 #pragma mark -
@@ -642,11 +766,23 @@ namespace Kai {
 		return NULL;
 	}
 	
+	Value * Table::globalPrototype () {
+		static Table * prototype = NULL;
+		
+		if (prototype == NULL) {
+			prototype = new Table;
+			
+			prototype->update(new Symbol("new"), KFunctionWrapper(Table::table));
+			prototype->update(new Symbol("set"), KFunctionWrapper(Table::update));
+			prototype->update(new Symbol("get"), KFunctionWrapper(Table::lookup));
+			prototype->update(new Symbol("prototype="), KFunctionWrapper(Table::setPrototype));
+		}
+		
+		return prototype;
+	}
+	
 	void Table::import (Table * context) {
-		context->update(new Symbol("table"), KFunctionWrapper(Table::table));
-		context->update(new Symbol("update"), KFunctionWrapper(Table::update));
-		context->update(new Symbol("lookup"), KFunctionWrapper(Table::lookup));
-		context->update(new Symbol("prototype="), KFunctionWrapper(Table::setPrototype));
+		context->update(new Symbol("Table"), Table::globalPrototype());
 	}
 	
 #pragma mark -
@@ -713,5 +849,148 @@ namespace Kai {
 	
 	void Lambda::import (Table * context) {
 		context->update(new Symbol("lambda"), KFunctionWrapper(Lambda::lambda));
+	}
+	
+#pragma mark -
+#pragma mark Logic
+
+	// Builtin Logical Operations
+	Value * Logic::or_ (Frame * frame) {
+		Cell * cur = frame->operands();
+		
+		while (cur != NULL) {
+			Value * value = cur->head()->evaluate(frame);
+			
+			if (Value::toBoolean(value)) {
+				return value;
+			}
+			
+			cur = cur->tailAs<Cell>();
+		}
+		
+		return Symbol::falseSymbol();
+	}
+	
+	Value * Logic::and_ (Frame * frame) {
+		Cell * cur = frame->operands();
+		
+		while (cur != NULL) {
+			Value * value = cur->head()->evaluate(frame);
+			
+			if (!Value::toBoolean(value)) {
+				return Symbol::falseSymbol();					
+			}
+			
+			cur = cur->tailAs<Cell>();
+		}
+		
+		return Symbol::trueSymbol();		
+	}
+	
+	Value * Logic::not_ (Frame * frame) {
+		Cell * cur = frame->unwrap();
+		
+		if (cur == NULL)
+			throw Exception("Invalid Argument", frame);
+		
+		if (Value::toBoolean(cur->head())) {
+			return Symbol::falseSymbol();
+		}
+		
+		return Symbol::trueSymbol();
+	}
+
+	Value * Logic::when (Frame * frame) {
+		Cell::ArgumentExtractor args(frame, frame->operands());
+		
+		Value * value;
+		args = args[value];
+		
+		value = value->evaluate(frame);
+		
+		while (args) {
+			Value * condition, * code;
+			
+			args[condition][code];
+			
+			condition = condition->evaluate(frame);
+			
+			if (Value::compare(value, condition) == COMPARISON_EQUAL) {
+				return code->evaluate(frame);
+			}
+		}
+		
+		return NULL;
+	}
+	
+	Value * Logic::if_ (Frame * frame) {
+		Value * condition, * trueClause, * falseClause;
+		
+		frame->extract(false)[condition][trueClause][falseClause];
+		
+		if (Value::toBoolean(condition->evaluate(frame))) {
+			return trueClause->evaluate(frame);
+		} else {
+			if (falseClause)
+				return falseClause->evaluate(frame);
+			else
+				return NULL;
+		}
+	}
+	
+	Value * Logic::trueValue () {
+		return NULL;
+	}
+	
+	Value * Logic::falseValue () {
+		return NULL;
+	}
+	
+	Value * Logic::anythingValue () {
+		return NULL;
+	}
+	
+	Value * Logic::nothingValue () {
+		return NULL;
+	}
+	
+	struct ReturnValue {
+		Value * value;
+	};
+	
+	Value * Logic::block (Frame * frame) {
+		Value * result = NULL;
+		
+		try {
+			Cell * statements = frame->operands();
+			
+			while (statements != NULL) {
+				result = statements->head()->evaluate(frame);
+				
+				statements = statements->tailAs<Cell>();
+			}
+		} catch (ReturnValue r) {
+			return r.value;
+		}
+		
+		return result;
+	}
+	
+	Value * Logic::return_ (Frame * frame) {
+		ReturnValue r = {frame->unwrap()};
+		
+		throw r;
+	}
+	
+	void Logic::import (Table * context) {
+		context->update(new Symbol("or"), KFunctionWrapper(Logic::or_));
+		context->update(new Symbol("and"), KFunctionWrapper(Logic::and_));
+		context->update(new Symbol("not"), KFunctionWrapper(Logic::not_));
+
+		context->update(new Symbol("block"), KFunctionWrapper(Logic::block));
+		context->update(new Symbol("return"), KFunctionWrapper(Logic::return_));
+
+		context->update(new Symbol("when"), KFunctionWrapper(Logic::when));
+		context->update(new Symbol("if"), KFunctionWrapper(Logic::if_));
 	}
 }

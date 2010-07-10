@@ -9,3 +9,13 @@
 
 #include "Kai.h"
 
+#include <ctime>
+#include <sys/time.h>
+
+namespace Kai {
+	TimeT systemTime () {
+		struct timeval t;
+		gettimeofday (&t, (struct timezone*)0);
+		return ((TimeT)t.tv_sec) + ((TimeT)t.tv_usec / 1000000.0);
+	}
+}

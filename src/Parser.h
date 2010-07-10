@@ -19,6 +19,7 @@ namespace Kai {
 		public:
 			static Cell * parse (const StringT & code);
 			static Cell * parse (const char *& begin, const char * end);
+			static Value * parseOne (const char *& begin, const char * end);
 
 			static String * parseString(const char *& begin, const char * end);
 			static Integer * parseInteger(const char *& begin, const char * end);

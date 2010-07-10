@@ -14,7 +14,7 @@
 namespace Kai {
 
 	Frame::Frame (Value * scope)
-		: m_previous(this), m_scope(scope), m_message(NULL), m_arguments(NULL), m_function(NULL)
+		: m_previous(this), m_scope(scope), m_message(NULL), m_arguments(NULL), m_function(NULL), m_depth(0)
 	{
 
 	}
@@ -23,13 +23,13 @@ namespace Kai {
 		: m_previous(previous), m_scope(scope), m_message(previous->m_message), m_arguments(previous->m_arguments), 
 		m_function(m_previous->m_function)
 	{
-	
+		m_depth = m_previous->m_depth + 1;
 	}
 
 	Frame::Frame (Value * scope, Cell * message, Frame * previous)
 		: m_previous(previous), m_scope(scope), m_message(message), m_arguments(NULL), m_function(NULL)
 	{
-		
+		m_depth = m_previous->m_depth + 1;
 	}
 	
 	Value * Frame::lookup (Symbol * identifier) {
@@ -37,10 +37,14 @@ namespace Kai {
 	}
 
 	Value * Frame::apply () {
-		std::cerr << "-- " << Value::toString(m_message) << " <= " << Value::toString(m_scope) << std::endl;
+		//std::cerr << "-- " << Value::toString(m_message) << " <= " << Value::toString(m_scope) << std::endl;
+		
+		//std::cerr << StringT(m_depth, '\t') << "Fetching Function " << Value::toString(m_message->head()) << std::endl;
 		
 		m_function = m_message->head()->evaluate(this);
-		
+
+		//std::cerr << StringT(m_depth, '\t') << "Executing Function " << Value::toString(m_function) << std::endl;
+				
 		if (!m_function) {
 			throw Exception("Invalid Function", m_message->head(), this);
 		}
@@ -61,6 +65,10 @@ namespace Kai {
 		Frame * frame = new Frame(scope, message, this);
 		
 		return frame->apply();
+	}
+
+	Cell * Frame::message () {
+		return m_message;
 	}
 
 	Frame * Frame::previous () {
@@ -108,8 +116,14 @@ namespace Kai {
 		return this == m_previous;
 	}
 	
-	Cell::ArgumentExtractor Frame::extract() {
-		Cell * args = unwrap();
+	Cell::ArgumentExtractor Frame::extract (bool evaluate) {
+		Cell * args = NULL;
+		
+		if (evaluate) {
+			args = unwrap();
+		} else {
+			args = operands();
+		}
 		
 		if (args == NULL) {
 			throw Exception("No arguments provided!", this);
@@ -153,7 +167,7 @@ namespace Kai {
 	Value * Frame::trace (Frame * frame) {
 		Cell * arguments = frame->unwrap();
 		
-		std::cerr << Value::toString(arguments) << std::endl;
+		std::cerr << Value::toString(frame->message()) << " -> " << Value::toString(arguments) << std::endl;
 		
 		return NULL;
 	}
@@ -178,7 +192,10 @@ namespace Kai {
 			
 			virtual void toCode (StringStreamT & buffer) {
 				buffer << "(wrap ";
-				m_value->toCode(buffer);
+
+				if (m_value)
+					m_value->toCode(buffer);
+					
 				buffer << ')';
 			}
 	};

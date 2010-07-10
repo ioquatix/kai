@@ -37,40 +37,50 @@ namespace Kai {
 		return *c >= '0' && *c <= '9';
 	}
 
+	Value * Parser::parseOne(const char *& begin, const char * end) {
+		Value * value = NULL;
+		
+		while (isWhitespace(begin) && begin < end) {
+			++begin;
+		}
+		
+		if (*begin == '(') {
+			value = parse(++begin, end);
+		} else if (*begin == '"') {
+			return parseString(begin, end);
+		} else if (isNumeric(begin) || *begin == '-') {
+			return parseInteger(begin, end);
+		} else if (*begin == '#') {
+			while (*begin != '\n' && begin < end) {
+				++begin;
+			}
+			
+			return NULL;
+		} else if (*begin == '\'') {
+			Value * expression = parseOne(++begin, end);
+			return new Cell(new Symbol("value"), new Cell(expression));
+		} else {
+			return parseSymbol(begin, end);
+		}
+	}
+
 	Cell * Parser::parse(const char *& begin, const char * end) {
 		Cell * list = NULL;
 		
 		while (begin < end) {
-			while (isWhitespace(begin)) {
+			while (isWhitespace(begin) && begin < end) {
 				++begin;
 			}
-			
-			Value * value = NULL;
-			
-			if (*begin == '(') {
-				value = parse(++begin, end);
-			} else if (*begin == ')') {
+		
+			if (*begin == ')') {
 				++begin;
 				break;
-			} else if (*begin == '"') {
-				value = parseString(begin, end);
-			} else if (isNumeric(begin) || *begin == '-') {
-				value = parseInteger(begin, end);
-			} else if (*begin == '#') {
-				while (*begin != '\n' && begin < end) {
-					++begin;
-				}
-				
-				continue;
-			} else {
-				value = parseSymbol(begin, end);
 			}
 			
-			// value != NULL -> empty list
-			// assert(value != NULL);
+			Value * value = parseOne(begin, end);
 			
-			//std::cout << "Appending: ";
-			//value->debug();
+			if (value == NULL)
+				continue;
 			
 			if (list)
 				list->append(value);

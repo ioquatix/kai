@@ -31,6 +31,8 @@ namespace Kai {
 			Cell * m_arguments;
 			
 			Value * apply ();
+			
+			unsigned m_depth;
 
 		public:
 			Frame (Value * scope);
@@ -46,11 +48,12 @@ namespace Kai {
 			Value * scope ();
 			Value * function ();
 			
+			Cell * message ();
 			Cell * operands ();
 			Cell * unwrap ();
 			Cell * arguments ();
 			
-			Cell::ArgumentExtractor extract();
+			Cell::ArgumentExtractor extract (bool evaluate = true);
 			
 			bool top ();
 			void debug ();
