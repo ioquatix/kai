@@ -18,38 +18,40 @@
 #include <stdio.h>
 
 #include "Value.h"
-#include "Parser.h"
+#include "Parser/Parser.h"
 #include "Frame.h"
 #include "Function.h"
 #include "Exception.h"
 #include "Terminal.h"
 #include "SourceCode.h"
+#include "Compiler.h"
 
 namespace {
 
 	using namespace Kai;
 
-	Value * runCode (Table * context, SourceCode & code, int & result) {
-		Cell * value = NULL;
-		Value * list = NULL;
+	Value * runCode (Table * context, SourceCode & code, int & status) {
+		Value * value = NULL, * result = NULL;
+
+		// Execution status
+		status = 0;
 	
 		try {
-			Frame frame(context);
-		
-			value = Parser::parse(code.buffer());
+			Frame * frame = new Frame(context);
+			
+			value = Parser::parse(code);
 			
 			if (value) {
-				while (value) {
-					list = value->head()->evaluate(&frame);
-					
-					value = value->tailAs<Cell>();
-				}
-				
-				return list;
+				result = value->evaluate(frame);
+							
+				return result;
 			} else {
 				return NULL;
 			}
 		} catch (Exception & ex) {
+			// Execution failed
+			status = 1;
+			
 			if (value) {
 				std::cerr << "Executing : " << Value::toString(value) << std::endl;
 			}
@@ -57,6 +59,8 @@ namespace {
 			std::cerr << "Exception : " << ex.what() << std::endl;
 			
 			ex.top()->debug();
+		} catch (Parser::FatalParseFailure & ex) {
+			status = 2;
 		}
 	
 		return NULL;
