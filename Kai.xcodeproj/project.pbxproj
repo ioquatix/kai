@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		7E330F881170295700DC72B5 /* libgc.1.0.3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 7E330F871170295700DC72B5 /* libgc.1.0.3.dylib */; };
 		7E330F8B11702B8C00DC72B5 /* Value.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7E330F8A11702B8C00DC72B5 /* Value.cpp */; };
-		7E33105F1171D86000DC72B5 /* Parser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7E330B3B116B19F600DC72B5 /* Parser.cpp */; };
 		7E33117D11732F0D00DC72B5 /* Frame.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7E33117C11732F0D00DC72B5 /* Frame.cpp */; };
 		7E33123A117356BA00DC72B5 /* Function.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7E331239117356BA00DC72B5 /* Function.cpp */; };
 		7E33136E1174388400DC72B5 /* Exception.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7E33136D1174388400DC72B5 /* Exception.cpp */; };
@@ -17,6 +16,7 @@
 		7E3EA3FB117F189A00F6C40B /* SourceCode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7E3EA3FA117F189A00F6C40B /* SourceCode.cpp */; };
 		7E3EA40C117F1A4400F6C40B /* Kai.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7E3EA40B117F1A4400F6C40B /* Kai.cpp */; };
 		7E3EA43B117F1C7800F6C40B /* Ensure.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7E3EA43A117F1C7800F6C40B /* Ensure.cpp */; };
+		7E5405A311ED517A00F8898D /* Parser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7E4A1F9411CA26520066C220 /* Parser.cpp */; };
 		7E8799C911A4CDC800051ED4 /* Token.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7E8799C611A4CDC800051ED4 /* Token.cpp */; };
 		8DD76FAC0486AB0100D96B5E /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 08FB7796FE84155DC02AAC07 /* main.cpp */; settings = {ATTRIBUTES = (); }; };
 		8DD76FB00486AB0100D96B5E /* Kai.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = C6A0FF2C0290799A04C91782 /* Kai.1 */; };
@@ -51,8 +51,6 @@
 
 /* Begin PBXFileReference section */
 		08FB7796FE84155DC02AAC07 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
-		7E330B3B116B19F600DC72B5 /* Parser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Parser.cpp; sourceTree = "<group>"; };
-		7E330B4C116B218000DC72B5 /* Parser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Parser.h; sourceTree = "<group>"; };
 		7E330F871170295700DC72B5 /* libgc.1.0.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libgc.1.0.3.dylib; path = /opt/local/lib/libgc.1.0.3.dylib; sourceTree = "<absolute>"; };
 		7E330F8911702B8C00DC72B5 /* Value.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Value.h; sourceTree = "<group>"; };
 		7E330F8A11702B8C00DC72B5 /* Value.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Value.cpp; sourceTree = "<group>"; };
@@ -70,7 +68,8 @@
 		7E3EA40B117F1A4400F6C40B /* Kai.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Kai.cpp; sourceTree = "<group>"; };
 		7E3EA439117F1C7800F6C40B /* Ensure.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Ensure.h; sourceTree = "<group>"; };
 		7E3EA43A117F1C7800F6C40B /* Ensure.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Ensure.cpp; sourceTree = "<group>"; };
-		7E4A1F9411CA26520066C220 /* BParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BParser.cpp; sourceTree = "<group>"; };
+		7E4A1F9411CA26520066C220 /* Parser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Parser.cpp; sourceTree = "<group>"; };
+		7E5405A511ED518400F8898D /* Parser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Parser.h; sourceTree = "<group>"; };
 		7E8799C511A4CDC700051ED4 /* Token.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Token.h; sourceTree = "<group>"; };
 		7E8799C611A4CDC800051ED4 /* Token.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Token.cpp; sourceTree = "<group>"; };
 		8DD76FB20486AB0100D96B5E /* kai */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = kai; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -145,8 +144,6 @@
 				7E33117C11732F0D00DC72B5 /* Frame.cpp */,
 				7E33136C1174388400DC72B5 /* Exception.h */,
 				7E33136D1174388400DC72B5 /* Exception.cpp */,
-				7E330B4C116B218000DC72B5 /* Parser.h */,
-				7E330B3B116B19F600DC72B5 /* Parser.cpp */,
 			);
 			name = Interpreter;
 			sourceTree = "<group>";
@@ -156,7 +153,8 @@
 			children = (
 				7E8799C511A4CDC700051ED4 /* Token.h */,
 				7E8799C611A4CDC800051ED4 /* Token.cpp */,
-				7E4A1F9411CA26520066C220 /* BParser.cpp */,
+				7E5405A511ED518400F8898D /* Parser.h */,
+				7E4A1F9411CA26520066C220 /* Parser.cpp */,
 			);
 			path = Parser;
 			sourceTree = "<group>";
@@ -215,7 +213,6 @@
 			files = (
 				8DD76FAC0486AB0100D96B5E /* main.cpp in Sources */,
 				7E330F8B11702B8C00DC72B5 /* Value.cpp in Sources */,
-				7E33105F1171D86000DC72B5 /* Parser.cpp in Sources */,
 				7E33117D11732F0D00DC72B5 /* Frame.cpp in Sources */,
 				7E33123A117356BA00DC72B5 /* Function.cpp in Sources */,
 				7E33136E1174388400DC72B5 /* Exception.cpp in Sources */,
@@ -224,6 +221,7 @@
 				7E3EA40C117F1A4400F6C40B /* Kai.cpp in Sources */,
 				7E3EA43B117F1C7800F6C40B /* Ensure.cpp in Sources */,
 				7E8799C911A4CDC800051ED4 /* Token.cpp in Sources */,
+				7E5405A311ED517A00F8898D /* Parser.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
