@@ -27,8 +27,7 @@ namespace Kai {
 	typedef std::string StringT;
 	typedef std::size_t SizeT;
 	typedef std::stringstream StringStreamT;
-	typedef StringT::value_type Character;
-	typedef StringT::const_iterator Iterator;
+	typedef StringT::const_iterator StringIteratorT;
 
 	typedef double TimeT;
 	

@@ -58,12 +58,12 @@ namespace Kai {
 			
 			std::vector<StringT> stringsForLines (unsigned firstLine, unsigned lastLine) const;
 			
-			unsigned offsetForIterator (Iterator it) const;
+			unsigned offsetForStringIteratorT (StringIteratorT it) const;
 			
 			const StringT & buffer ();
 			
-			Iterator begin ();
-			Iterator end ();
+			StringIteratorT begin () const;
+			StringIteratorT end () const;
 	};
 }
 

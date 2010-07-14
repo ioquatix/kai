@@ -99,7 +99,11 @@ namespace Kai {
 		}
 		
 		unsigned min = 0;
-		unsigned max = m_lineOffsets.size();		
+		unsigned max = m_lineOffsets.size();
+		
+		// Is this a hack?
+		if (max == 0)
+			return 0;
 		
 		// We should converge on the correct line in log(m_lineOffsets.size()) iterations.
 		while (true) {
@@ -146,7 +150,7 @@ namespace Kai {
 		return strings;
 	}
 	
-	unsigned SourceCode::offsetForIterator (Iterator it) const {
+	unsigned SourceCode::offsetForStringIteratorT (StringIteratorT it) const {
 		return it - m_buffer.begin();
 	}
 	
@@ -154,11 +158,11 @@ namespace Kai {
 		return m_buffer;
 	}
 		
-	Iterator SourceCode::begin () {
+	StringIteratorT SourceCode::begin () const {
 		return m_buffer.begin();
 	}
 	
-	Iterator SourceCode::end () {
+	StringIteratorT SourceCode::end () const {
 		return m_buffer.end();
 	}
 
