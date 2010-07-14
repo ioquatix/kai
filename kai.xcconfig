@@ -1,0 +1,14 @@
+//
+//  kai.xcconfig
+//  Kai
+//
+//  Created by Samuel Williams on 12/07/10.
+//  Copyright 2010 __MyCompanyName__. All rights reserved.
+//
+
+#include "base.xcconfig"
+
+OTHER_CFLAGS=$(LLVM_CFLAGS) $(GC_CFLAGS)
+OTHER_LDFLAGS=$(LLVM_LDFLAGS) $(GC_LDFLAGS)
+
+PRODUCT_NAME=kai

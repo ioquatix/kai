@@ -1,0 +1,18 @@
+//
+//  llvm-machine.xcconfig
+//  Kai
+//
+//  Created by Samuel Williams on 12/07/10.
+//  Copyright 2010 Samuel Williams. All rights reserved.
+//
+
+#include "base.xcconfig"
+
+OTHER_CFLAGS=-emit-llvm $(LLVM_CFLAGS) $(GC_CFLAGS)
+OTHER_LDFLAGS=-emit-llvm
+//-lstdc++ 
+
+GCC_VERSION=com.apple.compilers.llvmgcc42
+//CC=$(LLVM_BIN_PATH)/llvmc
+
+PRODUCT_NAME=machine
