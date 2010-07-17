@@ -9,6 +9,9 @@
 
 #include "Compiler.h"
 
+#include "Frame.h"
+#include "Function.h"
+
 #include <string>
 #include <memory>
 #include <limits>
@@ -22,7 +25,7 @@
 #include <llvm/ExecutionEngine/JIT.h>
 
 namespace Kai {
-
+	
 	Compiler::Compiler ()
 	{
 		using std::auto_ptr;
@@ -57,40 +60,54 @@ namespace Kai {
 			return;
 		}
 		
-		auto_ptr<llvm::ExecutionEngine> engine(llvm::ExecutionEngine::createJIT(module.get(), &error));
+		m_engine = llvm::ExecutionEngine::createJIT(module.get(), &error);
 		module.release();
 		
-		if (!engine.get()) {
+		if (!m_engine) {
 			std::cerr << "Could not create execution engine!" << std::endl;
 			std::cerr << "*** " << error << std::endl;
-			
-			return;
 		}
-
-		llvm::Function* func = engine->FindFunctionNamed("test");
-		
-		if (!func) {
-			std::cerr << "Could not load test function!" << std::endl;
-			
-			return;
-		}
-
-		typedef void (*TestFunc)();
-		TestFunc testFunc = reinterpret_cast<TestFunc>(engine->getPointerToFunction(func));
-		testFunc();
 	}
 	
 	Compiler::~Compiler () {
-	
+		std::cout << "Freeing execution engine" << std::endl;
+		
+		if (m_engine)
+			delete m_engine;
 	}
 	
 	// Returns a compiled function corresponding to the given arguments.
 	Value * Compiler::evaluate (Frame * frame) {
+		String * name;
+		Cell * arguments;
+		Value * body;
 		
-	}	
+		frame->extract()[name][arguments][body];
+		
+		std::vector<StringT> values;
+		std::vector<llvm::Type*> signature;
+		
+		Cell * cur = arguments;
+		
+		while (cur != NULL) {
+			
+			
+			cur = cur->tailAs<Cell>();
+		}
+		
+		return NULL;
+	}
 
 	Value * Compiler::lookup (Symbol * identifier) {
-		return NULL;
+		StringT functionName = identifier->value();
+		
+		llvm::Function* f = m_engine->FindFunctionNamed(functionName.c_str());
+		
+		if (!f) {
+			return NULL;
+		}
+		
+		return new CompiledFunction(reinterpret_cast<EvaluateFunctionT>(m_engine->getPointerToFunction(f)));
 	}
 			
 	Value * Compiler::prototype () {
@@ -99,6 +116,10 @@ namespace Kai {
 			
 	void Compiler::toCode (StringStreamT & buffer) {
 		buffer << "(compiler)";
+	}
+	
+	void Compiler::import (Table * context) {
+		context->update(new Symbol("compiler"), new Compiler);
 	}
 	
 }

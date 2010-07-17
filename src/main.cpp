@@ -78,6 +78,9 @@ namespace {
 		Lambda::import(global);
 		Logic::import(global);
 		
+		Compiler::import(global);
+		CompiledType::import(global);
+		
 		Table * context = new Table;
 		context->setPrototype(global);
 		

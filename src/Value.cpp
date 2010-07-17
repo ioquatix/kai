@@ -16,6 +16,9 @@
 #include "Exception.h"
 #include "Function.h"
 
+// For String constructor
+#include "Parser/Strings.h"
+
 namespace Kai {
 
 #pragma mark -
@@ -359,8 +362,10 @@ namespace Kai {
 #pragma mark -
 #pragma mark String
 
-	String::String (const StringT & value) : m_value(value) {
-		
+	String::String (const StringT & value, bool unescape) : m_value(value) {
+		if (unescape) {
+			m_value = Parser::unescapeString(m_value);
+		}
 	}
 
 	String::~String () {

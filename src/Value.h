@@ -13,6 +13,8 @@
 #include "Kai.h"
 #include "Exception.h"
 
+#include <llvm/Value.h>
+
 namespace Kai {
 	// Comparison Results
 	typedef std::ptrdiff_t ComparisonResult;
@@ -62,6 +64,9 @@ namespace Kai {
 			
 			// Evaluate the current value in the given context.
 			virtual Value * evaluate (Frame * frame);
+			
+			// Compile the value to an llvm Value
+			//virtual llvm::Value * compile (llvm::LLVMContext * context);
 			
 			static StringT toString (Value * value);
 			static bool toBoolean (Value * value);
@@ -157,6 +162,21 @@ namespace Kai {
 						return ArgumentExtractor(m_frame, m_current->tailAs<Cell>());
 					}
 					
+					template <typename AnyT>
+					ArgumentExtractor operator() (AnyT *& t, bool required = true) {
+						if (m_current == NULL) {
+							throw Exception("Argument Error", m_frame);
+						}
+						
+						t = m_current->headAs<AnyT>();
+						
+						if (required && !t) {
+							throw Exception("Argument Required", m_current, m_frame);
+						}
+						
+						return ArgumentExtractor(m_frame, m_current->tailAs<Cell>());
+					}
+					
 					inline operator Cell* () {
 						return m_current;
 					}
@@ -182,7 +202,7 @@ namespace Kai {
 			StringT m_value;
 			
 		public:
-			String (const StringT & value);
+			String (const StringT & value, bool unescape = false);
 			virtual ~String ();
 			
 			StringT & value () { return m_value; }

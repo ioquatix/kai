@@ -10,10 +10,14 @@
 #include "Value.h"
 
 #include <llvm/LLVMContext.h>
+#include <llvm/ExecutionEngine/ExecutionEngine.h>
 
 namespace Kai {
-
+	
 	class Compiler : public Value {
+		protected:
+			llvm::ExecutionEngine * m_engine;
+			
 		public:
 			Compiler ();
 			virtual ~Compiler ();
@@ -28,6 +32,8 @@ namespace Kai {
 			virtual Value * prototype ();
 			
 			virtual void toCode (StringStreamT & buffer);
+			
+			static void import (Table * context);
 	};
 
 }

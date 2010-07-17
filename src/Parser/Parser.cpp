@@ -429,7 +429,7 @@ namespace Kai {
 				}
 				
 				case STRING: {
-					return new String(t.value());
+					return new String(t.value(), true);
 				}
 				
 				case SYMBOL: {
