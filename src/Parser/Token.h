@@ -45,9 +45,7 @@ namespace Kai {
 			
 			COMMENTS = 300
 		};
-		
-		// Token value = parseFloat(begin, end) || parseHex(begin, end) || parseInt(begin, end);
-		
+				
 		struct Token {
 			public:
 				typedef std::vector<Token> ChildrenT;

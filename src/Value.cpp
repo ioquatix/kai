@@ -19,7 +19,14 @@
 // For String constructor
 #include "Parser/Strings.h"
 
+#include <llvm/Type.h>
+#include <llvm/Constants.h>
+
 namespace Kai {
+
+	void debug (Value * value) {
+		std::cerr << Value::toString(value) << std::endl;
+	}
 
 #pragma mark -
 #pragma mark Value
@@ -60,7 +67,7 @@ namespace Kai {
 	}
 	
 	Value * Value::prototype () {
-		return NULL;
+		return globalPrototype();
 	}
 
 	int Value::compare (Value * other) {
@@ -73,6 +80,10 @@ namespace Kai {
 
 	Value * Value::evaluate (Frame * frame) {
 		return this;
+	}
+	
+	llvm::Value * Value::compile (llvm::LLVMContext * context) {
+		return NULL;
 	}
 
 	StringT Value::toString (Value * value) {
@@ -115,36 +126,83 @@ namespace Kai {
 #pragma mark Builtin Functions
 
 	void Value::import (Table * context) {
-		context->update(new Symbol("string"), KFunctionWrapper(Value::toString));
-		context->update(new Symbol("boolean"), KFunctionWrapper(Value::toBoolean));
-		context->update(new Symbol("compare"), KFunctionWrapper(Value::compare));
-		context->update(new Symbol("equal"), KFunctionWrapper(Value::equal));
-		context->update(new Symbol("prototype"), KFunctionWrapper(Value::prototype));
-		context->update(new Symbol("value"), KFunctionWrapper(Value::value));
-		
-		context->update(new Symbol("lookup"), KFunctionWrapper(Value::lookup));
-		context->update(new Symbol("with"), KFunctionWrapper(Value::with));
+		context->update(new Symbol("Value"), globalPrototype());
 	}
 	
-	Value * Value::with (Frame * frame) {
-		Cell * cur = frame->unwrap();
+	Value * Value::globalPrototype () {
+		static Table * g_prototype = NULL;
 		
-		return cur;
+		if (!g_prototype) {
+			g_prototype = new Table;
+			
+			g_prototype->update(new Symbol("toString"), KFunctionWrapper(Value::toString));
+			g_prototype->update(new Symbol("toBoolean"), KFunctionWrapper(Value::toBoolean));
+			g_prototype->update(new Symbol("compare"), KFunctionWrapper(Value::compare));
+			g_prototype->update(new Symbol("equal"), KFunctionWrapper(Value::equal));
+			g_prototype->update(new Symbol("prototype"), KFunctionWrapper(Value::prototype));
+			g_prototype->update(new Symbol("value"), KFunctionWrapper(Value::value));
+					
+			g_prototype->update(new Symbol("lookup"), KFunctionWrapper(Value::lookup));
+			g_prototype->update(new Symbol("call"), KFunctionWrapper(Value::call));
+		}
+		
+		return g_prototype;
 	}
 	
-	Value * Value::lookup (Frame * frame) {
-		Cell * cur = frame->unwrap();
+	Value * Value::call (Frame * frame) {
+		/*
+			((lookup 'Table 'set) (this) 'call (lambda '(object function) '(block
+				((cell
+					(wrap (lookup object (head function)))
+					(cell object (tail function))
+				))
+			)))
+		*/
+		
+		Value * self;
+		Cell * body;
+		
+		frame->extract()(self)(body);
+		
+		// Wrap self so we can pass it to other functions
+		self = Cell::create()(new Symbol("value"))(self);
+		
+		Symbol * functionName = body->headAs<Symbol>();
+		
+		//std::cerr << "Calling " << Value::toString(functionName) << " for " << Value::toString(self) << std::endl;
+		
+		Cell * dispatch = Cell::create()
+			(new Symbol("lookup"))
+			(self)
+			(functionName);
+		
+		Cell * arguments = new Cell(self, body->tail());
+		
+		Cell * call = new Cell(dispatch, arguments);
+		
+		return call->evaluate(frame);
+	}
+	
+	Value * Value::lookup (Frame * frame) {		
+		Cell * cur = frame->operands();
 		Value * value = NULL;
 		
 		while (cur != NULL) {
+			if (cur->head() == NULL) {
+				throw Exception("Invalid Name", cur, frame);
+			}
+			
 			value = cur->head()->evaluate(frame);
 			
+			Cell * tail = cur->tailAs<Cell>();
+			if (!tail) break;
+			
 			if (value == NULL) {
-				throw Exception("Invalid Name", cur->head(), frame);
+				throw Exception("Null Scope", cur->head(), frame);
 			}
 			
 			frame = new Frame(value, frame);
-			cur = cur->tailAs<Cell>();
+			cur = tail;
 		}
 		
 		return value;
@@ -320,7 +378,7 @@ namespace Kai {
 		return frame->call(frame->scope(), this);
 	}
 
-	Value * Cell::cell (Frame * frame) {
+	Value * Cell::_new (Frame * frame) {
 		Value * head = NULL;
 		Value * tail = NULL;
 		
@@ -353,10 +411,43 @@ namespace Kai {
 		return cell->tail();
 	}
 	
+	Value * Cell::prototype () {
+		return globalPrototype();
+	}
+	
+	Value * Cell::each (Frame * frame) {
+		Cell * cell;
+		Value * callback;
+		
+		frame->extract()[cell][callback];
+		
+		while (cell != NULL) {
+			Cell * message = Cell::create()(callback)(cell);
+			message->evaluate(frame);
+			
+			cell = cell->tailAs<Cell>();
+		}
+		
+		return NULL;
+	}
+	
+	Value * Cell::globalPrototype () {
+		static Table * g_prototype = NULL;
+		
+		if (!g_prototype) {
+			g_prototype = new Table;
+			
+			g_prototype->update(new Symbol("new"), KFunctionWrapper(Cell::_new));
+			g_prototype->update(new Symbol("each"), KFunctionWrapper(Cell::each));
+			g_prototype->update(new Symbol("head"), KFunctionWrapper(Cell::head));
+			g_prototype->update(new Symbol("tail"), KFunctionWrapper(Cell::tail));
+		}
+		
+		return g_prototype;
+	}
+	
 	void Cell::import (Table * context) {
-		context->update(new Symbol("cell"), KFunctionWrapper(Cell::cell));
-		context->update(new Symbol("head"), KFunctionWrapper(Cell::head));
-		context->update(new Symbol("tail"), KFunctionWrapper(Cell::tail));		
+		context->update(new Symbol("Cell"), globalPrototype());
 	}
 
 #pragma mark -
@@ -461,6 +552,13 @@ namespace Kai {
 	Integer::~Integer () {
 	}
 	
+	llvm::Value * Integer::compile (llvm::LLVMContext * context) {
+		return llvm::ConstantInt::get(
+			(const llvm::Type*)llvm::Type::getInt32Ty(*context), 
+			llvm::APInt(sizeof(m_value) * 8, m_value, true)
+		);
+	}
+	
 	Value * Integer::sum (Frame * frame) {
 		int total = 0;
 		
@@ -509,22 +607,22 @@ namespace Kai {
 		return new Integer(number->value() / base->value());
 	}
 	
-	Value * integerPrototype () {
-		static Table * prototype = NULL;
+	Value * Integer::globalPrototype () {
+		static Table * g_prototype = NULL;
 		
-		if (!prototype) {
-			prototype = new Table;
+		if (!g_prototype) {
+			g_prototype = new Table;
 			
-			prototype->update(new Symbol("+"), KFunctionWrapper(Integer::sum));
-			prototype->update(new Symbol("*"), KFunctionWrapper(Integer::product));
-			prototype->update(new Symbol("%"), KFunctionWrapper(Integer::modulus));
+			g_prototype->update(new Symbol("+"), KFunctionWrapper(Integer::sum));
+			g_prototype->update(new Symbol("*"), KFunctionWrapper(Integer::product));
+			g_prototype->update(new Symbol("%"), KFunctionWrapper(Integer::modulus));
 		}
 		
-		return prototype;
+		return g_prototype;
 	}
 	
 	Value * Integer::prototype () {		
-		return integerPrototype();
+		return globalPrototype();
 	}
 
 	int Integer::compare (Value * other) {
@@ -540,7 +638,7 @@ namespace Kai {
 	}
 	
 	void Integer::import (Table * context) {
-		context->update(new Symbol("Integer"), integerPrototype());
+		context->update(new Symbol("Integer"), globalPrototype());
 	}
 
 #pragma mark -
@@ -652,29 +750,22 @@ namespace Kai {
 	}
 
 	void Table::toCode (StringStreamT & buffer) {
-		buffer << "{";
-		
-		bool first = true;
+		buffer << "(table";
 		
 		for (unsigned i = 0; i < m_size; i += 1) {
 			Bin * bin = m_bins[i];
 			
 			while (bin != NULL) {
-				if (!first) {
-					buffer << ' ';
-				} else {
-					first = false;
-				}
-			
+				buffer << " '";
 				bin->key->toCode(buffer);
-				buffer << ": ";
+				buffer << " ";
 				bin->value->toCode(buffer);
 				
 				bin = bin->next;
 			}
 		}
 		
-		buffer << "}";
+		buffer << ")";
 	}
 
 	Value * Table::lookup (Symbol * key) {
@@ -760,11 +851,31 @@ namespace Kai {
 		return table->lookup(key);
 	}
 	
+	Value * Table::each (Frame * frame) {
+		Table * table;
+		Value * callback;
+		
+		frame->extract()[table][callback];
+		
+		for (unsigned i = 0; i < table->m_size; i += 1) {
+			Bin * cur = table->m_bins[i];
+			
+			while (cur != NULL) {
+				Cell * message = Cell::create()(callback)(cur->key)(cur->value);
+				message->evaluate(frame);
+				
+				cur = cur->next;
+			}
+		}
+		
+		return NULL;
+	}
+	
 	Value * Table::setPrototype (Frame * frame) {
 		Table * table = NULL;
 		Value * prototype = NULL;
 		
-		frame->extract()[table][prototype];
+		frame->extract()(table)(prototype);
 		
 		table->setPrototype(prototype);
 		
@@ -772,18 +883,20 @@ namespace Kai {
 	}
 	
 	Value * Table::globalPrototype () {
-		static Table * prototype = NULL;
+		static Table * g_prototype = NULL;
 		
-		if (prototype == NULL) {
-			prototype = new Table;
+		if (!g_prototype) {
+			g_prototype = new Table;
+			g_prototype->setPrototype(Value::globalPrototype());
 			
-			prototype->update(new Symbol("new"), KFunctionWrapper(Table::table));
-			prototype->update(new Symbol("set"), KFunctionWrapper(Table::update));
-			prototype->update(new Symbol("get"), KFunctionWrapper(Table::lookup));
-			prototype->update(new Symbol("prototype="), KFunctionWrapper(Table::setPrototype));
+			g_prototype->update(new Symbol("new"), KFunctionWrapper(Table::table));
+			g_prototype->update(new Symbol("set"), KFunctionWrapper(Table::update));
+			g_prototype->update(new Symbol("get"), KFunctionWrapper(Table::lookup));
+			g_prototype->update(new Symbol("each"), KFunctionWrapper(Table::each));
+			g_prototype->update(new Symbol("prototype="), KFunctionWrapper(Table::setPrototype));
 		}
 		
-		return prototype;
+		return g_prototype;
 	}
 	
 	void Table::import (Table * context) {

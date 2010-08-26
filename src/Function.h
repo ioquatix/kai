@@ -19,7 +19,7 @@ namespace Kai {
 	
 	template <Value * (*FunctionT)(Frame *)>
 	class BuiltinFunction : public Value {
-		private:
+		protected:
 			const char * m_name;
 
 		public:
@@ -38,22 +38,43 @@ namespace Kai {
 
 	#define KFunctionWrapper(function) new BuiltinFunction<&function>(#function)
 	
-	class CompiledFunction : public Value {
-		private:
+	class DynamicFunction : public Value {
+		protected:
 			EvaluateFunctionT m_function;
 			
 		public:
-			CompiledFunction (EvaluateFunctionT function);
-			virtual ~CompiledFunction ();
+			DynamicFunction (EvaluateFunctionT function);
+			virtual ~DynamicFunction ();
 			
-			// Returns a compiled function corresponding to the given arguments.
+			// Executes the given function
 			virtual Value * evaluate (Frame * frame);
 			
 			virtual void toCode (StringStreamT & buffer);
 	};
 	
+	class CompiledFunction : public Value {
+		public:
+			typedef std::vector<llvm::Type*> TypeSignatureT;
+
+		protected:
+			friend class Compiler;
+			llvm::Function * m_code;
+					
+		public:
+			CompiledFunction(llvm::Function * code);
+			virtual ~CompiledFunction ();
+						
+			virtual void toCode (StringStreamT & buffer);
+			
+			virtual Value * prototype ();
+			
+			static Value * resolve (Frame * frame);
+			static void import (Table * context);		
+			static Value * globalPrototype ();
+	};
+	
 	class CompiledType : public Value {
-		private:
+		protected:
 			const llvm::Type * m_type;
 		
 		public:
@@ -65,10 +86,17 @@ namespace Kai {
 			virtual void toCode (StringStreamT & buffer);
 			
 			static Value * voidType (Frame * frame);
+			
 			static Value * intType (Frame * frame);
 			static Value * floatType (Frame * frame);
-			static Value * pointerType (Frame * frame);
+			static Value * functionType (Frame * frame);
+			
+			static Value * structType (Frame * frame);
+			static Value * unionType (Frame * frame);
+			
 			static Value * arrayType (Frame * frame);
+			static Value * pointerType (Frame * frame);
+			static Value * vectorType (Frame * frame);
 			
 			static void import (Table * context);
 	};

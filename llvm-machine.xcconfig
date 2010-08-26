@@ -8,7 +8,7 @@
 
 #include "base.xcconfig"
 
-OTHER_CFLAGS=-emit-llvm $(LLVM_CFLAGS) $(GC_CFLAGS)
+OTHER_CFLAGS=-O3 -emit-llvm $(LLVM_CFLAGS) $(GC_CFLAGS)
 OTHER_LDFLAGS=-emit-llvm
 //-lstdc++ 
 

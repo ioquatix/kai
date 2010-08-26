@@ -19,7 +19,7 @@ namespace Kai {
 	class Cell;
 
 	class Frame : public gc {
-		private:
+		protected:
 			// Previous stack frame
 			Frame * m_previous;
 			
@@ -56,7 +56,7 @@ namespace Kai {
 			Cell::ArgumentExtractor extract (bool evaluate = true);
 			
 			bool top ();
-			void debug ();
+			void debug (bool ascend = true);
 
 			static void import (Table * context);
 			

@@ -24,6 +24,11 @@
 #include <llvm/Support/MemoryBuffer.h>
 #include <llvm/ExecutionEngine/JIT.h>
 
+#include <llvm/DerivedTypes.h>
+#include <llvm/Analysis/Verifier.h>
+#include <llvm/Support/IRBuilder.h>
+
+
 namespace Kai {
 	
 	Compiler::Compiler ()
@@ -78,36 +83,58 @@ namespace Kai {
 	
 	// Returns a compiled function corresponding to the given arguments.
 	Value * Compiler::evaluate (Frame * frame) {
-		String * name;
-		Cell * arguments;
+		CompiledType * signature;
+		Cell * names;
 		Value * body;
 		
-		frame->extract()[name][arguments][body];
+		frame->extract()[signature][names][body];
 		
-		std::vector<StringT> values;
-		std::vector<llvm::Type*> signature;
+		const llvm::FunctionType * funcType = dynamic_cast<const llvm::FunctionType*>(signature->value());
 		
-		Cell * cur = arguments;
-		
-		while (cur != NULL) {
-			
-			
-			cur = cur->tailAs<Cell>();
+		if (!funcType) {
+			throw Exception("Invalid function signature!", signature, frame);
 		}
 		
-		return NULL;
+		using namespace llvm;
+		llvm::Function * func = llvm::Function::Create(
+			funcType,
+			llvm::GlobalValue::PrivateLinkage,
+			"anonymous",
+			NULL
+		);
+		
+		for (llvm::Function::arg_iterator i = func->arg_begin(); i != func->arg_end(); i++) {
+			Symbol * name = names->headAs<Symbol>();
+			
+			i->setName(name->value());
+			
+			names = names->tailAs<Cell>();
+		}
+		
+		llvm::IRBuilder<> builder(llvm::getGlobalContext());
+		llvm::BasicBlock *entryBlock = llvm::BasicBlock::Create(llvm::getGlobalContext(), "entry", func);
+		builder.SetInsertPoint(entryBlock);
+		
+		llvm::Value * result = body->compile(&llvm::getGlobalContext());
+		
+		builder.CreateRet(result);
+		
+		// Check the function is okay
+		llvm::verifyFunction(*func);
+		
+		return new CompiledFunction(func);
 	}
 
 	Value * Compiler::lookup (Symbol * identifier) {
 		StringT functionName = identifier->value();
 		
-		llvm::Function* f = m_engine->FindFunctionNamed(functionName.c_str());
+		llvm::Function* code = m_engine->FindFunctionNamed(functionName.c_str());
 		
-		if (!f) {
+		if (!code) {
 			return NULL;
 		}
 		
-		return new CompiledFunction(reinterpret_cast<EvaluateFunctionT>(m_engine->getPointerToFunction(f)));
+		return new CompiledFunction(code);
 	}
 			
 	Value * Compiler::prototype () {
@@ -116,6 +143,18 @@ namespace Kai {
 			
 	void Compiler::toCode (StringStreamT & buffer) {
 		buffer << "(compiler)";
+	}
+	
+	DynamicFunction * Compiler::resolve (CompiledFunction * compiledFunction) {
+		void * p = m_engine->getPointerToFunction(compiledFunction->m_code);
+		
+		if (!p) {
+			return NULL;
+		}
+		
+		EvaluateFunctionT function = reinterpret_cast<EvaluateFunctionT>(p);
+		
+		return new DynamicFunction(function);
 	}
 	
 	void Compiler::import (Table * context) {

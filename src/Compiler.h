@@ -14,6 +14,9 @@
 
 namespace Kai {
 	
+	class DynamicFunction;
+	class CompiledFunction;
+	
 	class Compiler : public Value {
 		protected:
 			llvm::ExecutionEngine * m_engine;
@@ -32,6 +35,8 @@ namespace Kai {
 			virtual Value * prototype ();
 			
 			virtual void toCode (StringStreamT & buffer);
+			
+			virtual DynamicFunction * resolve (CompiledFunction *);
 			
 			static void import (Table * context);
 	};

@@ -12,5 +12,9 @@
 #include "Value.h"
 
 extern "C" {
-	void test ();	
+	void test ();
+	
+	Kai::Value * debug (Kai::Frame * frame);
+		
+	//void kai_module_import (Kai::Frame * frame);
 };

@@ -9,10 +9,51 @@
 
 #include "Machine.h"
 
+#include <list>
 #include <iostream>
+/*
+namespace Kai {
+
+	class Module {
+		protected:
+			static std::list<StringT> m_searchPaths;
+			
+		public:
+			static Value * load (Frame * frame) {
+				
+			}
+			
+			static void import (Table * context) {
+				context->update(new Symbol("load"), KFunctionWrapper(Module::load));
+			}
+	};
+
+	class Machine {
+		public:
+			static Value * debug (Frame * frame) {
+				std::cerr << "Debug: " << Kai::Value::toString(frame->operands()) << std::endl;
+				return NULL;
+			}
+	};
+	
+}
+*/
 
 extern "C" {
 	void test () {
-		std::cerr << "Test executed successfully" << std::endl;
+		std::cerr << "[Compiler Online]" << std::endl;
 	}
+	
+	Kai::Value * debug (Kai::Frame * frame) {
+		std::cerr << "Debug: " << Kai::Value::toString(frame->operands()) << std::endl;
+		
+		return NULL;
+	}
+/*	
+	void kai_module_import (Kai::Table * module, Kai::Frame * frame) {
+		using namespace Kai;
+		
+		module->update("debug", KFunctionWrapper(Machine::debug));
+	}
+*/
 };

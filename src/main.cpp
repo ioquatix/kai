@@ -113,8 +113,7 @@ int main (int argc, const char * argv[]) {
 			
 			value = runCode(context, currentLine, result);
 			
-			if (value)
-				std::cout << Value::toString(value) << std::endl;
+			std::cout << Value::toString(value) << std::endl;
 		}
 	} else {
 		StringStreamT buffer;

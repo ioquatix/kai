@@ -33,7 +33,13 @@ namespace Kai {
 	}
 	
 	Value * Frame::lookup (Symbol * identifier) {
-		return m_scope->lookup(identifier);
+		Value * result = m_scope->lookup(identifier);
+		
+		if (!result && !top()) {
+			return m_previous->lookup(identifier);
+		}
+		
+		return result;
 	}
 
 	Value * Frame::apply () {
@@ -132,7 +138,7 @@ namespace Kai {
 		return args->extract(this);
 	}
 
-	void Frame::debug () {
+	void Frame::debug (bool ascend) {
 		Frame * cur = this;
 		
 		do {
@@ -143,13 +149,14 @@ namespace Kai {
 			if (cur->scope())
 				std::cerr << "\t Scope: " << Value::toString(cur->scope()) << std::endl;
 			
+			std::cerr << "\t Message: " << Value::toString(m_message) << std::endl;
 			std::cerr << "\t Function: " << Value::toString(&cell) << std::endl;
 			
 			if (cur->arguments())
 				std::cerr << "\t Arguments: " << Value::toString(cur->arguments()) << std::endl;
 			
 			cur = cur->previous();
-		} while (!cur->top());
+		} while (!cur->top() && ascend);
 	}
 	
 	void Frame::import (Table * context) {
@@ -177,7 +184,7 @@ namespace Kai {
 	}
 	
 	class Wrapper : public Value {
-		private:
+		protected:
 			Value * m_value;
 		
 		public:

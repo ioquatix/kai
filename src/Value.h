@@ -33,6 +33,8 @@ namespace Kai {
 #pragma mark -
 #pragma mark Value
 	
+	void debug (Value * value);
+	
 	class Value : public gc_cleanup {
 		public:
 			virtual ~Value ();
@@ -66,8 +68,8 @@ namespace Kai {
 			virtual Value * evaluate (Frame * frame);
 			
 			// Compile the value to an llvm Value
-			//virtual llvm::Value * compile (llvm::LLVMContext * context);
-			
+			virtual llvm::Value * compile (llvm::LLVMContext * context);
+
 			static StringT toString (Value * value);
 			static bool toBoolean (Value * value);
 			static int compare (Value * lhs, Value * rhs);
@@ -90,13 +92,14 @@ namespace Kai {
 			// Returns the arguments unevaluated
 			static Value * value (Frame * frame);
 			
-			// Evalutes arguments one at a time in the scope of the previous.
+			// Evaluates arguments one at a time in result of the previous.
 			static Value * lookup (Frame * frame);
 			
 			// Performs a method call with the given function.
-			static Value * with (Frame * frame);
+			static Value * call (Frame * frame);
 			
 			// Builtins
+			static Value * globalPrototype ();
 			static void import (Table * context);
 	};
 
@@ -104,7 +107,7 @@ namespace Kai {
 #pragma mark Cell
 
 	class Cell : public Value {
-		private:
+		protected:
 			Value * m_head;
 			Value * m_tail;
 			
@@ -137,6 +140,8 @@ namespace Kai {
 			
 			virtual int compare (Value * other);
 			int compare (Cell * other);
+
+			virtual Value * prototype ();
 			
 			virtual void toCode (StringStreamT & buffer);
 			
@@ -162,6 +167,7 @@ namespace Kai {
 						return ArgumentExtractor(m_frame, m_current->tailAs<Cell>());
 					}
 					
+					// Ensures argument is non-NULL
 					template <typename AnyT>
 					ArgumentExtractor operator() (AnyT *& t, bool required = true) {
 						if (m_current == NULL) {
@@ -186,11 +192,44 @@ namespace Kai {
 				return ArgumentExtractor(frame, this);
 			}
 			
+			class ListBuilder {
+				protected:
+					Cell * m_start;
+					Cell * m_current;
+					
+				public:
+					ListBuilder () : m_start(NULL), m_current(NULL) {
+					
+					}
+					
+					ListBuilder & operator() (Value * value) {
+						m_current = Cell::append(m_current, value, m_start);
+						
+						return *this;
+					}
+					
+					operator Cell* () {
+						return m_start;
+					}
+			};
+
+			static inline ListBuilder create() {
+				return ListBuilder();
+			}
+			
+			// Shorthand
+			static inline ListBuilder create(Value * value) {
+				return ListBuilder()(value);
+			}
+			
 			//% (prepend cell value) -> (cell value)
-			static Value * cell (Frame * frame);
+			static Value * _new (Frame * frame);
 			static Value * head (Frame * frame);
 			static Value * tail (Frame * frame);
 			
+			static Value * each (Frame * frame);
+			
+			static Value * globalPrototype ();
 			static void import (Table * context);
 	};
 
@@ -198,7 +237,7 @@ namespace Kai {
 #pragma mark String
 
 	class String : public Value {
-		private:
+		protected:
 			StringT m_value;
 			
 		public:
@@ -217,7 +256,7 @@ namespace Kai {
 #pragma mark Symbol
 
 	class Symbol : public Value {
-		private:
+		protected:
 			const StringT m_value;
 			const int m_hash;
 			
@@ -247,12 +286,14 @@ namespace Kai {
 #pragma mark Integer
 
 	class Integer : public Value {
-		private:
+		protected:
 			int m_value;
 			
 		public:
 			Integer (int value);
 			virtual ~Integer ();
+			
+			llvm::Value * compile (llvm::LLVMContext * context);
 			
 			int & value () { return m_value; }
 			
@@ -267,6 +308,7 @@ namespace Kai {
 			static Value * product (Frame * frame);
 			static Value * modulus (Frame * frame);
 			
+			static Value * globalPrototype ();
 			static void import (Table * context);
 	};
 
@@ -285,12 +327,10 @@ namespace Kai {
 			Table (int size = 16);
 			virtual ~Table ();
 			
-		private:
+		protected:
 			Table (int size, bool allocate);
 			
-		public:
-			static Value * globalPrototype ();
-			
+		public:			
 			// Inline table allocation
 			static Table * allocate (int size = 16);
 			
@@ -316,13 +356,17 @@ namespace Kai {
 			
 			//% (lookup table key) -> value || nil
 			static Value * lookup (Frame * frame);
+
+			// Iteration over key/value pairs
+			static Value * each (Frame * frame);
 			
 			// % (setPrototype table value)
 			static Value * setPrototype (Frame * frame);
 			
+			static Value * globalPrototype ();
 			static void import (Table *);
 			
-		private:
+		protected:
 			Value * m_prototype;
 			
 			unsigned m_size;
@@ -333,7 +377,7 @@ namespace Kai {
 #pragma mark Lambda
 
 	class Lambda : public Value {
-		private:
+		protected:
 			Value * m_scope;
 			Cell * m_arguments;
 			Cell * m_code;

@@ -1,0 +1,42 @@
+((lookup this 'Table 'new) 'name "Samuel" 'age 25)
+
+((lambda '(object function) '(object)) "Arg1" "Arg2")
+
+((lookup 'Table 'set) (this) 'call (lambda '(object function) '(
+	(wrap (lookup object (head function)) (tail function))
+)))
+
+# Another alternative is to use '(lookup object (head function))
+# This defers evaluation of the function lookup.
+((lookup 'Table 'set) (this) 'with (lambda '(object function) '(block
+	((cell
+		(wrap (lookup object (head function)))
+		(cell object (tail function))
+	))
+)))
+
+(with (this) '(set 'x 10))
+
+
+
+(with 'this 'LOAD_PATHS (wrap 'prepend x))
+
+
+(block
+	(trace 10)
+	(trace 20)
+	(return 30 40)
+	(trace 40)
+)
+
+(lookup (this) '(set (this) 'x 10))
+
+(unit-test 'BasicTest
+	'(block
+		(with (this) '(set 'x 10))
+		(check (lookup (this) 'x) == 10)
+		
+		(with (this) '(set 'x 20))
+		(check (lookup (this) 'x) == 20)
+	)
+)
