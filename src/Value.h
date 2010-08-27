@@ -68,7 +68,7 @@ namespace Kai {
 			virtual Value * evaluate (Frame * frame);
 			
 			// Compile the value to an llvm Value
-			virtual llvm::Value * compile (llvm::LLVMContext * context);
+			virtual llvm::Value * compile (Frame * frame);
 
 			static StringT toString (Value * value);
 			static bool toBoolean (Value * value);
@@ -293,7 +293,7 @@ namespace Kai {
 			Integer (int value);
 			virtual ~Integer ();
 			
-			llvm::Value * compile (llvm::LLVMContext * context);
+			llvm::Value * compile (Frame * context);
 			
 			int & value () { return m_value; }
 			

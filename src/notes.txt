@@ -40,3 +40,55 @@
 		(check (lookup (this) 'x) == 20)
 	)
 )
+
+# 27 August 2010
+
+(struct
+	(vector d (int 32))
+	
+)
+
+
+(set Marker
+	(struct
+		(int 32)
+		(int 32)
+	)
+)
+
+(class
+	(struct
+		(int 32)
+		(int 32)
+	)
+	(list
+		start
+		length
+	)
+)
+
+(set m
+	(with Marker (new))
+)
+
+(with m (getElement 0))
+
+(set (this) 'x (struct (int 32) (int 32) (float 32)))
+(set (this) 'y (struct x (int 32)))
+
+
+(function return-type (argument-types))
+
+(function (void) (int 32) (int 32))
+
+(set (this) 'f
+	(compiler 'theMeaningOfLife (function Value) '()
+		'(trace 42)
+	)
+)
+
+(set (this) 'x (call f '(resolve)))
+
+(
+
+

@@ -15,10 +15,13 @@
 #include "Frame.h"
 #include "Exception.h"
 #include "Function.h"
+#include "Compiler.h"
+#include "Ensure.h"
 
 // For String constructor
 #include "Parser/Strings.h"
 
+#include <llvm/LLVMContext.h>
 #include <llvm/Type.h>
 #include <llvm/Constants.h>
 
@@ -82,8 +85,19 @@ namespace Kai {
 		return this;
 	}
 	
-	llvm::Value * Value::compile (llvm::LLVMContext * context) {
-		return NULL;
+	llvm::Value * Value::compile (Frame * frame) {
+		// Return a new trampoline which will do the default evaluation of this.
+		Cell * message = Cell::create()(new Symbol("block"))(this);
+		
+		// Build stack frame
+		Frame * next = new Frame(NULL, message, frame);
+		
+		// Get the function called block
+		Value * function = frame->lookup(new Symbol("block"));
+		ensure(function != NULL);
+		
+		// This should return an appropriate trampoline
+		return function->compile(next);
 	}
 
 	StringT Value::toString (Value * value) {
@@ -375,7 +389,7 @@ namespace Kai {
 	}
 
 	Value * Cell::evaluate (Frame * frame) {
-		return frame->call(frame->scope(), this);
+		return frame->call(NULL, this);
 	}
 
 	Value * Cell::_new (Frame * frame) {
@@ -552,9 +566,9 @@ namespace Kai {
 	Integer::~Integer () {
 	}
 	
-	llvm::Value * Integer::compile (llvm::LLVMContext * context) {
+	llvm::Value * Integer::compile (Frame * context) {
 		return llvm::ConstantInt::get(
-			(const llvm::Type*)llvm::Type::getInt32Ty(*context), 
+			(const llvm::Type*)llvm::Type::getInt32Ty(llvm::getGlobalContext()), 
 			llvm::APInt(sizeof(m_value) * 8, m_value, true)
 		);
 	}

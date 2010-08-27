@@ -41,10 +41,16 @@ namespace Kai {
 			
 			Value * lookup (Symbol * identifier);
 			
+			template <typename ValueT>
+			ValueT * lookupAs (Symbol * identifier) {
+				return dynamic_cast<ValueT*>(lookup(identifier));
+			}
+			
 			// Should a message be restricted to a Cell, or is it suitable to be a Value ?
 			Value * call (Value * scope, Cell * message);
 			
 			Frame * previous ();
+			// This function searches up the tree for the current scope.
 			Value * scope ();
 			Value * function ();
 			

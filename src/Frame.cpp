@@ -33,10 +33,14 @@ namespace Kai {
 	}
 	
 	Value * Frame::lookup (Symbol * identifier) {
-		Value * result = m_scope->lookup(identifier);
+		Value * result = NULL;
+		
+		if (m_scope) {
+			result = m_scope->lookup(identifier);
+		}
 		
 		if (!result && !top()) {
-			return m_previous->lookup(identifier);
+			result = m_previous->lookup(identifier);
 		}
 		
 		return result;
@@ -60,9 +64,10 @@ namespace Kai {
 
 	Value * Frame::call (Value * scope, Cell * message)
 	{
-		if (scope == NULL) {
-			throw Exception("Invalid Scope", this);
-		}
+		// If scope is NULL, lookup proceeds to next level.
+		//if (scope == NULL) {
+		//	throw Exception("Invalid Scope", this);
+		//}
 		
 		if (message == NULL) {
 			throw Exception("Invalid Message", this);
@@ -82,7 +87,19 @@ namespace Kai {
 	}
 
 	Value * Frame::scope () {
-		return m_scope;
+		Value * scope = m_scope;
+		
+		if (scope == NULL) {
+			Frame * cur = m_previous;
+			
+			while (scope == NULL && cur) {
+				scope = cur->m_scope;
+				
+				cur = cur->m_previous;
+			}
+		}
+		
+		return scope;
 	}
 
 	Value * Frame::function () {
@@ -90,7 +107,10 @@ namespace Kai {
 	}
 
 	Cell * Frame::operands () {
-		return m_message->tailAs<Cell>();
+		if (m_message)
+			return m_message->tailAs<Cell>();
+		else
+			return NULL;
 	}
 
 	Cell * Frame::unwrap () {
@@ -150,7 +170,7 @@ namespace Kai {
 				std::cerr << "\t Scope: " << Value::toString(cur->scope()) << std::endl;
 			
 			std::cerr << "\t Message: " << Value::toString(m_message) << std::endl;
-			std::cerr << "\t Function: " << Value::toString(&cell) << std::endl;
+			std::cerr << "\t Function: " << Value::toString(cell.head()) << std::endl;
 			
 			if (cur->arguments())
 				std::cerr << "\t Arguments: " << Value::toString(cur->arguments()) << std::endl;

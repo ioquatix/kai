@@ -40,6 +40,14 @@ namespace Kai {
 */
 
 extern "C" {
+	Kai::Value * _valueType () {
+		return NULL;
+	}
+	
+	Kai::Frame * _frameType () {
+		return NULL;
+	}
+
 	void test () {
 		std::cerr << "[Compiler Online]" << std::endl;
 	}

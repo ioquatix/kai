@@ -13,6 +13,10 @@
 
 extern "C" {
 	void test ();
+
+	// These functions exist so we can get the compiled type information.
+	Kai::Value * _valueType ();
+	Kai::Frame * _frameType ();
 	
 	Kai::Value * debug (Kai::Frame * frame);
 		
