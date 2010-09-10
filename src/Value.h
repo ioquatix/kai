@@ -15,6 +15,8 @@
 
 #include <llvm/Value.h>
 
+#include <set>
+
 namespace Kai {
 	// Comparison Results
 	typedef std::ptrdiff_t ComparisonResult;
@@ -25,7 +27,9 @@ namespace Kai {
 
 	class InvalidComparison {};
 	class InvalidInvocation {};
-
+	
+	typedef std::set<Value*> MarkedT;
+	
 	struct Frame;
 	class Table;
 	class Symbol;
@@ -54,7 +58,12 @@ namespace Kai {
 				}
 			}
 			
-			virtual void toCode (StringStreamT & buffer) = 0;
+			virtual void toCode(StringStreamT & buffer, MarkedT & marks) = 0;
+						
+			inline void toCode(StringStreamT & buffer) {
+				MarkedT marks;
+				toCode(buffer, marks); 
+			}
 			
 			void debug ();
 
@@ -69,6 +78,9 @@ namespace Kai {
 			
 			// Compile the value to an llvm Value
 			virtual llvm::Value * compile (Frame * frame);
+			
+			// If the value contained is a compiled value, return it unevaluated.
+			virtual llvm::Value * compiledValue (Frame * frame);
 
 			static StringT toString (Value * value);
 			static bool toBoolean (Value * value);
@@ -143,9 +155,10 @@ namespace Kai {
 
 			virtual Value * prototype ();
 			
-			virtual void toCode (StringStreamT & buffer);
+			virtual void toCode(StringStreamT & buffer, MarkedT & marks);
 			
 			virtual Value * evaluate (Frame * frame);
+			virtual llvm::Value * compile (Frame * frame);
 			
 			class ArgumentExtractor {
 				Cell * m_current;
@@ -249,7 +262,7 @@ namespace Kai {
 			virtual int compare (Value * other);
 			int compare (String * other);
 			
-			virtual void toCode (StringStreamT & buffer);
+			virtual void toCode(StringStreamT & buffer, MarkedT & marks);
 	};
 
 #pragma mark -
@@ -273,9 +286,10 @@ namespace Kai {
 			virtual int compare (Value * other);
 			int compare (Symbol * other);
 			
-			virtual void toCode (StringStreamT & buffer);
+			virtual void toCode(StringStreamT & buffer, MarkedT & marks);
 			
 			virtual Value * evaluate (Frame * frame);
+			virtual llvm::Value * compile (Frame * frame);
 			
 			static Symbol * nilSymbol ();
 			static Symbol * falseSymbol ();
@@ -302,7 +316,7 @@ namespace Kai {
 			virtual int compare (Value * other);
 			int compare (Integer * other);
 			
-			virtual void toCode (StringStreamT & buffer);
+			virtual void toCode(StringStreamT & buffer, MarkedT & marks);
 			
 			static Value * sum (Frame * frame);
 			static Value * product (Frame * frame);
@@ -341,7 +355,7 @@ namespace Kai {
 			virtual int compare (Value * other);
 			int compare (Table * other);
 			
-			virtual void toCode (StringStreamT & buffer);
+			virtual void toCode(StringStreamT & buffer, MarkedT & marks);
 		
 			virtual Value * lookup (Symbol * key);
 						
@@ -388,7 +402,7 @@ namespace Kai {
 			
 			virtual Value * evaluate (Frame * frame);
 			
-			virtual void toCode (StringStreamT & buffer);
+			virtual void toCode(StringStreamT & buffer, MarkedT & marks);
 			
 			static Value * lambda (Frame * frame);
 			static void import (Table *);

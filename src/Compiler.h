@@ -11,6 +11,8 @@
 
 #include <llvm/LLVMContext.h>
 #include <llvm/ExecutionEngine/ExecutionEngine.h>
+#include <llvm/Support/IRBuilder.h>
+#include <llvm/Support/StandardPasses.h>
 
 namespace Kai {
 	
@@ -21,9 +23,12 @@ namespace Kai {
 		protected:
 			llvm::ExecutionEngine * m_engine;
 			llvm::Module * m_module;
+			llvm::IRBuilder<> * m_builder;
+			
+			llvm::FunctionPassManager * m_functionOptimizer;
 			
 			const llvm::Type * m_frameType;
-			const llvm::Type * m_valueType;
+			const llvm::Type * m_valueType;			
 		public:
 			Compiler ();
 			virtual ~Compiler ();
@@ -37,19 +42,21 @@ namespace Kai {
 			// A prototype specifies the behaviour of the current value.
 			virtual Value * prototype ();
 			
-			virtual void toCode (StringStreamT & buffer);
+			virtual void toCode(StringStreamT & buffer, MarkedT & marks);
 			
 			virtual DynamicFunction * resolve (CompiledFunction *);
 			
 			llvm::ExecutionEngine * engine ();
 			llvm::Module * module ();
+			llvm::IRBuilder<> * builder ();
+			llvm::FunctionPassManager * functionOptimizer ();
 			
 			const llvm::Type * framePointerType ();
 			const llvm::Type * valuePointerType ();
 			
 			static void import (Table * context);			
 	};
-	
+		
 	class CompiledValue : public Value {
 		protected:
 			llvm::Value * m_value;
@@ -61,8 +68,11 @@ namespace Kai {
 			// Returns the contained value.
 			llvm::Value * compile (Frame * frame);
 			
-			virtual void toCode (StringStreamT & buffer);
+			virtual void toCode(StringStreamT & buffer, MarkedT & marks);
 			
+			virtual Value * prototype ();
+			
+			static Value * globalPrototype ();
 			static void import (Table * context);
 	};
 	
@@ -78,12 +88,15 @@ namespace Kai {
 			CompiledFunction(llvm::Function * code);
 			virtual ~CompiledFunction ();
 						
-			virtual void toCode (StringStreamT & buffer);
+			virtual void toCode(StringStreamT & buffer, MarkedT & marks);
 			
 			virtual Value * prototype ();
 			
+			static Value * optimize (Frame * frame);
 			static Value * resolve (Frame * frame);
-			static void import (Table * context);		
+			
+			static void import (Table * context);
+				
 			static Value * globalPrototype ();
 	};
 	
@@ -97,7 +110,7 @@ namespace Kai {
 			
 			const llvm::Type * value () const;
 			
-			virtual void toCode (StringStreamT & buffer);
+			virtual void toCode(StringStreamT & buffer, MarkedT & marks);
 			
 			static Value * voidType (Frame * frame);
 			

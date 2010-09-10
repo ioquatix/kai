@@ -72,16 +72,28 @@ namespace Kai {
 			std::cerr << "*** " << error << std::endl;
 		}
 		
+		m_builder = new llvm::IRBuilder<>(llvm::getGlobalContext());
+		
+		// Create the function optimiser, optimisation level 3
+		m_functionOptimizer = new llvm::FunctionPassManager(m_module);
+		llvm::createStandardFunctionPasses(m_functionOptimizer, 3);
+		
 		// Extract some useful type information.
 		m_frameType = m_module->getFunction("_frameType")->getReturnType();
 		m_valueType = m_module->getFunction("_valueType")->getReturnType();
 	}
-	
+		
 	Compiler::~Compiler () {
 		std::cout << "Freeing execution engine" << std::endl;
 		
+		if (m_module)
+			delete m_module;
+		
 		if (m_engine)
 			delete m_engine;
+		
+		if (m_builder)
+			delete m_builder;
 	}
 	
 	// Returns a compiled function corresponding to the given arguments.
@@ -124,14 +136,17 @@ namespace Kai {
 			argumentNames = argumentNames->tailAs<Cell>();
 		}
 		
-		llvm::IRBuilder<> builder(llvm::getGlobalContext());
 		llvm::BasicBlock *entryBlock = llvm::BasicBlock::Create(llvm::getGlobalContext(), "entry", func);
-		builder.SetInsertPoint(entryBlock);
+		c->builder()->SetInsertPoint(entryBlock);
 		
 		Frame * next = new Frame(arguments, frame);
-		llvm::Value * result = builder.Insert((llvm::Instruction*)body->compile(next));
+		std::cout << "Compiling: " << Value::toString(body) << std::endl;
+		llvm::Value * result = body->compile(next);
 		
-		builder.CreateRet(result);
+		// Automatically return the last variable
+		//if (!c->builder()->GetInsertBlock()->getTerminator() && result) {
+		//	c->builder()->CreateRet(result);
+		//}
 		
 		// Check the function is okay
 		llvm::verifyFunction(*func);
@@ -163,6 +178,14 @@ namespace Kai {
 		return m_module;
 	}
 	
+	llvm::IRBuilder<> * Compiler::builder () {
+		return m_builder;
+	}
+	
+	llvm::FunctionPassManager * Compiler::functionOptimizer () {
+		return m_functionOptimizer;
+	}
+	
 	const llvm::Type * Compiler::framePointerType () {
 		return m_frameType;
 	}
@@ -171,7 +194,7 @@ namespace Kai {
 		return m_valueType;
 	}
 	
-	void Compiler::toCode (StringStreamT & buffer) {
+	void Compiler::toCode(StringStreamT & buffer, MarkedT & marks) {
 		buffer << "(compiler)";
 	}
 	
@@ -193,6 +216,8 @@ namespace Kai {
 		context->update(new Symbol("compiler"), c);
 		context->update(new Symbol("Value"), new CompiledType(c->valuePointerType()));
 		context->update(new Symbol("Frame"), new CompiledType(c->framePointerType()));
+		
+		CompiledValue::import(context);
 	}
 
 #pragma mark -
@@ -205,7 +230,7 @@ namespace Kai {
 	
 	}
 	
-	void CompiledFunction::toCode (StringStreamT & buffer) {
+	void CompiledFunction::toCode(StringStreamT & buffer, MarkedT & marks) {
 		buffer << "(compiled-function ";
 		
 		llvm::raw_os_ostream llvmBuffer(buffer);
@@ -219,6 +244,17 @@ namespace Kai {
 
 	Value * CompiledFunction::prototype () {
 		return globalPrototype();
+	}
+	
+	Value * CompiledFunction::optimize (Frame * frame) {
+		Compiler * compiler = dynamic_cast<Kai::Compiler *>(frame->lookup(new Symbol("compiler")));
+		CompiledFunction * function = NULL;
+		
+		frame->extract()[function];
+		
+		compiler->functionOptimizer()->run(*(function->m_code));
+		
+		return function;
 	}
 	
 	Value * CompiledFunction::resolve (Frame * frame) {
@@ -245,6 +281,7 @@ namespace Kai {
 			g_prototype = new Table;
 			
 			g_prototype->update(new Symbol("resolve"), KFunctionWrapper(CompiledFunction::resolve));
+			g_prototype->update(new Symbol("optimize"), KFunctionWrapper(CompiledFunction::optimize));
 		}
 		
 		return g_prototype;
@@ -264,7 +301,7 @@ namespace Kai {
 		return m_type;
 	}
 	
-	void CompiledType::toCode (StringStreamT & buffer) {
+	void CompiledType::toCode(StringStreamT & buffer, MarkedT & marks) {
 		buffer << "(compiled-type ";
 		
 		llvm::raw_os_ostream llvmBuffer(buffer);
@@ -419,9 +456,9 @@ namespace Kai {
 		context->update(new Symbol("vector"), KFunctionWrapper(CompiledType::vectorType));
 	}
 
-#pragma mark -	
+#pragma mark -
 	
-	CompiledValue::CompiledValue (llvm::Value * value) {
+	CompiledValue::CompiledValue (llvm::Value * value) : m_value(value)  {
 	
 	}
 	
@@ -434,7 +471,7 @@ namespace Kai {
 		return m_value;
 	}
 	
-	void CompiledValue::toCode (StringStreamT & buffer) {
+	void CompiledValue::toCode(StringStreamT & buffer, MarkedT & marks) {
 		buffer << "(compiled-value ";
 		
 		llvm::raw_os_ostream llvmBuffer(buffer);
@@ -442,6 +479,75 @@ namespace Kai {
 		llvmBuffer.flush();
 		
 		buffer << ")";
+	}
+	
+	Value * CompiledValue::prototype () {
+		return globalPrototype();
+	}
+	
+	class BuiltinLoad : public Value {
+	public:
+		virtual void toCode(StringStreamT & buffer, MarkedT & marks) {
+			buffer << "(builtin-load)" << std::endl;
+		}
+		
+		virtual Value * evaluate (Frame * frame) {
+			return new CompiledValue(this->compile(frame));
+		}
+		
+		virtual llvm::Value * compile (Frame * frame) {
+			Compiler * c = frame->lookupAs<Compiler>(new Symbol("compiler"));
+			
+			Value * varExpr;
+			frame->extract()(varExpr);
+			
+			llvm::Value * var = varExpr->compile(frame);
+			
+			return c->builder()->CreateLoad(var);
+		}
+	};
+	
+	class BuiltinStore : public Value {
+	public:
+		virtual void toCode(StringStreamT & buffer, MarkedT & marks) {
+			buffer << "(builtin-store)" << std::endl;
+		}
+		
+		virtual Value * evaluate (Frame * frame) {
+			return new CompiledValue(this->compile(frame));
+		}
+		
+		virtual llvm::Value * compile (Frame * frame) {
+			Compiler * c = frame->lookupAs<Compiler>(new Symbol("compiler"));
+			
+			Value * varExpr;
+			Value * valueExpr;
+			
+			frame->extract()(varExpr)(valueExpr);
+			
+			llvm::Value * var = varExpr->compile(frame);
+			llvm::Value * value = valueExpr->compile(frame);
+			
+			return c->builder()->CreateStore(value, var);
+		}
+	};
+	
+	Value * CompiledValue::globalPrototype () {
+		static Table * g_prototype = NULL;
+		
+		if (!g_prototype) {
+			g_prototype = new Table;
+			g_prototype->setPrototype(Value::globalPrototype());
+			
+			g_prototype->update(new Symbol("load"), new BuiltinLoad);
+			g_prototype->update(new Symbol("store"), new BuiltinStore);
+		}
+		
+		return g_prototype;
+	}
+	
+	void CompiledValue::import (Table * context) {
+		context->update(new Symbol("CompiledValue"), CompiledValue::globalPrototype());
 	}
 
 }

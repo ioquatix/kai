@@ -54,7 +54,9 @@ namespace Kai {
 		m_function = m_message->head()->evaluate(this);
 
 		//std::cerr << StringT(m_depth, '\t') << "Executing Function " << Value::toString(m_function) << std::endl;
-				
+		
+		//this->debug(true);
+		
 		if (!m_function) {
 			throw Exception("Invalid Function", m_message->head(), this);
 		}
@@ -152,7 +154,9 @@ namespace Kai {
 		}
 		
 		if (args == NULL) {
-			throw Exception("No arguments provided!", this);
+		//	throw Exception("No arguments provided!", this);
+			// Dummy for extraction of null arguments.
+			args = new Cell(NULL, NULL);
 		}
 		
 		return args->extract(this);
@@ -217,7 +221,7 @@ namespace Kai {
 				return m_value;
 			}
 			
-			virtual void toCode (StringStreamT & buffer) {
+			virtual void toCode(StringStreamT & buffer, MarkedT & marks) {
 				buffer << "(wrap ";
 
 				if (m_value)
@@ -238,9 +242,11 @@ namespace Kai {
 	Value * Frame::with (Frame * frame) {
 		Cell * cur = frame->operands();
 		Value * scope = frame->scope();
-		
+		Frame * next = frame;
+				
 		while (cur != NULL) {
-			scope = frame->call(scope, cur->headAs<Cell>());
+			scope = cur->head()->evaluate(next);
+			next = new Frame(scope, next);
 			
 			cur = cur->tailAs<Cell>();
 		}

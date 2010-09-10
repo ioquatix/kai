@@ -99,6 +99,10 @@ namespace Kai {
 		// This should return an appropriate trampoline
 		return function->compile(next);
 	}
+	
+	llvm::Value * Value::compiledValue (Frame * frame) {
+		return this->compile(frame);
+	}
 
 	StringT Value::toString (Value * value) {
 		if (value) {
@@ -358,38 +362,61 @@ namespace Kai {
 		}
 	}
 
-	void Cell::toCode (StringStreamT & buffer) {
-		buffer << '(';
-		
-		Cell * cur = this;
-		
-		while (cur) {
-			if (cur->m_head)
-				cur->m_head->toCode(buffer);
-			else
-				buffer << "nil";
+	void Cell::toCode(StringStreamT & buffer, MarkedT & marks) {
+		if (marks.find(this) != marks.end()) {
+			buffer << "(cell{" << this << "})";
+		} else {
+			MarkedT recurse (marks);
+			recurse.insert(this);
 			
-			if (cur->m_tail) {
-				buffer << ' ';
+			buffer << '(';
+			
+			Cell * cur = this;
+			
+			while (cur) {
+				if (cur->m_head)
+					cur->m_head->toCode(buffer, recurse);
+				else
+					buffer << "nil";
 				
-				Cell * next = dynamic_cast<Cell*>(cur->m_tail);
-				
-				if (next) {
-					cur = next;
+				if (cur->m_tail) {
+					buffer << ' ';
+					
+					Cell * next = dynamic_cast<Cell*>(cur->m_tail);
+					
+					if (next) {
+						cur = next;
+					} else {
+						cur->m_tail->toCode(buffer, recurse);
+						cur = NULL;
+					}
 				} else {
-					cur->m_tail->toCode(buffer);
-					cur = NULL;
+					break;
 				}
-			} else {
-				break;
 			}
+			
+			buffer << ')';
 		}
-		
-		buffer << ')';
 	}
 
 	Value * Cell::evaluate (Frame * frame) {
 		return frame->call(NULL, this);
+	}
+	
+	llvm::Value * Cell::compile (Frame * frame) {
+		//Compiler * c = frame->lookupAs<Compiler>("compiler");
+		
+		Symbol * name = headAs<Symbol>();
+		ensure(name != NULL);
+		
+		Value * function = frame->lookup(name);
+		ensure(function != NULL);
+		
+		//llvm::Value * function = function->compile(frame);
+		//llvm::Value * call = c->builder()->CreateCall(function);
+		
+		Frame * next = new Frame(NULL, this, frame);
+		return function->compile(next);
 	}
 
 	Value * Cell::_new (Frame * frame) {
@@ -485,7 +512,7 @@ namespace Kai {
 		return m_value.compare(other->m_value);
 	}
 
-	void String::toCode (StringStreamT & buffer) {
+	void String::toCode(StringStreamT & buffer, MarkedT & marks) {
 		buffer << '"';
 		
 		buffer << m_value;
@@ -533,7 +560,7 @@ namespace Kai {
 		return result;
 	}
 
-	void Symbol::toCode (StringStreamT & buffer) {
+	void Symbol::toCode(StringStreamT & buffer, MarkedT & marks) {
 		buffer << m_value;
 	}
 
@@ -543,6 +570,16 @@ namespace Kai {
 		} else {
 			return this;
 		}
+	}
+	
+	llvm::Value * Symbol::compile (Frame * frame) {
+		Value * result = frame->lookup(this);
+		
+		if (result == NULL) {
+			return NULL;
+		}
+		
+		return result->compiledValue(frame);
 	}
 
 	Symbol * Symbol::nilSymbol () {
@@ -647,7 +684,7 @@ namespace Kai {
 		return clampComparison(other->m_value - m_value);
 	}
 
-	void Integer::toCode (StringStreamT & buffer) {
+	void Integer::toCode(StringStreamT & buffer, MarkedT & marks) {
 		buffer << m_value;
 	}
 	
@@ -763,23 +800,30 @@ namespace Kai {
 		throw InvalidComparison();
 	}
 
-	void Table::toCode (StringStreamT & buffer) {
-		buffer << "(table";
-		
-		for (unsigned i = 0; i < m_size; i += 1) {
-			Bin * bin = m_bins[i];
+	void Table::toCode(StringStreamT & buffer, MarkedT & marks) {
+		if (marks.find(this) != marks.end()) {
+			buffer << "(table{" << this << "} ...)" << std::endl;
+		} else {
+			MarkedT recurse(marks);
+			recurse.insert(this);
 			
-			while (bin != NULL) {
-				buffer << " '";
-				bin->key->toCode(buffer);
-				buffer << " ";
-				bin->value->toCode(buffer);
+			buffer << "(table{" << this << "}";
+			
+			for (unsigned i = 0; i < m_size; i += 1) {
+				Bin * bin = m_bins[i];
 				
-				bin = bin->next;
+				while (bin != NULL) {
+					buffer << " '";
+					bin->key->toCode(buffer, recurse);
+					buffer << " ";
+					bin->value->toCode(buffer, recurse);
+					
+					bin = bin->next;
+				}
 			}
+			
+			buffer << ")";
 		}
-		
-		buffer << ")";
 	}
 
 	Value * Table::lookup (Symbol * key) {
@@ -951,16 +995,21 @@ namespace Kai {
 		return m_code->evaluate(next);
 	}
 	
-	void Lambda::toCode (StringStreamT & buffer) {
-		buffer << "(lambda ";
-		
-		m_arguments->toCode(buffer);
-		
-		buffer << " ";
-		
-		m_code->toCode(buffer);
-		
-		buffer << ")";
+	void Lambda::toCode(StringStreamT & buffer, MarkedT & marks) {		
+		if (marks.find(this) != marks.end()) {
+			buffer << "(lambda{" << this << "})";
+		} else {
+			MarkedT recurse (marks);
+			recurse.insert(this);
+			
+			m_arguments->toCode(buffer, recurse);
+			
+			buffer << " ";
+			
+			m_code->toCode(buffer, recurse);
+			
+			buffer << ")";
+		}
 	}
 	
 	Value * Lambda::lambda (Frame * frame) {
@@ -1090,39 +1139,177 @@ namespace Kai {
 		Value * value;
 	};
 	
-	Value * Logic::block (Frame * frame) {
-		Value * result = NULL;
-		
-		try {
-			Cell * statements = frame->operands();
-			
-			while (statements != NULL) {
-				result = statements->head()->evaluate(frame);
-				
-				statements = statements->tailAs<Cell>();
+	class BuiltinVar : public Value {
+		public:
+			virtual void toCode(StringStreamT & buffer, MarkedT & marks) {
+				buffer << "(builtin-var)" << std::endl;
 			}
-		} catch (ReturnValue r) {
-			return r.value;
-		}
-		
-		return result;
-	}
+			
+			virtual Value * evaluate (Frame * frame) {
+				throw Exception("Not Implemented!", frame);
+			}
+			
+			virtual llvm::Value * compile (Frame * frame) {
+				Compiler * c = frame->lookupAs<Compiler>(new Symbol("compiler"));
+				Table * locals = frame->lookupAs<Table>(new Symbol("locals"));
+				
+				CompiledType * varType;
+				Symbol * varName;
+				
+				frame->extract()(varName)(varType);
+				
+				llvm::Value * var = c->builder()->CreateAlloca(varType->value());
+				locals->update(varName, new CompiledValue(var));
+				
+				return var;
+			}
+	};
 	
-	Value * Logic::return_ (Frame * frame) {
-		ReturnValue r = {frame->unwrap()};
+	class BuiltinReturn : public Value {
+		public:
+			virtual void toCode(StringStreamT & buffer, MarkedT & marks) {
+				buffer << "(builtin-return)";
+			}
+			
+			virtual Value * evaluate (Frame * frame) {
+				ReturnValue r = {frame->unwrap()};
+				
+				throw r;
+			}
+			
+			virtual llvm::Value * compile (Frame * frame) {
+				Compiler * c = frame->lookupAs<Compiler>(new Symbol("compiler"));
+				
+				Value * expression = NULL;
+				frame->extract()[expression];
+				
+				if (expression) {
+					llvm::Value * result = expression->compile(frame);
+					c->builder()->CreateRet(result);
+				} else {
+					c->builder()->CreateRetVoid();
+				}
+				
+				return NULL;
+			}
+	};
+	
+	class BuiltinBlock : public Value {
+		public:
+			virtual void toCode(StringStreamT & buffer, MarkedT & marks) {
+				buffer << "(builtin-block)";
+			}
+			
+			virtual Value * evaluate (Frame * frame) {
+				Value * result = NULL;
 		
-		throw r;
-	}
+				try {
+					Cell * statements = frame->operands();
+					
+					while (statements != NULL) {
+						result = statements->head()->evaluate(frame);
+						
+						statements = statements->tailAs<Cell>();
+					}
+				} catch (ReturnValue r) {
+					return r.value;
+				}
+				
+				return result;
+			}
+			
+			virtual llvm::Value * compile (Frame * frame) {
+				//Compiler * c = frame->lookupAs<Compiler>(new Symbol("compiler"));
+				
+				// Setup the block local variables.
+				Table * locals = new Table;
+				locals->update(new Symbol("locals"), locals);
+				
+				Frame * next = new Frame(locals, frame);
+				
+				Cell * statements = frame->operands();
+				llvm::Value * result = NULL;				
+		
+				// Could check for getTerminator() and stop, or error.
+				while (statements != NULL) {
+					std::cout << "Compiling Statement: " << Value::toString(statements->head()) << std::endl;
+					result = statements->head()->compile(next);
+					
+					statements = statements->tailAs<Cell>();
+				}
+								
+				return result;
+			}
+	};
+	
+	class BuiltinIf : public Value {
+		public:
+			virtual void toCode(StringStreamT & buffer, MarkedT & marks) {
+				buffer << "(builtin-if)";
+			}
+		
+			virtual Value * evaluate (Frame * frame) {
+				Value * condition, * trueClause, * falseClause;
+				
+				frame->extract(false)[condition][trueClause][falseClause];
+				
+				if (Value::toBoolean(condition->evaluate(frame))) {
+					return trueClause->evaluate(frame);
+				} else {
+					if (falseClause)
+						return falseClause->evaluate(frame);
+					else
+						return NULL;
+				}
+			}
+			
+			virtual llvm::Value * compile (Frame * frame) {
+				Compiler * c = frame->lookupAs<Compiler>(new Symbol("compiler"));
+
+				Value * condition, * trueClause, * falseClause;
+				frame->extract(false)(condition)(trueClause)[falseClause];
+				
+				llvm::BasicBlock * trueBlock, * falseBlock, * nextBlock;
+				trueBlock = llvm::BasicBlock::Create(llvm::getGlobalContext(), "true");
+				falseBlock = llvm::BasicBlock::Create(llvm::getGlobalContext(), "false");
+				nextBlock = llvm::BasicBlock::Create(llvm::getGlobalContext(), "next");
+				
+				llvm::Value * test = condition->compile(frame);
+				c->builder()->CreateCondBr(test, trueBlock, falseBlock);
+
+				c->builder()->SetInsertPoint(trueBlock);
+				llvm::Value * trueResult = trueClause->compile(frame);
+				
+				if (!trueBlock->getTerminator()) {
+					c->builder()->CreateBr(nextBlock);
+				}
+				
+				c->builder()->SetInsertPoint(falseBlock);
+				if (falseClause) {
+					falseClause->compile(frame);
+				}
+				
+				if (!falseBlock->getTerminator()) {
+					c->builder()->CreateBr(nextBlock);
+				}
+				
+				c->builder()->SetInsertPoint(nextBlock);
+
+				return NULL;
+			}
+	};
 	
 	void Logic::import (Table * context) {
 		context->update(new Symbol("or"), KFunctionWrapper(Logic::or_));
 		context->update(new Symbol("and"), KFunctionWrapper(Logic::and_));
 		context->update(new Symbol("not"), KFunctionWrapper(Logic::not_));
 
-		context->update(new Symbol("block"), KFunctionWrapper(Logic::block));
-		context->update(new Symbol("return"), KFunctionWrapper(Logic::return_));
+		context->update(new Symbol("block"), new BuiltinBlock);
+		context->update(new Symbol("return"), new BuiltinReturn);
 
 		context->update(new Symbol("when"), KFunctionWrapper(Logic::when));
-		context->update(new Symbol("if"), KFunctionWrapper(Logic::if_));
+		context->update(new Symbol("if"), new BuiltinIf);
+		
+		context->update(new Symbol("var"), new BuiltinVar);
 	}
 }

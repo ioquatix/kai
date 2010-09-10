@@ -87,7 +87,8 @@ namespace Kai {
 		return llvm::CallInst::Create(trampoline);
 	}
 
-	DynamicFunction::DynamicFunction (EvaluateFunctionT function) : m_function(function) {
+	DynamicFunction::DynamicFunction (EvaluateFunctionT evaluateFunction)
+		: m_evaluateFunction(evaluateFunction) {
 		
 	}
 	
@@ -96,10 +97,10 @@ namespace Kai {
 	}
 
 	Value * DynamicFunction::evaluate (Frame * frame) {
-		return m_function(frame);
+		return m_evaluateFunction(frame);
 	}
 
-	void DynamicFunction::toCode (StringStreamT & buffer) {
-		buffer << "(dynamic-function " << m_function << ")";
+	void DynamicFunction::toCode(StringStreamT & buffer, MarkedT & marks) {
+		buffer << "(dynamic-function " << m_evaluateFunction << ")";
 	}
 }

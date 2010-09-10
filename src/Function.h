@@ -11,11 +11,11 @@
 #define _KFUNCTION_H
 
 #include "Value.h"
-#include <llvm/Type.h>
 
 namespace Kai {
 
 	typedef Value * (*EvaluateFunctionT)(Frame *);
+	typedef llvm::Value * (*CompileFunctionT)(Frame *);
 	
 	llvm::Value * buildTrampoline (std::string name, EvaluateFunctionT function, Frame * frame);
 	
@@ -34,10 +34,17 @@ namespace Kai {
 			}
 			
 			virtual llvm::Value * compile (Frame * frame) {
-				return buildTrampoline(m_name, FunctionT, frame);
+				//return buildTrampoline(m_name, FunctionT, frame);
+				Value * result = FunctionT(frame);
+				return result->compile(frame);
 			}
 			
-			virtual void toCode (StringStreamT & buffer) {
+			virtual llvm::Value * compiledValue (Frame * frame) {
+				Value * result = FunctionT(frame);				
+				return result->compiledValue(frame);
+			}
+			
+			virtual void toCode(StringStreamT & buffer, MarkedT & marks) {
 				buffer << "(builtin-function " << m_name << ")";
 			}
 	};
@@ -46,16 +53,15 @@ namespace Kai {
 	
 	class DynamicFunction : public Value {
 		protected:
-			EvaluateFunctionT m_function;
+			EvaluateFunctionT m_evaluateFunction;
 			
 		public:
-			DynamicFunction (EvaluateFunctionT function);
+			DynamicFunction (EvaluateFunctionT evaluateFunction);
 			virtual ~DynamicFunction ();
 			
-			// Executes the given function
 			virtual Value * evaluate (Frame * frame);
 			
-			virtual void toCode (StringStreamT & buffer);
+			virtual void toCode(StringStreamT & buffer, MarkedT & marks);
 	};	
 }
 
