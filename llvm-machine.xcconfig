@@ -9,10 +9,11 @@
 #include "base.xcconfig"
 
 OTHER_CFLAGS=-O3 -emit-llvm $(LLVM_CFLAGS) $(GC_CFLAGS)
-OTHER_LDFLAGS=-emit-llvm
-//-lstdc++ 
+OTHER_LDFLAGS=-emit-llvm -v -cppgen=module
 
+//CC=/Developer/usr/bin/llvm-gcc
 GCC_VERSION=com.apple.compilers.llvmgcc42
+//GCC_VERSION=com.apple.compilers.llvm.clang.1_0
 //CC=$(LLVM_BIN_PATH)/llvmc
 
 PRODUCT_NAME=machine

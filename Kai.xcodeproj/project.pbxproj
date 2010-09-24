@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		7E0E770B11E9C60500A568DA /* Compiler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7E0E770A11E9C60500A568DA /* Compiler.cpp */; };
-		7E0E773011EAA2F000A568DA /* Machine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7E0E771011E9EBF800A568DA /* Machine.cpp */; };
+		7E2649F212449D4500095131 /* Machine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7E0E771011E9EBF800A568DA /* Machine.cpp */; };
 		7E330F881170295700DC72B5 /* libgc.1.0.3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 7E330F871170295700DC72B5 /* libgc.1.0.3.dylib */; };
 		7E330F8B11702B8C00DC72B5 /* Value.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7E330F8A11702B8C00DC72B5 /* Value.cpp */; };
 		7E33117D11732F0D00DC72B5 /* Frame.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7E33117C11732F0D00DC72B5 /* Frame.cpp */; };
@@ -21,6 +21,7 @@
 		7E5405A311ED517A00F8898D /* Parser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7E4A1F9411CA26520066C220 /* Parser.cpp */; };
 		7E8799C911A4CDC800051ED4 /* Token.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7E8799C611A4CDC800051ED4 /* Token.cpp */; };
 		7EBE565111F09DC2006C2044 /* Strings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7EBE565011F09DC2006C2044 /* Strings.cpp */; };
+		7EC7BDEC123A9BAA0018AEA2 /* Expressions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7EC7BDEB123A9BAA0018AEA2 /* Expressions.cpp */; };
 		8DD76FAC0486AB0100D96B5E /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 08FB7796FE84155DC02AAC07 /* main.cpp */; settings = {ATTRIBUTES = (); }; };
 		8DD76FB00486AB0100D96B5E /* Kai.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = C6A0FF2C0290799A04C91782 /* Kai.1 */; };
 /* End PBXBuildFile section */
@@ -39,16 +40,6 @@
 		};
 /* End PBXBuildRule section */
 
-/* Begin PBXContainerItemProxy section */
-		7E0E774E11EAA4EF00A568DA /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 7E0E771C11EAA23900A568DA;
-			remoteInfo = "LLVM Machine";
-		};
-/* End PBXContainerItemProxy section */
-
 /* Begin PBXCopyFilesBuildPhase section */
 		8DD76FAF0486AB0100D96B5E /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
@@ -64,12 +55,12 @@
 
 /* Begin PBXFileReference section */
 		08FB7796FE84155DC02AAC07 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		7E045E7412449CE4009487F5 /* machine.o */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.objfile"; includeInIndex = 0; path = machine.o; sourceTree = BUILT_PRODUCTS_DIR; };
 		7E0E770311E8A67B00A568DA /* notes.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = notes.txt; sourceTree = "<group>"; };
 		7E0E770911E9C60500A568DA /* Compiler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Compiler.h; sourceTree = "<group>"; };
 		7E0E770A11E9C60500A568DA /* Compiler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Compiler.cpp; sourceTree = "<group>"; };
 		7E0E770F11E9EBF800A568DA /* Machine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Machine.h; sourceTree = "<group>"; };
 		7E0E771011E9EBF800A568DA /* Machine.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Machine.cpp; sourceTree = "<group>"; };
-		7E0E771D11EAA23900A568DA /* machine.o */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.objfile"; includeInIndex = 0; path = machine.o; sourceTree = BUILT_PRODUCTS_DIR; };
 		7E0E777411EAAE7F00A568DA /* base.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = base.xcconfig; sourceTree = "<group>"; };
 		7E0E777511EAD9D000A568DA /* llvm-machine.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "llvm-machine.xcconfig"; sourceTree = "<group>"; };
 		7E0E777F11EADB0E00A568DA /* kai.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = kai.xcconfig; sourceTree = "<group>"; };
@@ -94,13 +85,24 @@
 		7E5405A511ED518400F8898D /* Parser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Parser.h; sourceTree = "<group>"; };
 		7E8799C511A4CDC700051ED4 /* Token.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Token.h; sourceTree = "<group>"; };
 		7E8799C611A4CDC800051ED4 /* Token.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Token.cpp; sourceTree = "<group>"; };
+		7EA9757F12483FD20041AAB3 /* Array.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Array.h; sourceTree = "<group>"; };
+		7EA9758012483FD20041AAB3 /* Array.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Array.cpp; sourceTree = "<group>"; };
 		7EBE564F11F09DC2006C2044 /* Strings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Strings.h; sourceTree = "<group>"; };
 		7EBE565011F09DC2006C2044 /* Strings.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Strings.cpp; sourceTree = "<group>"; };
+		7EC7BDEA123A9BAA0018AEA2 /* Expressions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Expressions.h; sourceTree = "<group>"; };
+		7EC7BDEB123A9BAA0018AEA2 /* Expressions.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Expressions.cpp; sourceTree = "<group>"; };
 		8DD76FB20486AB0100D96B5E /* kai */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = kai; sourceTree = BUILT_PRODUCTS_DIR; };
 		C6A0FF2C0290799A04C91782 /* Kai.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = Kai.1; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		7E045E7212449CE4009487F5 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8DD76FAD0486AB0100D96B5E /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -153,7 +155,7 @@
 			isa = PBXGroup;
 			children = (
 				8DD76FB20486AB0100D96B5E /* kai */,
-				7E0E771D11EAA23900A568DA /* machine.o */,
+				7E045E7412449CE4009487F5 /* machine.o */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -171,12 +173,16 @@
 			children = (
 				7E330F8911702B8C00DC72B5 /* Value.h */,
 				7E330F8A11702B8C00DC72B5 /* Value.cpp */,
+				7EA9757F12483FD20041AAB3 /* Array.h */,
+				7EA9758012483FD20041AAB3 /* Array.cpp */,
 				7E331238117356BA00DC72B5 /* Function.h */,
 				7E331239117356BA00DC72B5 /* Function.cpp */,
 				7E33117B11732F0D00DC72B5 /* Frame.h */,
 				7E33117C11732F0D00DC72B5 /* Frame.cpp */,
 				7E33136C1174388400DC72B5 /* Exception.h */,
 				7E33136D1174388400DC72B5 /* Exception.cpp */,
+				7EC7BDEA123A9BAA0018AEA2 /* Expressions.h */,
+				7EC7BDEB123A9BAA0018AEA2 /* Expressions.cpp */,
 			);
 			name = Interpreter;
 			sourceTree = "<group>";
@@ -205,11 +211,12 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		7E0E771C11EAA23900A568DA /* LLVM Machine */ = {
+		7E045E7312449CE4009487F5 /* LLVM Machine */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 7E0E772F11EAA25800A568DA /* Build configuration list for PBXNativeTarget "LLVM Machine" */;
+			buildConfigurationList = 7E045E7C12449D26009487F5 /* Build configuration list for PBXNativeTarget "LLVM Machine" */;
 			buildPhases = (
-				7E0E771A11EAA23900A568DA /* Sources */,
+				7E045E7112449CE4009487F5 /* Sources */,
+				7E045E7212449CE4009487F5 /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -217,7 +224,7 @@
 			);
 			name = "LLVM Machine";
 			productName = "LLVM Machine";
-			productReference = 7E0E771D11EAA23900A568DA /* machine.o */;
+			productReference = 7E045E7412449CE4009487F5 /* machine.o */;
 			productType = "com.apple.product-type.objfile";
 		};
 		8DD76FA90486AB0100D96B5E /* Kai Interpreter */ = {
@@ -232,7 +239,6 @@
 				7E330B46116B1A2B00DC72B5 /* PBXBuildRule */,
 			);
 			dependencies = (
-				7E0E774F11EAA4EF00A568DA /* PBXTargetDependency */,
 			);
 			name = "Kai Interpreter";
 			productInstallPath = "$(HOME)/bin";
@@ -247,23 +253,30 @@
 			isa = PBXProject;
 			buildConfigurationList = 1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "Kai" */;
 			compatibilityVersion = "Xcode 3.1";
+			developmentRegion = English;
 			hasScannedForEncodings = 1;
+			knownRegions = (
+				English,
+				Japanese,
+				French,
+				German,
+			);
 			mainGroup = 08FB7794FE84155DC02AAC07 /* Kai */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				7E0E771C11EAA23900A568DA /* LLVM Machine */,
 				8DD76FA90486AB0100D96B5E /* Kai Interpreter */,
+				7E045E7312449CE4009487F5 /* LLVM Machine */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
-		7E0E771A11EAA23900A568DA /* Sources */ = {
+		7E045E7112449CE4009487F5 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				7E0E773011EAA2F000A568DA /* Machine.cpp in Sources */,
+				7E2649F212449D4500095131 /* Machine.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -284,18 +297,11 @@
 				7E0E770B11E9C60500A568DA /* Compiler.cpp in Sources */,
 				7E5405A311ED517A00F8898D /* Parser.cpp in Sources */,
 				7EBE565111F09DC2006C2044 /* Strings.cpp in Sources */,
+				7EC7BDEC123A9BAA0018AEA2 /* Expressions.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXTargetDependency section */
-		7E0E774F11EAA4EF00A568DA /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 7E0E771C11EAA23900A568DA /* LLVM Machine */;
-			targetProxy = 7E0E774E11EAA4EF00A568DA /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		1DEB928608733DD80010E9CD /* Debug */ = {
@@ -346,7 +352,7 @@
 			};
 			name = Release;
 		};
-		7E0E771E11EAA23900A568DA /* Debug */ = {
+		7E045E7512449CE4009487F5 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 7E0E777511EAD9D000A568DA /* llvm-machine.xcconfig */;
 			buildSettings = {
@@ -354,13 +360,12 @@
 				COPY_PHASE_STRIP = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
-				HEADER_SEARCH_PATHS = /opt/local/include;
 				INSTALL_PATH = /usr/local/lib;
 				PREBINDING = NO;
 			};
 			name = Debug;
 		};
-		7E0E771F11EAA23900A568DA /* Release */ = {
+		7E045E7612449CE4009487F5 /* Release */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 7E0E777511EAD9D000A568DA /* llvm-machine.xcconfig */;
 			buildSettings = {
@@ -368,7 +373,6 @@
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_ENABLE_FIX_AND_CONTINUE = NO;
-				HEADER_SEARCH_PATHS = /opt/local/include;
 				INSTALL_PATH = /usr/local/lib;
 				PREBINDING = NO;
 			};
@@ -395,11 +399,11 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		7E0E772F11EAA25800A568DA /* Build configuration list for PBXNativeTarget "LLVM Machine" */ = {
+		7E045E7C12449D26009487F5 /* Build configuration list for PBXNativeTarget "LLVM Machine" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				7E0E771E11EAA23900A568DA /* Debug */,
-				7E0E771F11EAA23900A568DA /* Release */,
+				7E045E7512449CE4009487F5 /* Debug */,
+				7E045E7612449CE4009487F5 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
