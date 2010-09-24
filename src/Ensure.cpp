@@ -14,7 +14,7 @@
 namespace Kai {
 
 	InternalError::InternalError (const char * expression, const char * func, const char * file, unsigned line) throw ()
-		: m_expression (expression), m_function(func), m_file (file), m_line (line)
+		: m_function(func), m_expression (expression), m_file (file), m_line (line)
 	{
 		using namespace std;
 

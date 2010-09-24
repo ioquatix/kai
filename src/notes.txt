@@ -2,6 +2,8 @@
 
 ((lambda '(object function) '(object)) "Arg1" "Arg2")
 
+(lambda '(message) 
+
 ((lookup 'Table 'set) (this) 'call (lambda '(object function) '(
 	(wrap (lookup object (head function)) (tail function))
 )))
@@ -17,7 +19,7 @@
 
 (with (this) '(set 'x 10))
 
-
+((lambda '(x y) '(x)) "Arg1" "Arg2")
 
 (with 'this 'LOAD_PATHS (wrap 'prepend x))
 
@@ -87,8 +89,68 @@
 	)
 )
 
+union X {
+	int x;
+	float y;
+};
+
 (set (this) 'x (call f '(resolve)))
 
-(
+(head . tail)
+(1 (2 (7 (5 nil))))
+(1 2 7 5)
 
+(if [conditon]
+	[trueClause]
+	[falseClause]
+)
+(union (pointer (int 32)) (float 64))
+
+([function] [arguments...])
+
+#int f (int x) {
+#}
+
+(compiler 'f (function (int 32) (int 32)) '(x)
+
+(set (this) 'x
+	(compiler 'f (function (int 32)) '()
+		'(block
+			(var 'x (int 32))
+			(call x '(store 100))
+			(return (call x '(load)))
+		)
+	)
+)
+
+(set (this) 'meaningOfLife
+	(compiler 'meaningOfLife (function (int 32)) '()
+		'(block
+			(return 42)
+		)
+	)
+)
+
+(call meaningOfLife '(resolve))
+
+(set (this) 'gcd
+	(compiler 'gcd (function (int 32) (int 32) (int 32)) '(a b)
+		'(block
+			(if (== b 0)
+				(return a)
+				
+				(return (gcd b (modulus a b))
+			)
+		)
+	)
+)
+
+// Returns the greatest common divisor of a and b.
+BigIntT greatestCommonDivisor (BigIntT a, BigIntT b) {
+	if (b == 0) {
+		return a;
+	} else {
+		return greatestCommonDivisor(b, a % b);
+	}
+}
 

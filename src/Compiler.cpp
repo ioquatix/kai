@@ -23,6 +23,7 @@
 #include <llvm/ExecutionEngine/ExecutionEngine.h>
 #include <llvm/Support/MemoryBuffer.h>
 #include <llvm/ExecutionEngine/JIT.h>
+#include <llvm/Assembly/PrintModulePass.h>
 
 #include <llvm/DerivedTypes.h>
 #include <llvm/Analysis/Verifier.h>
@@ -77,7 +78,14 @@ namespace Kai {
 		// Create the function optimiser, optimisation level 3
 		m_functionOptimizer = new llvm::FunctionPassManager(m_module);
 		llvm::createStandardFunctionPasses(m_functionOptimizer, 3);
+		m_functionOptimizer->doInitialization();
 		
+		// Create the module optimiser, optimisation level 3
+		m_moduleOptimizer = new llvm::PassManager;
+		llvm::createStandardModulePasses(m_moduleOptimizer,
+			1, false, true, true, true, true, NULL
+		);
+								
 		// Extract some useful type information.
 		m_frameType = m_module->getFunction("_frameType")->getReturnType();
 		m_valueType = m_module->getFunction("_valueType")->getReturnType();
@@ -113,18 +121,20 @@ namespace Kai {
 			throw Exception("Invalid function signature!", signature, frame);
 		}
 		
-		using namespace llvm;
 		llvm::Function * func = llvm::Function::Create(
 			funcType,
-			llvm::GlobalValue::PrivateLinkage,
+			llvm::Function::ExternalLinkage,
 			name->value(),
 			c->module()
 		);
 		
+		//func->setCallingConv(llvm::CallingConv::Fast);
+		//func->setVisibility(llvm::GlobalValue::HiddenVisibility);
+		
 		Table * arguments = new Table;
 
 		// For recursion
-		arguments->update(name, new CompiledValue(func));
+		arguments->update(name, new CompiledFunction(func));
 		
 		for (llvm::Function::arg_iterator arg = func->arg_begin(); arg != func->arg_end(); arg++) {
 			Symbol * name = argumentNames->headAs<Symbol>();
@@ -140,7 +150,7 @@ namespace Kai {
 		c->builder()->SetInsertPoint(entryBlock);
 		
 		Frame * next = new Frame(arguments, frame);
-		std::cout << "Compiling: " << Value::toString(body) << std::endl;
+		//std::cout << "Compiling: " << Value::toString(body) << std::endl;
 		llvm::Value * result = body->compile(next);
 		
 		// Automatically return the last variable
@@ -184,6 +194,10 @@ namespace Kai {
 	
 	llvm::FunctionPassManager * Compiler::functionOptimizer () {
 		return m_functionOptimizer;
+	}
+	
+	llvm::PassManager * Compiler::moduleOptimizer () {
+		return m_moduleOptimizer;
 	}
 	
 	const llvm::Type * Compiler::framePointerType () {
@@ -246,6 +260,48 @@ namespace Kai {
 		return globalPrototype();
 	}
 	
+	Value * CompiledFunction::evaluate (Frame * frame) {
+		Compiler * compiler = dynamic_cast<Kai::Compiler *>(frame->lookup(new Symbol("compiler")));
+		typedef int (FuncT)(int, int);
+		FuncT * f = (FuncT*)compiler->engine()->getPointerToFunction(m_code);
+		
+		Integer * f1, * f2;
+		frame->extract()[f1][f2];
+		
+		int r = f(f1->value(), f2->value());
+		
+		return new Integer(r);
+	}
+	
+	llvm::Value * CompiledFunction::compile (Frame * frame)
+	{
+		Compiler * compiler = dynamic_cast<Kai::Compiler *>(frame->lookup(new Symbol("compiler")));
+
+		std::vector<llvm::Value*> operands;
+		Cell * arguments = frame->unwrap();
+		
+		//std::cerr << "Compiling function " << Value::toString(arguments) << std::endl;
+		
+		while (arguments != NULL) {
+			llvm::Value * operand = arguments->head()->compile(frame);
+			assert(operand != NULL);
+			
+			operands.push_back(operand);
+			
+			arguments = arguments->tailAs<Cell>();
+		}
+		
+		llvm::CallInst * call = compiler->builder()->CreateCall(m_code, operands.begin(), operands.end());
+		//call->setCallingConv(llvm::CallingConv::Fast);
+		
+		return call;
+	}
+	
+	llvm::Value * CompiledFunction::compiledValue (Frame * frame)
+	{
+		return m_code;
+	}
+	
 	Value * CompiledFunction::optimize (Frame * frame) {
 		Compiler * compiler = dynamic_cast<Kai::Compiler *>(frame->lookup(new Symbol("compiler")));
 		CompiledFunction * function = NULL;
@@ -253,6 +309,7 @@ namespace Kai {
 		frame->extract()[function];
 		
 		compiler->functionOptimizer()->run(*(function->m_code));
+		compiler->moduleOptimizer()->run(*(compiler->module()));
 		
 		return function;
 	}
@@ -295,6 +352,64 @@ namespace Kai {
 	
 	CompiledType::~CompiledType () {
 	
+	}
+	
+	class IntegerEquality : public Value {
+		public:
+			virtual void toCode(StringStreamT & buffer, MarkedT & marks) {
+				buffer << "(builtin-integer-equality)";
+			}
+			
+			virtual Value * evaluate (Frame * frame) {
+				return new CompiledValue(this->compile(frame));
+			}
+			
+			virtual llvm::Value * compile (Frame * frame) {
+				Compiler * c = frame->lookupAs<Compiler>(new Symbol("compiler"));
+				
+				Value * lhs, * rhs;
+				frame->extract()[lhs][rhs];
+
+				llvm::Value * result = c->builder()->CreateICmpEQ(lhs->compile(frame), rhs->compile(frame));
+				
+				return result;
+			}
+	};
+	
+	class IntegerModulus : public Value {
+		public:
+			virtual void toCode(StringStreamT & buffer, MarkedT & marks) {
+				buffer << "(builtin-integer-modulus)";
+			}
+			
+			virtual Value * evaluate (Frame * frame) {
+				return new CompiledValue(this->compile(frame));
+			}
+			
+			virtual llvm::Value * compile (Frame * frame) {
+				Compiler * c = frame->lookupAs<Compiler>(new Symbol("compiler"));
+				
+				Value * lhs, * rhs;
+				frame->extract()[lhs][rhs];
+
+				llvm::Value * result = c->builder()->CreateURem(lhs->compile(frame), rhs->compile(frame));
+				
+				return result;
+			}
+	};
+	
+	Value * CompiledType::globalIntegerPrototype () {
+		static Table * g_prototype = NULL;
+		
+		if (!g_prototype) {
+			g_prototype = new Table;
+			g_prototype->setPrototype(Value::globalPrototype());
+			
+			g_prototype->update(new Symbol("=="), new IntegerEquality);
+			g_prototype->update(new Symbol("%"), new IntegerModulus);
+		}
+		
+		return g_prototype;
 	}
 	
 	const llvm::Type * CompiledType::value () const {
@@ -541,6 +656,8 @@ namespace Kai {
 			
 			g_prototype->update(new Symbol("load"), new BuiltinLoad);
 			g_prototype->update(new Symbol("store"), new BuiltinStore);
+			g_prototype->update(new Symbol("=="), new IntegerEquality);
+			g_prototype->update(new Symbol("%"), new IntegerModulus);
 		}
 		
 		return g_prototype;

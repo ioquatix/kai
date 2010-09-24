@@ -19,6 +19,7 @@
 #include <vector>
 
 #include <gc/gc_cpp.h>
+#include <gc/gc_allocator.h>
 
 #define abstract = 0
 
@@ -29,9 +30,36 @@ namespace Kai {
 	typedef std::stringstream StringStreamT;
 	typedef StringT::const_iterator StringIteratorT;
 
-	typedef double TimeT;
+	class Time {
+		public:
+			typedef uint64_t SecondsT;
+			typedef double FractionT;
+			
+		protected:
+			SecondsT m_seconds;
+			FractionT m_fraction;
+			
+			void normalize();
+			
+		public:
+			Time();
+			Time(FractionT time);
+			
+			Time operator+(const Time & other);
+			Time operator-(const Time & other);
+			
+			Time & operator+=(const Time & other);
+			Time & operator-=(const Time & other);
+			
+			Time operator*(FractionT other);
+			Time operator/(FractionT other);
+			
+			const SecondsT & seconds() const { return m_seconds; }
+			const FractionT & fraction() const { return m_fraction; }
+			const FractionT total() const { return (FractionT)m_seconds + m_fraction; }
+	};
 	
-	TimeT systemTime ();
+	std::ostream & operator<<(std::ostream & output, const Time & time);
 }
 
 #endif

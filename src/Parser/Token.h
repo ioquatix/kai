@@ -28,24 +28,13 @@ namespace Kai {
 			STRING = 20,
 			NUMBER = 22,
 			DECIMAL = 24,
-			
-			FUNCTION = 26,
-			CHAIN = 28,
-			VALUE = 30,
-			
-			BINARY_OPERATOR = 32,
-			BINARY_OPERATOR_FUNCTION = 33,
-			LEFT_UNARY_OPERATOR = 42,
-			RIGHT_UNARY_OPERATOR = 52,
-			
-			ARGUMENTS = 60,
-			
+						
 			WHITESPACE = 100,
 			INDENTATION = 200,
 			
 			COMMENTS = 300
 		};
-				
+		
 		struct Token {
 			public:
 				typedef std::vector<Token> ChildrenT;
@@ -124,14 +113,6 @@ namespace Kai {
 				Token simplify ();
 		};
 		
-		/// Indicates we need to backtrack
-		struct ParseFailure {
-		};
-		
-		inline Token invalid () {
-			return Token();
-		}
-		
 		struct FatalParseFailure {
 			protected:
 				Token m_token;
@@ -170,7 +151,7 @@ namespace Kai {
 			while (s != end && predicate(s)) s++;
 			
 			if (s == begin)
-				return invalid();
+				return Token();
 			else
 				return Token(begin, s);
 		}
@@ -186,7 +167,7 @@ namespace Kai {
 			}
 			
 			if (counter.failed())
-				return invalid();
+				return Token();
 			else
 				return Token(begin, s);
 		}
@@ -235,48 +216,7 @@ namespace Kai {
 				return *this;
 			}
 		};
-
-		template <typename TermParserT, typename OperatorParserT>
-		struct BinaryOperatorParser {
-			TermParserT termParser;
-			OperatorParserT operatorParser;
-			
-			Token operator() (StringIteratorT begin, StringIteratorT end) {
-				Token t(begin, BINARY_OPERATOR);
-				
-				t += parseCharacters(t.end(), end, isWhitespace);
-				
-				t << termParser(t.end(), end);
-				
-				while (t) {
-					Token c(t.end(), BINARY_OPERATOR_FUNCTION);
-					
-					c += parseCharacters(c.end(), end, isWhitespace);
-					
-					c << operatorParser(c.end(), end);
-					if (!c) break;
-					
-					c += parseCharacters(c.end(), end, isWhitespace);
-					
-					c << termParser(c.end(), end);
-					if (!c) break;
-					
-					t << c;
-				}
-				
-				return t.simplify();
-			}
-		};
 		
-		template <typename TermParserT, typename OperatorParserT>
-		BinaryOperatorParser<TermParserT, OperatorParserT> binaryOperatorParser (TermParserT termParser, OperatorParserT operatorParser) {
-			BinaryOperatorParser<TermParserT, OperatorParserT> parser;
-			
-			parser.termParser = termParser;
-			parser.operatorParser = operatorParser;
-			
-			return parser;
-		}
 	}
 }
 

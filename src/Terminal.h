@@ -37,6 +37,14 @@ namespace Kai {
 			void updateFlags (unsigned flag, bool state);
 	};
 	
+	class IEditor
+	{
+		public:
+			virtual ~IEditor();
+			virtual StringT firstPrompt() = 0;
+			virtual bool isComplete(const StringStreamT & buffer, StringT & prompt) = 0;
+	};
+	
 	class TerminalEditor {
 		protected:
 			StringT m_prompt;
@@ -46,7 +54,10 @@ namespace Kai {
 			~TerminalEditor ();
 			
 			bool readInput (StringT & buffer);
+			bool readInput (StringT & buffer, StringT & prompt);
 			void writeOutput (StringT);
+			
+			bool readInput (StringStreamT & buffer, IEditor & editor);
 	};
 
 }

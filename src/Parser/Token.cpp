@@ -20,12 +20,6 @@ namespace Kai {
 				return " LIST";
 			case EXPRESSION:
 				return " EXPR";
-			case FUNCTION:
-				return " FUNC";
-			case CHAIN:
-				return "CHAIN";
-			case ARGUMENTS:
-				return " ARGS";
 			case BLOCK:
 				return "BLOCK";
 			case SYMBOL:
@@ -40,18 +34,10 @@ namespace Kai {
 				return "   WS";
 			case COMMENTS:
 				return " CMTS";
-			case BINARY_OPERATOR:
-				return " B-OP";
-			case BINARY_OPERATOR_FUNCTION:
-				return "B-OPF";
-			case LEFT_UNARY_OPERATOR:
-				return " L-OP";
-			case RIGHT_UNARY_OPERATOR:
-				return " R-OP";
 			case CELL:
 				return " CELL";
-			case VALUE:
-				return "VALUE";
+			default:
+				break;
 			}
 			
 			return     "?????";
@@ -96,7 +82,10 @@ namespace Kai {
 		}
 		
 		StringT Token::value () const {
-			return StringT(m_begin, m_end);
+			if (m_begin != StringIteratorT())
+				return StringT(m_begin, m_end);
+			else
+				return "";
 		}
 		
 		const Token& Token::operator<< (const Token& other) {
@@ -133,7 +122,7 @@ namespace Kai {
 				add(other, true);
 			} else {
 				// Become invalid
-				m_begin = m_end = StringIteratorT();
+				m_begin = StringIteratorT();
 			}
 			
 			return *this;
@@ -168,8 +157,6 @@ namespace Kai {
 		Token Token::simplify () {
 			if (m_children.size() == 1 && m_identity == m_children[0].identity()) {
 				return m_children[0];
-			} else if (m_children.size() == 1 && m_identity == BINARY_OPERATOR) {
-				return m_children[0];
 			} else {
 				return *this;
 			}
@@ -199,7 +186,9 @@ namespace Kai {
 			printTree(std::cerr, 0);
 		}
 		
-		FatalParseFailure::FatalParseFailure (const Token& token, const char * failureMessage) : m_token(token), m_failureMessage(failureMessage) {
+		FatalParseFailure::FatalParseFailure (const Token& token, const char * failureMessage) 
+			: m_token(token), m_failureMessage(failureMessage)
+		{
 
 		}
 		
@@ -236,9 +225,14 @@ namespace Kai {
 			printIndicatorLine(whitespace, outp, 0, size);
 		}
 		
-		void FatalParseFailure::printError (std::ostream& outp, const SourceCode & sourceCode) {
-			unsigned firstOffset = sourceCode.offsetForStringIteratorT(m_token.begin());
-			unsigned lastOffset = sourceCode.offsetForStringIteratorT(m_token.end());
+		void FatalParseFailure::printError (std::ostream& outp, const SourceCode & sourceCode) {			
+			unsigned firstOffset = sourceCode.offsetForIterator(m_token.begin());
+			unsigned lastOffset = sourceCode.offsetForIterator(m_token.end());
+			
+			// Empty source code?
+			if (firstOffset >= sourceCode.size() || lastOffset > sourceCode.size()) {
+				return;
+			}
 			
 			unsigned firstLine = sourceCode.lineForOffset(firstOffset);
 			unsigned lastLine = sourceCode.lineForOffset(lastOffset);
@@ -317,12 +311,12 @@ namespace Kai {
 			if (c == constant.end()) {
 				return Token(begin, s);
 			} else {
-				return invalid();
+				return Token();
 			}
 		}
 		
 		bool isAlpha (StringIteratorT i) {
-			return (*i >= 'a' && *i <= 'z') || (*i >= 'A' && *i <= 'Z');
+			return (*i >= 'a' && *i <= 'z') || (*i >= 'A' && *i <= 'Z') || *i == '_';
 		}
 		
 		bool isNumeric (StringIteratorT i) {

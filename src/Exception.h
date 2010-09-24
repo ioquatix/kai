@@ -21,12 +21,12 @@ namespace Kai {
 
 	class Exception {
 		protected:
-			Frame * m_frame;
-			Cell * m_arguments;
-			Value * m_value;
-			
 			StringT m_what;
-		
+
+			Value * m_value;
+						
+			Frame * m_frame;
+			
 		public:
 			Exception(StringT what, Frame * frame);
 			Exception(StringT what, Value * value, Frame * frame);

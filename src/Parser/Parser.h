@@ -10,10 +10,14 @@
 #include "Token.h"
 
 namespace Kai {
+	
+	class Value;
+	
 	namespace Parser {
-		
-		// May throw FatalParseFailure
-		Value * parse (const SourceCode & code);
-		
+		Token parseNumber (StringIteratorT begin, StringIteratorT end);
+		Token parseString (StringIteratorT begin, StringIteratorT end);
+		Token parseDecimal (StringIteratorT begin, StringIteratorT end);
+		Token parseWhitespace (StringIteratorT begin, StringIteratorT end);
+		Token parseIdentifier (StringIteratorT begin, StringIteratorT end);
 	}
 }

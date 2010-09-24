@@ -25,11 +25,56 @@
 #include "Terminal.h"
 #include "SourceCode.h"
 #include "Compiler.h"
+#include "Expressions.h"
 
 namespace {
 
 	using namespace Kai;
 
+	class BasicEditor : virtual public IEditor
+	{
+		protected:
+			Expressions * m_expressions;
+			
+		public:
+			BasicEditor(Value * context)
+			{
+				Frame * frame = new Frame(context);
+				m_expressions = frame->lookupAs<Expressions>(new Symbol("expr"));
+			}
+			
+			virtual ~BasicEditor()
+			{
+			
+			}
+			
+			virtual StringT firstPrompt()
+			{
+				return "kai> ";
+			}
+			
+			virtual bool isComplete(const StringStreamT & buffer, StringT & prompt)
+			{
+				ParseResult result;
+				
+				SourceCode code("<editor>", buffer.str());
+				prompt = "";
+				
+				try {
+					result = m_expressions->parse(code, true);
+				} catch (Parser::FatalParseFailure & ex) {
+					return false;
+				}
+				
+				if (result.isIncomplete()) {
+					return false;
+				} else {
+					// FAILED or OKAY
+					return true;
+				}
+			}
+	};
+	
 	Value * runCode (Table * context, SourceCode & code, int & status) {
 		Value * value = NULL, * result = NULL;
 
@@ -38,8 +83,9 @@ namespace {
 	
 		try {
 			Frame * frame = new Frame(context);
+			Expressions * expressions = frame->lookupAs<Expressions>(new Symbol("expr"));
 			
-			value = Parser::parse(code);
+			value = expressions->parse(code).value;
 			
 			if (value) {
 				result = value->evaluate(frame);
@@ -60,6 +106,9 @@ namespace {
 			
 			ex.top()->debug();
 		} catch (Parser::FatalParseFailure & ex) {
+			// Print syntax error message
+			ex.printError(std::cerr, code);
+			
 			status = 2;
 		}
 	
@@ -73,10 +122,12 @@ namespace {
 		Integer::import(global);
 		Frame::import(global);
 		Value::import(global);
+		Symbol::import(global);
 		Cell::import(global);
 		Table::import(global);
 		Lambda::import(global);
 		Logic::import(global);
+		Expressions::import(global);
 		
 		Compiler::import(global);
 		CompiledType::import(global);
@@ -89,6 +140,8 @@ namespace {
 }
 
 int main (int argc, const char * argv[]) {
+	Time start;
+	
 	using namespace Kai;
 
 	GC_init();
@@ -97,23 +150,30 @@ int main (int argc, const char * argv[]) {
 	Terminal console(STDIN_FILENO);
 	Table * context = buildContext();
 
+	BasicEditor editor(context);
+
 	if (argc == 2) {
 		SourceCode code(argv[1]);
 		
 		runCode(context, code, result);
 	} else if (console.isTTY()) {
+		// Running interactively
 		TerminalEditor terminalEditor("kai> ");
 		
-		StringT input;
+		StringStreamT buffer;
 		
-		while (terminalEditor.readInput(input)) {
+		std::cerr << "Startup time = " << (Time() - start) << std::endl;
+		
+		while (terminalEditor.readInput(buffer, editor)) {
 			Value * value;
 							
-			SourceCode currentLine("<stdin>", input);
-			
+			SourceCode currentLine("<stdin>", buffer.str());
+						
 			value = runCode(context, currentLine, result);
 			
 			std::cout << Value::toString(value) << std::endl;
+			
+			buffer.str("");
 		}
 	} else {
 		StringStreamT buffer;
@@ -122,6 +182,10 @@ int main (int argc, const char * argv[]) {
 		
 		runCode(context, code, result);			
 	}
+	
+	// Dump trace statistics.
+	std::cout << std::endl;
+	Tracer::globalTracer()->dump(std::cout);
 	
 	return result;
 }

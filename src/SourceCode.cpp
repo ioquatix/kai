@@ -150,7 +150,7 @@ namespace Kai {
 		return strings;
 	}
 	
-	unsigned SourceCode::offsetForStringIteratorT (StringIteratorT it) const {
+	unsigned SourceCode::offsetForIterator (StringIteratorT it) const {
 		return it - m_buffer.begin();
 	}
 	

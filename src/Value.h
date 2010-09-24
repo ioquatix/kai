@@ -39,8 +39,30 @@ namespace Kai {
 	
 	void debug (Value * value);
 	
-	class Value : public gc_cleanup {
+	template <typename ThisT>
+	inline static int derivedCompare (ThisT * lhs, Value * rhs) {
+		ThisT * other = dynamic_cast<ThisT *>(rhs);
+
+		if (other) {
+			return lhs->compare(other);
+		} else {
+			throw InvalidComparison();
+		}
+	}
+
+	inline int clampComparison (int result) {
+		if (result < 0) {
+			return -1;
+		} else if (result > 0) {
+			return 1;
+		} else {
+			return 0;
+		}
+	}
+	
+	class Value : virtual public gc {
 		public:
+			Value ();
 			virtual ~Value ();
 		
 			virtual int compare (Value * other);
@@ -58,7 +80,7 @@ namespace Kai {
 				}
 			}
 			
-			virtual void toCode(StringStreamT & buffer, MarkedT & marks) = 0;
+			virtual void toCode(StringStreamT & buffer, MarkedT & marks);
 						
 			inline void toCode(StringStreamT & buffer) {
 				MarkedT marks;
@@ -161,8 +183,8 @@ namespace Kai {
 			virtual llvm::Value * compile (Frame * frame);
 			
 			class ArgumentExtractor {
-				Cell * m_current;
 				Frame * m_frame;
+				Cell * m_current;
 				
 				public:
 					inline ArgumentExtractor(Frame * frame, Cell * current) : m_frame(frame), m_current(current) {
@@ -241,7 +263,7 @@ namespace Kai {
 			static Value * tail (Frame * frame);
 			
 			static Value * each (Frame * frame);
-			
+						
 			static Value * globalPrototype ();
 			static void import (Table * context);
 	};
@@ -249,7 +271,7 @@ namespace Kai {
 #pragma mark -
 #pragma mark String
 
-	class String : public Value {
+	class String : public Value, virtual public gc_cleanup {
 		protected:
 			StringT m_value;
 			
@@ -268,7 +290,7 @@ namespace Kai {
 #pragma mark -
 #pragma mark Symbol
 
-	class Symbol : public Value {
+	class Symbol : public Value, virtual public gc_cleanup {
 		protected:
 			const StringT m_value;
 			const int m_hash;
@@ -294,6 +316,12 @@ namespace Kai {
 			static Symbol * nilSymbol ();
 			static Symbol * falseSymbol ();
 			static Symbol * trueSymbol ();
+			
+			static Value * hash (Frame * frame);
+			
+			virtual Value * prototype ();
+			static Value * globalPrototype ();
+			static void import (Table * context);
 	};
 
 #pragma mark -
@@ -392,12 +420,12 @@ namespace Kai {
 
 	class Lambda : public Value {
 		protected:
-			Value * m_scope;
+			Frame * m_scope;
 			Cell * m_arguments;
 			Cell * m_code;
 			
 		public:
-			Lambda (Value * scope, Cell * arguments, Cell * code);
+			Lambda (Frame * scope, Cell * arguments, Cell * code);
 			virtual ~Lambda ();
 			
 			virtual Value * evaluate (Frame * frame);

@@ -12,6 +12,11 @@
 
 namespace Kai {
 
+	IEditor::~IEditor()
+	{
+	
+	}
+
 	Terminal::Terminal (unsigned fileno) : m_fileno(fileno) {
 		bzero(&m_settings, sizeof(struct termios));
 	}
@@ -51,27 +56,29 @@ namespace Kai {
 			
 	bool TerminalEditor::readInput (StringT & buffer)
 	{
-		/*
-		char * line = readline(m_prompt.c_str());
-		
-		if (line) {
-			add_history(line);
-			
-			buffer = StringT(line);
-			
-			free(line);
-			
-			return true;
-		} else {
-			return false;
-		}
-		*/
-		
-		std::cout << m_prompt;
-		
+		return readInput(buffer, m_prompt);
+	}
+	
+	bool TerminalEditor::readInput (StringT & buffer, StringT & prompt)
+	{
+		std::cout << prompt;
 		std::getline(std::cin, buffer);
-		
 		return std::cin.good();
+	}
+	
+	bool TerminalEditor::readInput (StringStreamT & buffer, IEditor & editor)
+	{
+		StringT input;
+		StringT prompt = editor.firstPrompt();
+		
+		do {
+			if (!readInput(input, prompt))
+				return false;
+			
+			buffer << input << std::endl;
+		} while (!editor.isComplete(buffer, prompt));
+		
+		return true;
 	}
 	
 	void TerminalEditor::writeOutput (StringT buffer)

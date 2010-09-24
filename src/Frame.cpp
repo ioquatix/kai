@@ -13,39 +13,113 @@
 
 namespace Kai {
 
+	Tracer::Statistics::Statistics() : totalTime(0), count(0)
+	{
+	
+	}
+
+	void Tracer::enter(Value* value)
+	{
+		Statistics & stats = m_statistics[value];
+		
+		stats.count++;
+		stats.frames.push_back(Time());
+	}
+	
+	void Tracer::exit(Value* value)
+	{
+		Statistics & stats = m_statistics[value];
+		
+		stats.totalTime += (Time() - stats.frames.back());
+		stats.frames.pop_back();
+	}
+	
+	void Tracer::dump(std::ostream & buffer)
+	{
+		buffer << "Tracer Statistics" << std::endl;
+		
+		for (StatisticsMapT::iterator iter = m_statistics.begin(); iter != m_statistics.end(); iter++) {
+			Value * function = iter->first;
+			Statistics & stats = iter->second;
+			
+			buffer << "\t";
+			StringStreamT code;
+			function->toCode(code);
+			buffer << code.str();
+			
+			buffer << "\t\t" << stats.totalTime;
+			buffer << "\t" << stats.count;
+			buffer << std::endl;
+		}
+	}
+	
+	Tracer * Tracer::globalTracer ()
+	{
+		static Tracer * tracer = NULL;
+		
+		if (tracer == NULL) {
+			tracer = new Tracer;
+		}
+		
+		return tracer;
+	}
+	
+	struct Trace {
+		Frame * m_frame;
+		
+		Trace(Frame * frame) : m_frame(frame) {
+			Tracer::globalTracer()->enter(m_frame->function());
+		}
+		
+		~Trace() {
+			Tracer::globalTracer()->exit(m_frame->function());
+		}
+	};
+
+#pragma mark -
+
 	Frame::Frame (Value * scope)
-		: m_previous(this), m_scope(scope), m_message(NULL), m_arguments(NULL), m_function(NULL), m_depth(0)
+		: m_previous(this), m_scope(scope), m_message(NULL), m_function(NULL), m_arguments(NULL), m_depth(0)
 	{
 
 	}
 	
 	Frame::Frame (Value * scope, Frame * previous)
-		: m_previous(previous), m_scope(scope), m_message(previous->m_message), m_arguments(previous->m_arguments), 
-		m_function(m_previous->m_function)
+		: m_previous(previous), m_scope(scope), m_message(previous->m_message), m_function(m_previous->m_function),
+		m_arguments(previous->m_arguments)
 	{
 		m_depth = m_previous->m_depth + 1;
 	}
 
 	Frame::Frame (Value * scope, Cell * message, Frame * previous)
-		: m_previous(previous), m_scope(scope), m_message(message), m_arguments(NULL), m_function(NULL)
+		: m_previous(previous), m_scope(scope), m_message(message), m_function(NULL), m_arguments(NULL)
 	{
 		m_depth = m_previous->m_depth + 1;
 	}
 	
-	Value * Frame::lookup (Symbol * identifier) {
+	Value * Frame::lookup (Symbol * identifier, Frame *& frame)
+	{
 		Value * result = NULL;
 		
 		if (m_scope) {
 			result = m_scope->lookup(identifier);
+			frame = this;
 		}
 		
 		if (!result && !top()) {
-			result = m_previous->lookup(identifier);
+			result = m_previous->lookup(identifier, frame);
 		}
 		
 		return result;
 	}
-
+	
+	Value * Frame::lookup (Symbol * identifier)
+	{
+		Frame * frame = NULL;
+		
+		return lookup(identifier, frame);
+	}
+	
 	Value * Frame::apply () {
 		//std::cerr << "-- " << Value::toString(m_message) << " <= " << Value::toString(m_scope) << std::endl;
 		
@@ -61,7 +135,12 @@ namespace Kai {
 			throw Exception("Invalid Function", m_message->head(), this);
 		}
 		
-		return m_function->evaluate(this);
+		// trace will be deconstructed even in the event of an exception.
+		Trace trace(this);
+		
+		Value * result = m_function->evaluate(this);
+		
+		return result;
 	}
 
 	Value * Frame::call (Value * scope, Cell * message)
@@ -183,12 +262,83 @@ namespace Kai {
 		} while (!cur->top() && ascend);
 	}
 	
+	Value * Frame::benchmark (Frame * frame)
+	{		
+		Integer * times;
+		Value * exec;
+		Value * result;
+		
+		frame->extract()(times)(exec);
+		
+		int count = times->value();
+		
+		Time start;
+		
+		while (count > 0) {
+			result = exec->evaluate(frame);
+			
+			count--;
+		}
+		
+		Time end;
+		
+		Time duration = (end - start);
+		
+		std::cerr << "Total time for " << times->value() << " runs = " << duration << std::endl;
+		std::cerr << "Average time taken = " << (duration / times->value()) << std::endl;
+
+		return result;
+	}
+	
 	void Frame::import (Table * context) {
 		context->update(new Symbol("this"), KFunctionWrapper(Frame::scope));
 		context->update(new Symbol("trace"), KFunctionWrapper(Frame::trace));
 		context->update(new Symbol("unwrap"), KFunctionWrapper(Frame::unwrap));
 		context->update(new Symbol("wrap"), KFunctionWrapper(Frame::wrap));
 		context->update(new Symbol("with"), KFunctionWrapper(Frame::with));
+		context->update(new Symbol("update"), KFunctionWrapper(Frame::update));
+		context->update(new Symbol("benchmark"), KFunctionWrapper(Frame::benchmark));
+
+
+		//context->update(new Symbol("defines"), KFunctionWrapper(Frame::where));
+	}
+/*	
+	Value * Frame::where (Frame * frame)
+	{
+		Symbol * identifier = NULL;
+		
+		frame->extract()(identifier);
+		
+		Frame * location = NULL;
+		frame->lookup(identifier, location);
+		
+		return location;
+	}
+*/	
+	// Attempt to update inplace a value in a frame
+	Value * Frame::update (Frame * frame)
+	{
+		Symbol * identifier = NULL;
+		Value * newValue = NULL;
+		
+		frame->extract()(identifier)[newValue];
+		
+		Frame * location = NULL;
+		frame->lookup(identifier, location);
+		
+		if (location) {
+			Table * scope = dynamic_cast<Table*>(location->scope());
+			
+			if (scope) {
+				scope->update(identifier, newValue);
+			} else {
+				throw Exception("Non-table Scope", location->scope(), frame);
+			}
+		} else {
+			throw Exception("Invalid Variable Name", identifier, frame);
+		}
+		
+		return newValue;		
 	}
 	
 	Value * Frame::scope (Frame * frame) {

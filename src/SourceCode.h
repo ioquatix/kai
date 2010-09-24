@@ -32,8 +32,8 @@ namespace Kai {
 	
 	class SourceCode {
 		protected:
-			StringT m_buffer;
 			StringT m_inputName;
+			StringT m_buffer;
 			
 			struct LineIndex {
 				unsigned offset;
@@ -50,6 +50,8 @@ namespace Kai {
 			
 			StringT inputName () const;
 			
+			std::size_t size () const { return m_buffer.size(); }
+			
 			unsigned numberOfLines () const;
 						
 			unsigned lineForOffset (unsigned offset) const; // O(log(N))
@@ -58,7 +60,7 @@ namespace Kai {
 			
 			std::vector<StringT> stringsForLines (unsigned firstLine, unsigned lastLine) const;
 			
-			unsigned offsetForStringIteratorT (StringIteratorT it) const;
+			unsigned offsetForIterator (StringIteratorT it) const;
 			
 			const StringT & buffer ();
 			

@@ -26,6 +26,7 @@ namespace Kai {
 			llvm::IRBuilder<> * m_builder;
 			
 			llvm::FunctionPassManager * m_functionOptimizer;
+			llvm::PassManager * m_moduleOptimizer;
 			
 			const llvm::Type * m_frameType;
 			const llvm::Type * m_valueType;			
@@ -50,6 +51,7 @@ namespace Kai {
 			llvm::Module * module ();
 			llvm::IRBuilder<> * builder ();
 			llvm::FunctionPassManager * functionOptimizer ();
+			llvm::PassManager * moduleOptimizer ();
 			
 			const llvm::Type * framePointerType ();
 			const llvm::Type * valuePointerType ();
@@ -92,6 +94,11 @@ namespace Kai {
 			
 			virtual Value * prototype ();
 			
+			virtual Value * evaluate (Frame * frame);
+			
+			virtual llvm::Value * compile (Frame * frame);
+			virtual llvm::Value * compiledValue (Frame * frame);
+			
 			static Value * optimize (Frame * frame);
 			static Value * resolve (Frame * frame);
 			
@@ -109,6 +116,8 @@ namespace Kai {
 			virtual ~CompiledType ();
 			
 			const llvm::Type * value () const;
+						
+			static Value * globalIntegerPrototype ();
 			
 			virtual void toCode(StringStreamT & buffer, MarkedT & marks);
 			

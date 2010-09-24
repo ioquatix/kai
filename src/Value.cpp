@@ -34,29 +34,15 @@ namespace Kai {
 #pragma mark -
 #pragma mark Value
 
-	template <typename ThisT>
-	inline static int derivedCompare (ThisT * lhs, Value * rhs) {
-		ThisT * other = dynamic_cast<ThisT *>(rhs);
-
-		if (other) {
-			return lhs->compare(other);
-		} else {
-			throw InvalidComparison();
-		}
-	}
-
-	inline int clampComparison (int result) {
-		if (result < 0) {
-			return -1;
-		} else if (result > 0) {
-			return 1;
-		} else {
-			return 0;
-		}
+	Value::Value () {
 	}
 
 	Value::~Value () {
 
+	}
+	
+	void Value::toCode(StringStreamT & buffer, MarkedT & marks) {
+		buffer << "(value{" << this << "})";
 	}
 	
 	Value * Value::lookup (Symbol * identifier) {
@@ -155,8 +141,8 @@ namespace Kai {
 			
 			g_prototype->update(new Symbol("toString"), KFunctionWrapper(Value::toString));
 			g_prototype->update(new Symbol("toBoolean"), KFunctionWrapper(Value::toBoolean));
-			g_prototype->update(new Symbol("compare"), KFunctionWrapper(Value::compare));
-			g_prototype->update(new Symbol("equal"), KFunctionWrapper(Value::equal));
+			g_prototype->update(new Symbol("<=>"), KFunctionWrapper(Value::compare));
+			g_prototype->update(new Symbol("=="), KFunctionWrapper(Value::equal));
 			g_prototype->update(new Symbol("prototype"), KFunctionWrapper(Value::prototype));
 			g_prototype->update(new Symbol("value"), KFunctionWrapper(Value::value));
 					
@@ -404,26 +390,22 @@ namespace Kai {
 	}
 	
 	llvm::Value * Cell::compile (Frame * frame) {
-		//Compiler * c = frame->lookupAs<Compiler>("compiler");
-		
 		Symbol * name = headAs<Symbol>();
 		ensure(name != NULL);
 		
 		Value * function = frame->lookup(name);
 		ensure(function != NULL);
 		
-		//llvm::Value * function = function->compile(frame);
-		//llvm::Value * call = c->builder()->CreateCall(function);
-		
 		Frame * next = new Frame(NULL, this, frame);
 		return function->compile(next);
 	}
 
 	Value * Cell::_new (Frame * frame) {
+		Value * self;
 		Value * head = NULL;
 		Value * tail = NULL;
 		
-		frame->extract()[head][tail];
+		frame->extract()[self][head][tail];
 		
 		return new Cell(head, tail);
 	}
@@ -513,11 +495,7 @@ namespace Kai {
 	}
 
 	void String::toCode(StringStreamT & buffer, MarkedT & marks) {
-		buffer << '"';
-		
-		buffer << m_value;
-		
-		buffer << '"';
+		buffer << Parser::escapeString(m_value);
 	}
 
 #pragma mark -
@@ -593,6 +571,34 @@ namespace Kai {
 	Symbol * Symbol::trueSymbol () {
 		return new Symbol("true");
 	}
+	
+	Value * Symbol::hash (Frame * frame) {
+		Symbol * self;
+		
+		frame->extract()(self);
+		
+		return new Integer(self->m_hash);
+	}
+	
+	Value * Symbol::prototype () {
+		return globalPrototype();
+	}
+	
+	Value * Symbol::globalPrototype () {
+		static Table * g_prototype = NULL;
+		
+		if (!g_prototype) {
+			g_prototype = new Table;
+			
+			g_prototype->update(new Symbol("hash"), KFunctionWrapper(Symbol::hash));
+		}
+		
+		return g_prototype;
+	}
+	
+	void Symbol::import (Table * context) {
+		context->update(new Symbol("Symbol"), globalPrototype());
+	}
 
 #pragma mark -
 #pragma mark Integer
@@ -655,7 +661,7 @@ namespace Kai {
 		
 		frame->extract()[number][base];
 		
-		return new Integer(number->value() / base->value());
+		return new Integer(number->value() % base->value());
 	}
 	
 	Value * Integer::globalPrototype () {
@@ -813,7 +819,7 @@ namespace Kai {
 				Bin * bin = m_bins[i];
 				
 				while (bin != NULL) {
-					buffer << " '";
+					buffer << " `";
 					bin->key->toCode(buffer, recurse);
 					buffer << " ";
 					bin->value->toCode(buffer, recurse);
@@ -852,6 +858,9 @@ namespace Kai {
 	Value * Table::table (Frame * frame) {
 		Table * table = new Table;
 		Cell * args = frame->unwrap();
+
+		// Bump self
+		args = args->tailAs<Cell>();
 		
 		while (args) {
 			Symbol * key = NULL;
@@ -884,7 +893,7 @@ namespace Kai {
 			throw Exception("Invalid Key", frame);
 		}
 		
-		std::cerr << "Updating " << Value::toString(key) << " to " << Value::toString(value) << std::endl;
+		//std::cerr << "Updating " << Value::toString(key) << " to " << Value::toString(value) << std::endl;
 		
 		if (value == NULL)
 			return table->remove(key);
@@ -964,9 +973,10 @@ namespace Kai {
 #pragma mark -
 #pragma mark Lambda
 
-	Lambda::Lambda (Value * scope, Cell * arguments, Cell * code)
+	Lambda::Lambda (Frame * scope, Cell * arguments, Cell * code)
 		: m_scope(scope), m_arguments(arguments), m_code(code) {
-		
+		// Required if we inherit from gc_cleanup, as this will often create a circular finalisation reference
+		//GC_register_disappearing_link((void**)&m_scope);
 	}
 	
 	Lambda::~Lambda () {
@@ -975,7 +985,6 @@ namespace Kai {
 	
 	Value * Lambda::evaluate (Frame * frame) {
 		Table * locals = new Table;
-		locals->setPrototype(m_scope);
 		
 		Cell * names = m_arguments;
 		Cell * values = frame->unwrap();
@@ -990,23 +999,35 @@ namespace Kai {
 			values = values->tailAs<Cell>();
 		}
 		
-		Frame * next = new Frame(locals, frame);
+		Frame * next = new Frame(locals, m_scope);
 		
-		return m_code->evaluate(next);
+		if (m_code)
+			return m_code->evaluate(next);
+		else
+			return NULL;
 	}
 	
-	void Lambda::toCode(StringStreamT & buffer, MarkedT & marks) {		
+	void Lambda::toCode(StringStreamT & buffer, MarkedT & marks) {
+		buffer << "(lambda{" << this << "}";
 		if (marks.find(this) != marks.end()) {
-			buffer << "(lambda{" << this << "})";
+			buffer << ")";
 		} else {
+			buffer << " `";
+			
 			MarkedT recurse (marks);
 			recurse.insert(this);
 			
-			m_arguments->toCode(buffer, recurse);
+			if (m_arguments)
+				m_arguments->toCode(buffer, recurse);
+			else
+				buffer << "()";
+				
+			buffer << " `";
 			
-			buffer << " ";
-			
-			m_code->toCode(buffer, recurse);
+			if (m_code)
+				m_code->toCode(buffer, recurse);
+			else
+				buffer << "()";
 			
 			buffer << ")";
 		}
@@ -1017,6 +1038,7 @@ namespace Kai {
 		
 		frame->extract()[arguments][code];
 		
+		/*
 		if (arguments == NULL) {
 			throw Exception("Invalid Argument List", frame);
 		}
@@ -1024,8 +1046,9 @@ namespace Kai {
 		if (code == NULL) {
 			throw Exception("Invalid Lambda Body", frame);
 		}
+		*/
 		
-		return new Lambda(frame->scope(), arguments, code);
+		return new Lambda(frame, arguments, code);
 	}
 	
 	void Lambda::import (Table * context) {
@@ -1172,7 +1195,11 @@ namespace Kai {
 			}
 			
 			virtual Value * evaluate (Frame * frame) {
-				ReturnValue r = {frame->unwrap()};
+				Value * result = NULL;
+				
+				frame->extract()[result];
+				
+				ReturnValue r = {result};
 				
 				throw r;
 			}
@@ -1181,8 +1208,9 @@ namespace Kai {
 				Compiler * c = frame->lookupAs<Compiler>(new Symbol("compiler"));
 				
 				Value * expression = NULL;
-				frame->extract()[expression];
 				
+				frame->extract()[expression];
+								
 				if (expression) {
 					llvm::Value * result = expression->compile(frame);
 					c->builder()->CreateRet(result);
@@ -1232,7 +1260,7 @@ namespace Kai {
 		
 				// Could check for getTerminator() and stop, or error.
 				while (statements != NULL) {
-					std::cout << "Compiling Statement: " << Value::toString(statements->head()) << std::endl;
+					// std::cout << "Compiling Statement: " << Value::toString(statements->head()) << std::endl;
 					result = statements->head()->compile(next);
 					
 					statements = statements->tailAs<Cell>();
@@ -1265,22 +1293,27 @@ namespace Kai {
 			
 			virtual llvm::Value * compile (Frame * frame) {
 				Compiler * c = frame->lookupAs<Compiler>(new Symbol("compiler"));
+				llvm::Function * function = c->builder()->GetInsertBlock()->getParent();
 
 				Value * condition, * trueClause, * falseClause;
 				frame->extract(false)(condition)(trueClause)[falseClause];
 				
-				llvm::BasicBlock * trueBlock, * falseBlock, * nextBlock;
-				trueBlock = llvm::BasicBlock::Create(llvm::getGlobalContext(), "true");
-				falseBlock = llvm::BasicBlock::Create(llvm::getGlobalContext(), "false");
-				nextBlock = llvm::BasicBlock::Create(llvm::getGlobalContext(), "next");
+				llvm::BasicBlock * trueBlock, * falseBlock;
+				trueBlock = llvm::BasicBlock::Create(llvm::getGlobalContext(), "true", function);
+				falseBlock = llvm::BasicBlock::Create(llvm::getGlobalContext(), "false", function);
+				
+				llvm::BasicBlock * nextBlock = NULL;
 				
 				llvm::Value * test = condition->compile(frame);
 				c->builder()->CreateCondBr(test, trueBlock, falseBlock);
 
 				c->builder()->SetInsertPoint(trueBlock);
 				llvm::Value * trueResult = trueClause->compile(frame);
-				
+								
 				if (!trueBlock->getTerminator()) {
+					if (!nextBlock)
+						nextBlock = llvm::BasicBlock::Create(llvm::getGlobalContext(), "next", function);
+					
 					c->builder()->CreateBr(nextBlock);
 				}
 				
@@ -1290,10 +1323,14 @@ namespace Kai {
 				}
 				
 				if (!falseBlock->getTerminator()) {
+					if (!nextBlock)
+						nextBlock = llvm::BasicBlock::Create(llvm::getGlobalContext(), "next", function);
+						
 					c->builder()->CreateBr(nextBlock);
 				}
 				
-				c->builder()->SetInsertPoint(nextBlock);
+				if (nextBlock)
+					c->builder()->SetInsertPoint(nextBlock);
 
 				return NULL;
 			}

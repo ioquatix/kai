@@ -11,6 +11,7 @@
 #define _KFRAME_H
 
 #include "Value.h"
+#include <map>
 
 namespace Kai {
 	
@@ -18,6 +19,31 @@ namespace Kai {
 	class Symbol;
 	class Cell;
 
+	class Tracer : public Value {
+		protected:
+			struct Statistics {
+				Statistics();
+				
+				std::vector<Time> frames;
+				//std::set<Value*> children;
+				
+				//TimeT selfTime;
+				Time totalTime;
+				uint64_t count;
+			};
+			
+			typedef std::map<Value*, Statistics> StatisticsMapT;
+			StatisticsMapT m_statistics;
+			
+		public:
+			void enter(Value* value);
+			void exit(Value* value);
+			
+			void dump(std::ostream & buffer);
+			
+			static Tracer * globalTracer ();
+	};
+	
 	class Frame : public gc {
 		protected:
 			// Previous stack frame
@@ -40,6 +66,7 @@ namespace Kai {
 			Frame (Value * scope, Cell * message, Frame * previous);
 			
 			Value * lookup (Symbol * identifier);
+			Value * lookup (Symbol * identifier, Frame *& frame);
 			
 			template <typename ValueT>
 			ValueT * lookupAs (Symbol * identifier) {
@@ -66,11 +93,20 @@ namespace Kai {
 
 			static void import (Table * context);
 			
+			// Returns the frame which defines a given symbol
+			//static Value * where (Frame * frame);
+			
+			// Attempt to update inplace a value in a frame
+			static Value * update (Frame * frame);
+			
 			// Returns the caller of the current frame, similar to the "this" keyword.
 			static Value * scope (Frame * frame);
 			
 			// Marks a trace point in the stack frame, and prints out the given unwrapped arguments.
 			static Value * trace (Frame * frame);
+
+			// Run the enclosed code and report the amount of time taken.
+			static Value * benchmark (Frame * frame);
 			
 			// Returns the arguments evaluated in the caller's context.
 			static Value * unwrap (Frame * frame);
