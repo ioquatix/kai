@@ -64,6 +64,8 @@ namespace Kai {
 			std::cerr << "*** " << error << std::endl;
 			
 			return;
+		} else {
+			m_module = new llvm::Module("machine", context);
 		}
 		
 		m_engine = llvm::ExecutionEngine::createJIT(m_module, &error);
