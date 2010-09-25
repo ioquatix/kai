@@ -1,5 +1,5 @@
 
-set(CORELIBS ${BOEHMGC_LIBRARIES} ${LLVM_LIBRARIES})
+set(CORELIBS ${BOEHMGC_LIBRARIES} ${LLVM_LIBRARIES} stdc++)
 
 add_executable(kai 
 	Compiler.cpp
