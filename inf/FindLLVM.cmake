@@ -39,7 +39,7 @@ else (LLVM_LIBRARIES AND LLVM_INCLUDE_DIRS)
 	)
 	
 	if (LLVM_LIB_PATH)
-		set(LLVM_LIBRARIES LLVMX86Disassembler LLVMX86AsmParser LLVMMCParser LLVMX86AsmPrinter LLVMX86CodeGen LLVMSelectionDAG LLVMAsmPrinter LLVMX86Info LLVMJIT LLVMExecutionEngine LLVMCodeGen LLVMScalarOpts LLVMInstCombine LLVMTransformUtils LLVMipa LLVMAnalysis LLVMTarget LLVMMC LLVMCore LLVMSupport LLVMSystem LLVMipo LLVMBitReader)
+		set(LLVM_LIBRARIES LLVMX86Disassembler LLVMX86AsmParser LLVMMCParser LLVMX86AsmPrinter LLVMX86CodeGen LLVMSelectionDAG LLVMBitReader LLVMAsmPrinter LLVMX86Info LLVMJIT LLVMExecutionEngine LLVMCodeGen LLVMScalarOpts LLVMInstCombine LLVMTransformUtils LLVMipo LLVMipa LLVMAnalysis LLVMTarget LLVMMC LLVMCore LLVMSupport LLVMSystem)
 		set(LLVM_FOUND TRUE)
 	endif (LLVM_LIB_PATH)
 
