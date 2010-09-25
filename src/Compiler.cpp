@@ -52,20 +52,21 @@ namespace Kai {
 		
 		if (!buffer.get()) {
 			std::cerr << "Could not load machine bitcode!" << std::endl;
+			m_module = new llvm::Module("machine", context);
+		} else {
+			m_module = llvm::ParseBitcodeFile(buffer.get(), context, &error);
+			buffer.release();
 			
-			return;
+			// Extract some useful type information.
+			m_frameType = m_module->getFunction("_frameType")->getReturnType();
+			m_valueType = m_module->getFunction("_valueType")->getReturnType();
 		}
-		
-		m_module = llvm::ParseBitcodeFile(buffer.get(), context, &error);
-		buffer.release();
 		
 		if (!m_module) {
 			std::cerr << "Could not create machine module!" << std::endl;
 			std::cerr << "*** " << error << std::endl;
 			
 			return;
-		} else {
-			m_module = new llvm::Module("machine", context);
 		}
 		
 		m_engine = llvm::ExecutionEngine::createJIT(m_module, &error);
@@ -87,10 +88,6 @@ namespace Kai {
 		llvm::createStandardModulePasses(m_moduleOptimizer,
 			1, false, true, true, true, true, NULL
 		);
-								
-		// Extract some useful type information.
-		m_frameType = m_module->getFunction("_frameType")->getReturnType();
-		m_valueType = m_module->getFunction("_valueType")->getReturnType();
 	}
 		
 	Compiler::~Compiler () {
@@ -230,8 +227,12 @@ namespace Kai {
 		Compiler * c = new Compiler;
 		
 		context->update(new Symbol("compiler"), c);
-		context->update(new Symbol("Value"), new CompiledType(c->valuePointerType()));
-		context->update(new Symbol("Frame"), new CompiledType(c->framePointerType()));
+		
+		if (c->valuePointerType())
+			context->update(new Symbol("Value"), new CompiledType(c->valuePointerType()));
+		
+		if (c->framePointerType())
+			context->update(new Symbol("Frame"), new CompiledType(c->framePointerType()));
 		
 		CompiledValue::import(context);
 	}
