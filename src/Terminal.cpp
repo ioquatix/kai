@@ -10,6 +10,8 @@
 #include "Terminal.h"
 #include "Ensure.h"
 
+#include <string.h>
+
 namespace Kai {
 
 	IEditor::~IEditor()
@@ -18,7 +20,7 @@ namespace Kai {
 	}
 
 	Terminal::Terminal (unsigned fileno) : m_fileno(fileno) {
-		bzero(&m_settings, sizeof(struct termios));
+		memset(&m_settings, 0, sizeof(struct termios));
 	}
 
 	Terminal::Terminal (const Terminal & other) {
