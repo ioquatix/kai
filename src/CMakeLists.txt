@@ -21,6 +21,13 @@ add_executable(kai
 
 target_link_libraries(kai ${CORELIBS})
 
-add_library(machine.o STATIC
-	Machine.cpp
+install(
+	TARGETS
+		kai
+	RUNTIME DESTINATION
+		bin
 )
+
+# add_library(machine.o STATIC
+# 	Machine.cpp
+# )
