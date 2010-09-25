@@ -26,54 +26,11 @@
 #include "SourceCode.h"
 #include "Compiler.h"
 #include "Expressions.h"
+#include "BasicEditor.h"
 
 namespace {
 
 	using namespace Kai;
-
-	class BasicEditor : virtual public IEditor
-	{
-		protected:
-			Expressions * m_expressions;
-			
-		public:
-			BasicEditor(Value * context)
-			{
-				Frame * frame = new Frame(context);
-				m_expressions = frame->lookupAs<Expressions>(new Symbol("expr"));
-			}
-			
-			virtual ~BasicEditor()
-			{
-			
-			}
-			
-			virtual StringT firstPrompt()
-			{
-				return "kai> ";
-			}
-			
-			virtual bool isComplete(const StringStreamT & buffer, StringT & prompt)
-			{
-				ParseResult result;
-				
-				SourceCode code("<editor>", buffer.str());
-				prompt = "";
-				
-				try {
-					result = m_expressions->parse(code, true);
-				} catch (Parser::FatalParseFailure & ex) {
-					return false;
-				}
-				
-				if (result.isIncomplete()) {
-					return false;
-				} else {
-					// FAILED or OKAY
-					return true;
-				}
-			}
-	};
 	
 	Value * runCode (Table * context, SourceCode & code, int & status) {
 		Value * value = NULL, * result = NULL;
