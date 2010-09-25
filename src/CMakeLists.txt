@@ -12,6 +12,7 @@ add_executable(kai
 	main.cpp
 	SourceCode.cpp
 	Terminal.cpp
+	BasicEditor.cpp
 	Value.cpp
 	
 	Parser/Parser.cpp
