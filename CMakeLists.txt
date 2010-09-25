@@ -9,7 +9,8 @@ find_package(LLVM)
 link_directories(${LLVM_LIB_PATH})
 include_directories(${LLVM_INCLUDE_DIRS} ${BOEHMGC_INCLUDE_DIRS})
 
-set(CMAKE_CXX_COMPILER clang)
+# libgc fails
+# set(CMAKE_CXX_COMPILER clang)
 
 set(CMAKE_CXX_FLAGS "-g -Wall ${LLVM_DEFINITIONS}")
 add_subdirectory(src)
