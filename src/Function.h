@@ -44,7 +44,7 @@ namespace Kai {
 				return result->compiledValue(frame);
 			}
 			
-			virtual void toCode(StringStreamT & buffer, MarkedT & marks) {
+			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) {
 				buffer << "(builtin-function " << m_name << ")";
 			}
 	};
@@ -61,7 +61,7 @@ namespace Kai {
 			
 			virtual Value * evaluate (Frame * frame);
 			
-			virtual void toCode(StringStreamT & buffer, MarkedT & marks);
+			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation);
 	};	
 }
 

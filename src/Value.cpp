@@ -41,7 +41,7 @@ namespace Kai {
 
 	}
 	
-	void Value::toCode(StringStreamT & buffer, MarkedT & marks) {
+	void Value::toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) {
 		buffer << "(value{" << this << "})";
 	}
 	
@@ -348,7 +348,7 @@ namespace Kai {
 		}
 	}
 
-	void Cell::toCode(StringStreamT & buffer, MarkedT & marks) {
+	void Cell::toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) {
 		if (marks.find(this) != marks.end()) {
 			buffer << "(cell{" << this << "})";
 		} else {
@@ -361,7 +361,7 @@ namespace Kai {
 			
 			while (cur) {
 				if (cur->m_head)
-					cur->m_head->toCode(buffer, recurse);
+					cur->m_head->toCode(buffer, recurse, indentation + 1);
 				else
 					buffer << "nil";
 				
@@ -373,7 +373,7 @@ namespace Kai {
 					if (next) {
 						cur = next;
 					} else {
-						cur->m_tail->toCode(buffer, recurse);
+						cur->m_tail->toCode(buffer, recurse, indentation + 1);
 						cur = NULL;
 					}
 				} else {
@@ -494,7 +494,7 @@ namespace Kai {
 		return m_value.compare(other->m_value);
 	}
 
-	void String::toCode(StringStreamT & buffer, MarkedT & marks) {
+	void String::toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) {
 		buffer << Parser::escapeString(m_value);
 	}
 
@@ -538,7 +538,7 @@ namespace Kai {
 		return result;
 	}
 
-	void Symbol::toCode(StringStreamT & buffer, MarkedT & marks) {
+	void Symbol::toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) {
 		buffer << m_value;
 	}
 
@@ -690,7 +690,7 @@ namespace Kai {
 		return clampComparison(other->m_value - m_value);
 	}
 
-	void Integer::toCode(StringStreamT & buffer, MarkedT & marks) {
+	void Integer::toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) {
 		buffer << m_value;
 	}
 	
@@ -806,12 +806,11 @@ namespace Kai {
 		throw InvalidComparison();
 	}
 
-	void Table::toCode(StringStreamT & buffer, MarkedT & marks) {
+	void Table::toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) {
 		if (marks.find(this) != marks.end()) {
 			buffer << "(table{" << this << "} ...)" << std::endl;
 		} else {
-			MarkedT recurse(marks);
-			recurse.insert(this);
+			marks.insert(this);
 			
 			buffer << "(table{" << this << "}";
 			
@@ -819,10 +818,10 @@ namespace Kai {
 				Bin * bin = m_bins[i];
 				
 				while (bin != NULL) {
-					buffer << " `";
-					bin->key->toCode(buffer, recurse);
+					buffer << std::endl << StringT(indentation, '\t') << "`";
+					bin->key->toCode(buffer, marks, indentation + 1);
 					buffer << " ";
-					bin->value->toCode(buffer, recurse);
+					bin->value->toCode(buffer, marks, indentation + 1);
 					
 					bin = bin->next;
 				}
@@ -1007,7 +1006,7 @@ namespace Kai {
 			return NULL;
 	}
 	
-	void Lambda::toCode(StringStreamT & buffer, MarkedT & marks) {
+	void Lambda::toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) {
 		buffer << "(lambda{" << this << "}";
 		if (marks.find(this) != marks.end()) {
 			buffer << ")";
@@ -1018,14 +1017,14 @@ namespace Kai {
 			recurse.insert(this);
 			
 			if (m_arguments)
-				m_arguments->toCode(buffer, recurse);
+				m_arguments->toCode(buffer, recurse, indentation + 1);
 			else
 				buffer << "()";
 				
 			buffer << " `";
 			
 			if (m_code)
-				m_code->toCode(buffer, recurse);
+				m_code->toCode(buffer, recurse, indentation + 1);
 			else
 				buffer << "()";
 			
@@ -1164,8 +1163,8 @@ namespace Kai {
 	
 	class BuiltinVar : public Value {
 		public:
-			virtual void toCode(StringStreamT & buffer, MarkedT & marks) {
-				buffer << "(builtin-var)" << std::endl;
+			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) {
+				buffer << "(builtin-var)";
 			}
 			
 			virtual Value * evaluate (Frame * frame) {
@@ -1190,7 +1189,7 @@ namespace Kai {
 	
 	class BuiltinReturn : public Value {
 		public:
-			virtual void toCode(StringStreamT & buffer, MarkedT & marks) {
+			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) {
 				buffer << "(builtin-return)";
 			}
 			
@@ -1209,8 +1208,8 @@ namespace Kai {
 				
 				Value * expression = NULL;
 				
-				frame->extract()[expression];
-								
+				frame->extract(false)[expression];
+				
 				if (expression) {
 					llvm::Value * result = expression->compile(frame);
 					c->builder()->CreateRet(result);
@@ -1224,7 +1223,7 @@ namespace Kai {
 	
 	class BuiltinBlock : public Value {
 		public:
-			virtual void toCode(StringStreamT & buffer, MarkedT & marks) {
+			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) {
 				buffer << "(builtin-block)";
 			}
 			
@@ -1272,7 +1271,7 @@ namespace Kai {
 	
 	class BuiltinIf : public Value {
 		public:
-			virtual void toCode(StringStreamT & buffer, MarkedT & marks) {
+			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) {
 				buffer << "(builtin-if)";
 			}
 		

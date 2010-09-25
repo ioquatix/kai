@@ -371,7 +371,7 @@ namespace Kai {
 				return m_value;
 			}
 			
-			virtual void toCode(StringStreamT & buffer, MarkedT & marks) {
+			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) {
 				buffer << "(wrap ";
 
 				if (m_value)

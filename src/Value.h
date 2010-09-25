@@ -80,11 +80,11 @@ namespace Kai {
 				}
 			}
 			
-			virtual void toCode(StringStreamT & buffer, MarkedT & marks);
+			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation);
 						
 			inline void toCode(StringStreamT & buffer) {
 				MarkedT marks;
-				toCode(buffer, marks); 
+				toCode(buffer, marks, 0); 
 			}
 			
 			void debug ();
@@ -177,7 +177,7 @@ namespace Kai {
 
 			virtual Value * prototype ();
 			
-			virtual void toCode(StringStreamT & buffer, MarkedT & marks);
+			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation);
 			
 			virtual Value * evaluate (Frame * frame);
 			virtual llvm::Value * compile (Frame * frame);
@@ -284,7 +284,7 @@ namespace Kai {
 			virtual int compare (Value * other);
 			int compare (String * other);
 			
-			virtual void toCode(StringStreamT & buffer, MarkedT & marks);
+			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation);
 	};
 
 #pragma mark -
@@ -308,7 +308,7 @@ namespace Kai {
 			virtual int compare (Value * other);
 			int compare (Symbol * other);
 			
-			virtual void toCode(StringStreamT & buffer, MarkedT & marks);
+			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation);
 			
 			virtual Value * evaluate (Frame * frame);
 			virtual llvm::Value * compile (Frame * frame);
@@ -344,7 +344,7 @@ namespace Kai {
 			virtual int compare (Value * other);
 			int compare (Integer * other);
 			
-			virtual void toCode(StringStreamT & buffer, MarkedT & marks);
+			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation);
 			
 			static Value * sum (Frame * frame);
 			static Value * product (Frame * frame);
@@ -383,7 +383,7 @@ namespace Kai {
 			virtual int compare (Value * other);
 			int compare (Table * other);
 			
-			virtual void toCode(StringStreamT & buffer, MarkedT & marks);
+			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation);
 		
 			virtual Value * lookup (Symbol * key);
 						
@@ -430,7 +430,7 @@ namespace Kai {
 			
 			virtual Value * evaluate (Frame * frame);
 			
-			virtual void toCode(StringStreamT & buffer, MarkedT & marks);
+			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation);
 			
 			static Value * lambda (Frame * frame);
 			static void import (Table *);

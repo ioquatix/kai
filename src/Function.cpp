@@ -72,7 +72,6 @@ namespace Kai {
 		const llvm::Type * intPointerType = c->engine()->getTargetData()->getIntPtrType(llvm::getGlobalContext());
 		llvm::Value * framePointer = llvm::ConstantExpr::getIntToPtr(
 			llvm::ConstantInt::get(intPointerType, (intptr_t)frame),
-			// This could be replaced with the correct type by looking into machine.o
 			c->framePointerType()
 		);
 		
@@ -100,7 +99,7 @@ namespace Kai {
 		return m_evaluateFunction(frame);
 	}
 
-	void DynamicFunction::toCode(StringStreamT & buffer, MarkedT & marks) {
+	void DynamicFunction::toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) {
 		buffer << "(dynamic-function " << m_evaluateFunction << ")";
 	}
 }
