@@ -30,7 +30,7 @@ namespace Kai {
 	
 	typedef std::set<Value*> MarkedT;
 	
-	struct Frame;
+	class Frame;
 	class Table;
 	class Symbol;
 
