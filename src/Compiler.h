@@ -99,8 +99,9 @@ namespace Kai {
 			virtual llvm::Value * compile (Frame * frame);
 			virtual llvm::Value * compiledValue (Frame * frame);
 			
-			static Value * optimize (Frame * frame);
-			static Value * resolve (Frame * frame);
+			static Value * code(Frame * frame);
+			static Value * optimize(Frame * frame);
+			static Value * resolve(Frame * frame);
 			
 			static void import (Table * context);
 				
