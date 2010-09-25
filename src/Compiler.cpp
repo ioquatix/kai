@@ -249,13 +249,7 @@ namespace Kai {
 	
 	void CompiledFunction::toCode(StringStreamT & buffer, MarkedT & marks) {
 		buffer << "(compiled-function ";
-		
-		llvm::raw_os_ostream llvmBuffer(buffer);
-		m_code->print(llvmBuffer);
-		llvmBuffer.flush();
-		
-		//buffer << m_code->getNameStr();
-		
+		buffer << m_code->getNameStr();
 		buffer << ")";
 	}
 
@@ -305,11 +299,23 @@ namespace Kai {
 		return m_code;
 	}
 	
+	Value * CompiledFunction::code(Frame * frame) {
+		CompiledFunction * function = NULL;
+		frame->extract()(function);
+		
+		StringStreamT buffer;
+		llvm::raw_os_ostream llvmBuffer(buffer);
+		function->compiledValue(frame)->print(llvmBuffer);
+		llvmBuffer.flush();
+		
+		return new String(buffer.str());
+	}
+	
 	Value * CompiledFunction::optimize (Frame * frame) {
 		Compiler * compiler = dynamic_cast<Kai::Compiler *>(frame->lookup(new Symbol("compiler")));
 		CompiledFunction * function = NULL;
 		
-		frame->extract()[function];
+		frame->extract()(function);
 		
 		compiler->functionOptimizer()->run(*(function->m_code));
 		compiler->moduleOptimizer()->run(*(compiler->module()));
@@ -340,6 +346,7 @@ namespace Kai {
 		if (!g_prototype) {
 			g_prototype = new Table;
 			
+			g_prototype->update(new Symbol("code"), KFunctionWrapper(CompiledFunction::code));
 			g_prototype->update(new Symbol("resolve"), KFunctionWrapper(CompiledFunction::resolve));
 			g_prototype->update(new Symbol("optimize"), KFunctionWrapper(CompiledFunction::optimize));
 		}
