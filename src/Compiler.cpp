@@ -207,7 +207,7 @@ namespace Kai {
 		return m_valueType;
 	}
 	
-	void Compiler::toCode(StringStreamT & buffer, MarkedT & marks) {
+	void Compiler::toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) {
 		buffer << "(compiler)";
 	}
 	
@@ -247,7 +247,7 @@ namespace Kai {
 	
 	}
 	
-	void CompiledFunction::toCode(StringStreamT & buffer, MarkedT & marks) {
+	void CompiledFunction::toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) {
 		buffer << "(compiled-function ";
 		buffer << m_code->getNameStr();
 		buffer << ")";
@@ -366,7 +366,7 @@ namespace Kai {
 	
 	class IntegerEquality : public Value {
 		public:
-			virtual void toCode(StringStreamT & buffer, MarkedT & marks) {
+			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) {
 				buffer << "(builtin-integer-equality)";
 			}
 			
@@ -388,7 +388,7 @@ namespace Kai {
 	
 	class IntegerModulus : public Value {
 		public:
-			virtual void toCode(StringStreamT & buffer, MarkedT & marks) {
+			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) {
 				buffer << "(builtin-integer-modulus)";
 			}
 			
@@ -426,7 +426,7 @@ namespace Kai {
 		return m_type;
 	}
 	
-	void CompiledType::toCode(StringStreamT & buffer, MarkedT & marks) {
+	void CompiledType::toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) {
 		buffer << "(compiled-type ";
 		
 		llvm::raw_os_ostream llvmBuffer(buffer);
@@ -596,7 +596,7 @@ namespace Kai {
 		return m_value;
 	}
 	
-	void CompiledValue::toCode(StringStreamT & buffer, MarkedT & marks) {
+	void CompiledValue::toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) {
 		buffer << "(compiled-value ";
 		
 		llvm::raw_os_ostream llvmBuffer(buffer);
@@ -612,8 +612,8 @@ namespace Kai {
 	
 	class BuiltinLoad : public Value {
 	public:
-		virtual void toCode(StringStreamT & buffer, MarkedT & marks) {
-			buffer << "(builtin-load)" << std::endl;
+		virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) {
+			buffer << "(builtin-load)";
 		}
 		
 		virtual Value * evaluate (Frame * frame) {
@@ -634,8 +634,8 @@ namespace Kai {
 	
 	class BuiltinStore : public Value {
 	public:
-		virtual void toCode(StringStreamT & buffer, MarkedT & marks) {
-			buffer << "(builtin-store)" << std::endl;
+		virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) {
+			buffer << "(builtin-store)";
 		}
 		
 		virtual Value * evaluate (Frame * frame) {

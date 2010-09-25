@@ -43,7 +43,7 @@ namespace Kai {
 			// A prototype specifies the behaviour of the current value.
 			virtual Value * prototype ();
 			
-			virtual void toCode(StringStreamT & buffer, MarkedT & marks);
+			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation);
 			
 			virtual DynamicFunction * resolve (CompiledFunction *);
 			
@@ -70,7 +70,7 @@ namespace Kai {
 			// Returns the contained value.
 			llvm::Value * compile (Frame * frame);
 			
-			virtual void toCode(StringStreamT & buffer, MarkedT & marks);
+			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation);
 			
 			virtual Value * prototype ();
 			
@@ -90,7 +90,7 @@ namespace Kai {
 			CompiledFunction(llvm::Function * code);
 			virtual ~CompiledFunction ();
 						
-			virtual void toCode(StringStreamT & buffer, MarkedT & marks);
+			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation);
 			
 			virtual Value * prototype ();
 			
@@ -120,7 +120,7 @@ namespace Kai {
 						
 			static Value * globalIntegerPrototype ();
 			
-			virtual void toCode(StringStreamT & buffer, MarkedT & marks);
+			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation);
 			
 			static Value * voidType (Frame * frame);
 			
