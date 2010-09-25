@@ -46,7 +46,10 @@ namespace {
 			
 			if (value) {
 				result = value->evaluate(frame);
-							
+				
+				if (result)
+					context->update(new Symbol("_"), result);
+				
 				return result;
 			} else {
 				return NULL;
