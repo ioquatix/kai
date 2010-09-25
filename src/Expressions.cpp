@@ -271,6 +271,10 @@ namespace Kai {
 		
 		if (t &= Parser::parseConstant(t.end(), end, m_open)) {
 			while (true) {
+				// Eat any whitespace before the expression because otherwise if the expression fails to parse we might
+				// be left with erroneous whitespace..
+				t += Parser::parseWhitespace(t.end(), end);
+
 				ParseResult result = top->parse(top, t.end(), end);
 				status |= result.status;
 				
