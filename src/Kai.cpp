@@ -124,8 +124,9 @@ namespace Kai {
 	{
 		Time t(*this);
 		
-		t.m_seconds /= other;
-		t.m_fraction /= other;
+		FractionT current = this->total();
+		t.m_seconds = 0;
+		t.m_fraction = current / other;
 		
 		t.normalize();
 		
@@ -143,7 +144,7 @@ namespace Kai {
 			Time::FractionT f = time.fraction();
 			std::size_t k = 0;
 			
-			while (f < 0.0001 && k < 3) {
+			while (f < 0.01 && k < 3) {
 				k++;
 				f *= 1000.0;
 			}
