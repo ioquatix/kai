@@ -10,6 +10,7 @@
 #include "Value.h"
 #include <assert.h>
 #include <gc/gc_cpp.h>
+#include <unistd.h>
 #include <iostream>
 
 #include "Frame.h"
@@ -154,7 +155,9 @@ namespace Kai {
 			g_prototype->update(new Symbol("=="), KFunctionWrapper(Value::equal));
 			g_prototype->update(new Symbol("prototype"), KFunctionWrapper(Value::prototype));
 			g_prototype->update(new Symbol("value"), KFunctionWrapper(Value::value));
-					
+			
+			g_prototype->update(new Symbol("sleep"), KFunctionWrapper(Value::sleep));
+			
 			g_prototype->update(new Symbol("lookup"), KFunctionWrapper(Value::lookup));
 			g_prototype->update(new Symbol("call"), KFunctionWrapper(Value::call));
 		}
@@ -275,6 +278,16 @@ namespace Kai {
 		} else {
 			return NULL;
 		}
+	}
+	
+	Value * Value::sleep (Frame * frame)
+	{
+		Integer * duration;
+		frame->extract()(duration);
+		
+		::sleep(duration->value());
+		
+		return NULL;
 	}
 	
 	Value * Value::prototype (Frame * frame) {

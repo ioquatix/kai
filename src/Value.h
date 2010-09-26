@@ -133,6 +133,8 @@ namespace Kai {
 			// Performs a method call with the given function.
 			static Value * call (Frame * frame);
 			
+			static Value * sleep (Frame * frame);
+			
 			// Builtins
 			static Value * globalPrototype ();
 			static void import (Table * context);
