@@ -956,22 +956,27 @@ namespace Kai {
 		Symbol * key = NULL;
 		Value * value = NULL;
 		
-		frame->extract()[table][key][value];
-		
-		if (table == NULL) {
-			throw Exception("Invalid Target", frame);
-		}
-		
-		if (key == NULL) {
-			throw Exception("Invalid Key", frame);
-		}
-		
-		//std::cerr << "Updating " << Value::toString(key) << " to " << Value::toString(value) << std::endl;
+		frame->extract()(table)(key)(value);
 		
 		if (value == NULL)
 			return table->remove(key);
 		else
 			return table->update(key, value);
+	}
+	
+	Value * Table::set (Frame * frame) {
+		Table * table = NULL;
+		Symbol * key = NULL;
+		Value * value = NULL;
+		
+		frame->extract()(table)(key)[value];
+		
+		if (value == NULL)
+			table->remove(key);
+		else
+			table->update(key, value);
+		
+		return value;
 	}
 	
 	Value * Table::lookup (Frame * frame) {
@@ -1019,7 +1024,7 @@ namespace Kai {
 		
 		table->setPrototype(prototype);
 		
-		return NULL;
+		return prototype;
 	}
 	
 	Value * Table::globalPrototype () {
@@ -1030,7 +1035,8 @@ namespace Kai {
 			g_prototype->setPrototype(Value::globalPrototype());
 			
 			g_prototype->update(new Symbol("new"), KFunctionWrapper(Table::table));
-			g_prototype->update(new Symbol("set"), KFunctionWrapper(Table::update));
+			//g_prototype->update(new Symbol("update"), KFunctionWrapper(Table::update));
+			g_prototype->update(new Symbol("set"), KFunctionWrapper(Table::set));
 			g_prototype->update(new Symbol("get"), KFunctionWrapper(Table::lookup));
 			g_prototype->update(new Symbol("each"), KFunctionWrapper(Table::each));
 			g_prototype->update(new Symbol("prototype="), KFunctionWrapper(Table::setPrototype));

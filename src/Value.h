@@ -403,6 +403,8 @@ namespace Kai {
 			
 			//% (update table key value) -> old_value
 			static Value * update (Frame * frame);
+
+			static Value * set (Frame * frame);
 			
 			//% (lookup table key) -> value || nil
 			static Value * lookup (Frame * frame);
