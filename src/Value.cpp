@@ -126,6 +126,15 @@ namespace Kai {
 		// We should never get here
 		throw InvalidComparison();
 	}
+	
+	bool Value::equal(Value * lhs, Value * rhs)
+	{
+		try {
+			return Value::compare(lhs, rhs) == COMPARISON_EQUAL;
+		} catch (...) {
+			return false;
+		}
+	}
 
 #pragma mark Builtin Functions
 
