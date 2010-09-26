@@ -677,7 +677,7 @@ namespace Kai {
 #pragma mark -
 #pragma mark Integer
 
-	Integer::Integer (int value) : m_value(value) {
+	Integer::Integer (ValueT value) : m_value(value) {
 	}
 
 	Integer::~Integer () {
@@ -691,7 +691,7 @@ namespace Kai {
 	}
 	
 	Value * Integer::sum (Frame * frame) {
-		int total = 0;
+		ValueT total = 0;
 		
 		Cell * args = frame->unwrap();
 		
@@ -711,7 +711,7 @@ namespace Kai {
 	}
 	
 	Value * Integer::product (Frame * frame) {
-		int total = 1;
+		ValueT total = 1;
 		
 		Cell * args = frame->unwrap();
 		

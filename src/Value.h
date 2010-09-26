@@ -336,16 +336,19 @@ namespace Kai {
 #pragma mark Integer
 
 	class Integer : public Value {
+		public:
+			typedef int32_t ValueT;
+			
 		protected:
-			int m_value;
+			ValueT m_value;
 			
 		public:
-			Integer (int value);
+			Integer (ValueT value);
 			virtual ~Integer ();
 			
 			llvm::Value * compile (Frame * context);
 			
-			int & value () { return m_value; }
+			ValueT & value () { return m_value; }
 			
 			virtual Value * prototype ();
 			
