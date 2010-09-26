@@ -106,7 +106,8 @@ namespace Kai {
 
 			static StringT toString (Value * value);
 			static bool toBoolean (Value * value);
-			static int compare (Value * lhs, Value * rhs);
+			static int compare(Value * lhs, Value * rhs);
+			static bool equal(Value * lhs, Value * rhs);
 			
 			// Converts the argument to a string value
 			static Value * toString (Frame * frame);
