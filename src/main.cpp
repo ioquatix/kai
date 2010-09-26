@@ -84,6 +84,7 @@ namespace {
 		Value::import(global);
 		Symbol::import(global);
 		Cell::import(global);
+		String::import(global);
 		Table::import(global);
 		Lambda::import(global);
 		Logic::import(global);
