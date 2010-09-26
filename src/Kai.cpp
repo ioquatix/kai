@@ -144,7 +144,7 @@ namespace Kai {
 			Time::FractionT f = time.fraction();
 			std::size_t k = 0;
 			
-			while (f < 0.01 && k < 3) {
+			while (f < 1.0 && k < 3) {
 				k++;
 				f *= 1000.0;
 			}
