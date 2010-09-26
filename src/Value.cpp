@@ -497,6 +497,80 @@ namespace Kai {
 	void String::toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) {
 		buffer << Parser::escapeString(m_value);
 	}
+	
+	Value * String::join(Frame * frame)
+	{
+		StringStreamT buffer;
+		String * self;
+		
+		Cell * next = frame->extract()(self);
+		
+		buffer << self->value();
+		
+		while (next != NULL) {
+			String * head = next->headAs<String>();
+			
+			if (head) {
+				buffer << head->value();
+			} else {
+				buffer << Value::toString(next->head());
+			}
+			
+			next = next->tailAs<Cell>();
+		}
+		
+		return new String(buffer.str());
+	}
+	
+	Value * String::size (Frame * frame)
+	{
+		String * self;
+		frame->extract()(self);
+		
+		return new Integer(self->value().size());
+	}
+	
+	Value * String::at (Frame * frame)
+	{
+		String * self;
+		Integer * offset;
+		frame->extract()(self)(offset);
+		
+		// Bounds checking
+		if (offset->value() < 0 || offset->value() > self->value().size()) {
+			throw Exception("Invalid Offset!", offset, frame);
+		}
+		
+		StringT character(1, self->value()[offset->value()]);
+		
+		return new String(character);
+	}
+	
+	Value * String::prototype()
+	{
+		return globalPrototype();
+	}
+	
+	Value * String::globalPrototype()
+	{
+		static Table * g_prototype = NULL;
+		
+		if (!g_prototype) {
+			g_prototype = new Table;
+			
+			g_prototype->update(new Symbol("+"), KFunctionWrapper(String::join));
+			g_prototype->update(new Symbol("size"), KFunctionWrapper(String::size));
+			g_prototype->update(new Symbol("at"), KFunctionWrapper(String::at));
+			
+		}
+		
+		return g_prototype;
+	}
+	
+	void String::import(Table * context)
+	{
+		context->update(new Symbol("String"), globalPrototype());
+	}
 
 #pragma mark -
 #pragma mark Symbol

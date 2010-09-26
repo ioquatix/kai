@@ -285,6 +285,14 @@ namespace Kai {
 			int compare (String * other);
 			
 			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation);
+			
+			static Value * join(Frame * frame);
+			static Value * size(Frame * frame);
+			static Value * at(Frame * frame);
+			
+			virtual Value * prototype ();
+			static Value * globalPrototype ();
+			static void import (Table * context);
 	};
 
 #pragma mark -
