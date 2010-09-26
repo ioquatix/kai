@@ -352,36 +352,47 @@ namespace Kai {
 		if (marks.find(this) != marks.end()) {
 			buffer << "(cell{" << this << "})";
 		} else {
-			MarkedT recurse (marks);
-			recurse.insert(this);
+			marks.insert(this);
+			Cell * tail = this->tailAs<Cell>();
 			
-			buffer << '(';
-			
-			Cell * cur = this;
-			
-			while (cur) {
-				if (cur->m_head)
-					cur->m_head->toCode(buffer, recurse, indentation + 1);
+			if (tail && Value::equal(m_head, new Symbol("value"))) {
+				// Print out values using backtick if possible.
+				buffer << '`';
+				if (tail->head())
+					tail->head()->toCode(buffer, marks, indentation + 1);
 				else
-					buffer << "nil";
+					Symbol::nilSymbol()->toCode(buffer, marks, indentation + 1);
+			} else {
+				// Otherwise, print out as a bracketed list.
+				buffer << '(';
 				
-				if (cur->m_tail) {
-					buffer << ' ';
+				Cell * cur = this;
+				
+				while (cur) {
+					if (cur->m_head)
+						cur->m_head->toCode(buffer, marks, indentation + 1);
+					else
+						buffer << "nil";
 					
-					Cell * next = dynamic_cast<Cell*>(cur->m_tail);
-					
-					if (next) {
-						cur = next;
+					if (cur->m_tail) {
+						buffer << ' ';
+						
+						Cell * next = dynamic_cast<Cell*>(cur->m_tail);
+						
+						if (next) {
+							cur = next;
+						} else {
+							cur->m_tail->toCode(buffer, marks, indentation + 1);
+							cur = NULL;
+						}
 					} else {
-						cur->m_tail->toCode(buffer, recurse, indentation + 1);
-						cur = NULL;
+						break;
 					}
-				} else {
-					break;
 				}
-			}
+				
+				buffer << ')';
 			
-			buffer << ')';
+			}
 		}
 	}
 
