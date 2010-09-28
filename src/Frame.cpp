@@ -353,10 +353,6 @@ namespace Kai {
 		return NULL;
 	}
 	
-	Value * Frame::unwrap (Frame * frame) {
-		return frame->unwrap();
-	}
-	
 	class Wrapper : public Value {
 		protected:
 			Value * m_value;
@@ -368,11 +364,18 @@ namespace Kai {
 			}
 			
 			virtual Value * evaluate (Frame * frame) {
+				Cell * arguments = frame->unwrap();
+				Cell * message = new Cell(m_value, arguments);
+				return frame->call(NULL, message);
+			}
+			
+			Value * value ()
+			{
 				return m_value;
 			}
 			
 			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) {
-				buffer << "(wrap ";
+				buffer << "(wrapper ";
 
 				if (m_value)
 					m_value->toCode(buffer);
@@ -381,12 +384,64 @@ namespace Kai {
 			}
 	};
 	
-	Value * Frame::wrap (Frame * frame) {
-		Value * value;
+	Value * Frame::wrap (Frame * frame) {	
+		Value * function;
+		frame->extract()(function);
+		return new Wrapper(Cell::create(new Symbol("value"))(function));
+	}
+	
+	class Unwrapper : public Value {
+		protected:
+			Value * m_value;
+			
+		public:
+			Unwrapper (Value * value) : m_value(value)
+			{
+			
+			}
+			
+			virtual Value * evaluate (Frame * frame) {
+				Cell * operands = frame->operands();
+				Cell * message = new Cell(m_value);
+				Cell * next = message;
+				Symbol * value = new Symbol("value");
+				
+				while (operands != NULL) {
+					next = next->append(
+						Cell::create(value)(operands->head())
+					);
+					
+					operands = operands->tailAs<Cell>();
+				}
+				
+				return frame->call(NULL, message);
+			}
+			
+			Value * value ()
+			{
+				return m_value;
+			}
+			
+			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) {
+				buffer << "(unwrapper ";
+
+				if (m_value)
+					m_value->toCode(buffer);
+					
+				buffer << ')';
+			}
+	};
+	
+	Value * Frame::unwrap (Frame * frame) {
+		Value * function;
+		frame->extract()(function);
 		
-		frame->extract()[value];
-		
-		return new Wrapper(value);
+		Wrapper * wrapper = dynamic_cast<Wrapper*>(function);
+		if (wrapper) {
+			return wrapper->value();
+		} else {
+			return new Unwrapper(Cell::create(new Symbol("value"))(function));
+		}
 	}
 	
 	Value * Frame::with (Frame * frame) {
