@@ -366,6 +366,7 @@ namespace Kai {
 			
 			static Value * sum (Frame * frame);
 			static Value * product (Frame * frame);
+			static Value * subtract (Frame * frame);
 			static Value * modulus (Frame * frame);
 			
 			static Value * globalPrototype ();
