@@ -44,28 +44,42 @@ namespace Kai {
 			static Tracer * globalTracer ();
 	};
 	
+	/** The Frame class represents the stack of a running program, and is dynamically allocated.
+	
+	*/
 	class Frame : public gc {
 		protected:
-			// Previous stack frame
+			/// Previous stack frame
 			Frame * m_previous;
 			
+			/// The scope of the stack frame, if any.
 			Value * m_scope;
-						
+			
+			/// The original message which created this frame, if any.
 			Cell * m_message;
 			
+			/// The evaluated function.
 			Value * m_function;
+			/// The unwrapped arguments.
 			Cell * m_arguments;
 			
+			/// Given a stack frame, apply the function to the arguments.
 			Value * apply ();
 			
+			/// For debugging - the depth of the stack.
 			unsigned m_depth;
 
 		public:
+			/// Create a root level stack frame with a given scope.
 			Frame (Value * scope);
+			/// Create an intermediate stack frame with a given scope and previous frame.
 			Frame (Value * scope, Frame * previous);
+			/// Create an intermediate stack frame as above, but with a given message.
 			Frame (Value * scope, Cell * message, Frame * previous);
 			
+			/// Lookup an identifier using the stack, starting at this frame.
 			Value * lookup (Symbol * identifier);
+			/// Lookup an identifier as above, but return the frame which defines the value.
 			Value * lookup (Symbol * identifier, Frame *& frame);
 			
 			template <typename ValueT>
@@ -76,14 +90,22 @@ namespace Kai {
 			// Should a message be restricted to a Cell, or is it suitable to be a Value ?
 			Value * call (Value * scope, Cell * message);
 			
+			/// Return the previous stack frame.
 			Frame * previous ();
-			// This function searches up the tree for the current scope.
-			Value * scope ();
-			Value * function ();
 			
+			/// This function searches up the stack for the current scope.
+			Value * scope ();
+
+			/// Return the message (m o1 o2 o3) if it is defined.
 			Cell * message ();
+			
+			/// Return the defined function (m), if it is known.
+			Value * function ();
+			/// Return the operands (o1 o2 o3) if they are given.
 			Cell * operands ();
+			/// Evaluate the operands in the current stack frame.
 			Cell * unwrap ();
+			/// Return the arguments if they have been evaluated.
 			Cell * arguments ();
 			
 			Cell::ArgumentExtractor extract (bool evaluate = true);

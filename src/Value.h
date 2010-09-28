@@ -64,7 +64,9 @@ namespace Kai {
 		public:
 			Value ();
 			virtual ~Value ();
-		
+
+			/// Compare the value with another value. Returns -1, 0, 1 depending on comparison result.
+			/// If objects cannot be compared, throws InvalidComparison exception.
 			virtual int compare (Value * other);
 			
 			template <typename LeftT, typename RightT>
@@ -80,6 +82,7 @@ namespace Kai {
 				}
 			}
 			
+			/// Write the value to the given buffer.
 			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation);
 						
 			inline void toCode(StringStreamT & buffer) {
@@ -89,19 +92,19 @@ namespace Kai {
 			
 			void debug ();
 
-			// Lookup the given identifier. Defers to prototype.
+			/// Lookup the given identifier. Defers to prototype by default.
 			virtual Value * lookup (Symbol * identifier);
 			
-			// A prototype specifies the behaviour of the current value.
+			/// A prototype specifies the behaviour of the current value.
 			virtual Value * prototype ();
 			
-			// Evaluate the current value in the given context.
+			/// Evaluate the current value in the given context.
 			virtual Value * evaluate (Frame * frame);
 			
-			// Compile the value to an llvm Value
+			/// Compile the value to an llvm Value
 			virtual llvm::Value * compile (Frame * frame);
 			
-			// If the value contained is a compiled value, return it unevaluated.
+			/// If the value contained is a compiled value, return it unevaluated.
 			virtual llvm::Value * compiledValue (Frame * frame);
 
 			static StringT toString (Value * value);
@@ -121,7 +124,7 @@ namespace Kai {
 			// Compares the given values and returns a true/false value
 			static Value * equal (Frame * frame);
 			
-			// Returns a prototype for the given object.
+			/// Returns a prototype for the given object.
 			static Value * prototype (Frame * frame);
 			
 			// Returns the arguments unevaluated
@@ -135,8 +138,9 @@ namespace Kai {
 			
 			static Value * sleep (Frame * frame);
 			
-			// Builtins
+			/// The global value prototype.
 			static Value * globalPrototype ();
+			/// Import the global prototype and associated functions into an execution context.
 			static void import (Table * context);
 	};
 
