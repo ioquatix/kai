@@ -743,6 +743,29 @@ namespace Kai {
 		return new Integer(total);
 	}
 	
+	Value * Integer::subtract (Frame * frame) {
+		ValueT total = 0;
+		Integer * first;
+		
+		Cell * args = frame->extract()(first);
+		
+		total = first->value();
+		
+		while (args != NULL) {
+			Integer * integer = args->headAs<Integer>();
+			
+			if (integer) {
+				total -= integer->value();
+			} else {
+				throw Exception("Invalid Integer Value", frame);
+			}
+			
+			args = args->tailAs<Cell>();
+		}
+		
+		return new Integer(total);
+	}
+	
 	Value * Integer::product (Frame * frame) {
 		ValueT total = 1;
 		
@@ -778,6 +801,7 @@ namespace Kai {
 			g_prototype = new Table;
 			
 			g_prototype->update(new Symbol("+"), KFunctionWrapper(Integer::sum));
+			g_prototype->update(new Symbol("-"), KFunctionWrapper(Integer::subtract));
 			g_prototype->update(new Symbol("*"), KFunctionWrapper(Integer::product));
 			g_prototype->update(new Symbol("%"), KFunctionWrapper(Integer::modulus));
 		}
