@@ -678,7 +678,7 @@ namespace Kai {
 	}
 	
 	Symbol * Symbol::falseSymbol () {
-		return new Symbol("false");
+		return NULL;
 	}
 	
 	Symbol * Symbol::trueSymbol () {
