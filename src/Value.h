@@ -268,6 +268,7 @@ namespace Kai {
 			static Value * _new (Frame * frame);
 			static Value * head (Frame * frame);
 			static Value * tail (Frame * frame);
+			static Value * list (Frame * frame);
 			
 			static Value * each (Frame * frame);
 						
