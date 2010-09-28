@@ -306,6 +306,12 @@ namespace Kai {
 #pragma mark -
 #pragma mark Symbol
 
+	template <typename SymbolNameT>
+	Symbol * sym(const SymbolNameT & name)
+	{
+		return sym(name);
+	}
+	
 	class Symbol : public Value, virtual public gc_cleanup {
 		protected:
 			const StringT m_value;

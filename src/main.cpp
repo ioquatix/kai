@@ -40,7 +40,7 @@ namespace {
 	
 		try {
 			Frame * frame = new Frame(context);
-			Expressions * expressions = frame->lookupAs<Expressions>(new Symbol("expr"));
+			Expressions * expressions = frame->lookupAs<Expressions>(sym("expr"));
 			
 			value = expressions->parse(code).value;
 			
@@ -48,7 +48,7 @@ namespace {
 				result = value->evaluate(frame);
 				
 				if (result)
-					context->update(new Symbol("_"), result);
+					context->update(sym("_"), result);
 				
 				return result;
 			} else {

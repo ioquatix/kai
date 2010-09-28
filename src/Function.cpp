@@ -29,7 +29,7 @@ namespace Kai {
 #pragma mark -
 
 	llvm::Value * buildTrampoline (std::string name, EvaluateFunctionT function, Frame * frame) {
-		Compiler * c = frame->lookupAs<Compiler>(new Symbol("compiler"));
+		Compiler * c = frame->lookupAs<Compiler>(sym("compiler"));
 		
 		std::vector<const llvm::Type*> argumentTypes;
 		llvm::FunctionType * trampolineFunctionType = llvm::FunctionType::get(

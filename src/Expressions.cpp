@@ -154,15 +154,15 @@ namespace Kai {
 		if (!g_prototype) {
 			g_prototype = new Table;
 			
-			g_prototype->update(new Symbol("parse"), KFunctionWrapper(Expressions::parse));
+			g_prototype->update(sym("parse"), KFunctionWrapper(Expressions::parse));
 		}
 		
 		return g_prototype;
 	}
 	
 	void Expressions::import (Table * context) {
-		context->update(new Symbol("Expressions"), globalPrototype());
-		context->update(new Symbol("expr"), basicExpressions());
+		context->update(sym("Expressions"), globalPrototype());
+		context->update(sym("expr"), basicExpressions());
 	}
 
 #pragma mark -
@@ -191,7 +191,7 @@ namespace Kai {
 		Parser::Token token = Parser::parseIdentifier(begin, end);
 		
 		if (token) {
-			return ParseResult(token, new Symbol(token.value()));
+			return ParseResult(token, sym(token.value()));
 		} else {
 			return ParseResult(token);
 		}
@@ -217,7 +217,7 @@ namespace Kai {
 		Parser::Token token = m_operators(begin, end);
 		
 		if (token) {
-			return ParseResult(token, new Symbol(token.value()));
+			return ParseResult(token, sym(token.value()));
 		} else {
 			return ParseResult(token);
 		}
@@ -327,7 +327,7 @@ namespace Kai {
 		ParseResult body = top->parse(top, token.end(), end);
 			
 		if (body.isOkay()) {
-			return ParseResult(body.token, Cell::create(new Symbol("value"))(body.value));
+			return ParseResult(body.token, Cell::create(sym("value"))(body.value));
 		}
 		
 		return body;
@@ -347,10 +347,10 @@ namespace Kai {
 
 	Value * CallExpression::convertToResult (Cell * items) {
 		return Cell::create
-			(new Symbol("call"))
+			(sym("call"))
 			(items->head())
 			(Cell::create
-				(new Symbol("value"))
+				(sym("value"))
 				(items->tail())
 			);
 	}
@@ -370,6 +370,6 @@ namespace Kai {
 			
 	Value * BlockExpression::convertToResult (Cell * items)
 	{
-		return new Cell(new Symbol("block"), items);
+		return new Cell(sym("block"), items);
 	}
 }

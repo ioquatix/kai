@@ -105,7 +105,7 @@ namespace Kai {
 	
 	// Returns a compiled function corresponding to the given arguments.
 	Value * Compiler::evaluate (Frame * frame) {
-		Compiler * c = frame->lookupAs<Compiler>(new Symbol("compiler"));
+		Compiler * c = frame->lookupAs<Compiler>(sym("compiler"));
 
 		Symbol * name;	
 		CompiledType * signature;
@@ -226,13 +226,13 @@ namespace Kai {
 	void Compiler::import (Table * context) {
 		Compiler * c = new Compiler;
 		
-		context->update(new Symbol("compiler"), c);
+		context->update(sym("compiler"), c);
 		
 		if (c->valuePointerType())
-			context->update(new Symbol("Value"), new CompiledType(c->valuePointerType()));
+			context->update(sym("Value"), new CompiledType(c->valuePointerType()));
 		
 		if (c->framePointerType())
-			context->update(new Symbol("Frame"), new CompiledType(c->framePointerType()));
+			context->update(sym("Frame"), new CompiledType(c->framePointerType()));
 		
 		CompiledValue::import(context);
 	}
@@ -258,7 +258,7 @@ namespace Kai {
 	}
 	
 	Value * CompiledFunction::evaluate (Frame * frame) {
-		Compiler * compiler = dynamic_cast<Kai::Compiler *>(frame->lookup(new Symbol("compiler")));
+		Compiler * compiler = dynamic_cast<Kai::Compiler *>(frame->lookup(sym("compiler")));
 		typedef int (FuncT)(int, int);
 		FuncT * f = (FuncT*)compiler->engine()->getPointerToFunction(m_code);
 		
@@ -272,7 +272,7 @@ namespace Kai {
 	
 	llvm::Value * CompiledFunction::compile (Frame * frame)
 	{
-		Compiler * compiler = dynamic_cast<Kai::Compiler *>(frame->lookup(new Symbol("compiler")));
+		Compiler * compiler = dynamic_cast<Kai::Compiler *>(frame->lookup(sym("compiler")));
 
 		std::vector<llvm::Value*> operands;
 		Cell * arguments = frame->unwrap();
@@ -312,7 +312,7 @@ namespace Kai {
 	}
 	
 	Value * CompiledFunction::optimize (Frame * frame) {
-		Compiler * compiler = dynamic_cast<Kai::Compiler *>(frame->lookup(new Symbol("compiler")));
+		Compiler * compiler = dynamic_cast<Kai::Compiler *>(frame->lookup(sym("compiler")));
 		CompiledFunction * function = NULL;
 		
 		frame->extract()(function);
@@ -325,7 +325,7 @@ namespace Kai {
 	
 	Value * CompiledFunction::resolve (Frame * frame) {
 		CompiledFunction * self = NULL;
-		Compiler * compiler = dynamic_cast<Kai::Compiler *>(frame->lookup(new Symbol("compiler")));
+		Compiler * compiler = dynamic_cast<Kai::Compiler *>(frame->lookup(sym("compiler")));
 		
 		frame->extract()(self);
 		
@@ -337,7 +337,7 @@ namespace Kai {
 	}
 	
 	void CompiledFunction::import (Table * context) {
-		context->update(new Symbol("CompiledFunction"), globalPrototype());
+		context->update(sym("CompiledFunction"), globalPrototype());
 	}
 	
 	Value * CompiledFunction::globalPrototype () {
@@ -346,9 +346,9 @@ namespace Kai {
 		if (!g_prototype) {
 			g_prototype = new Table;
 			
-			g_prototype->update(new Symbol("code"), KFunctionWrapper(CompiledFunction::code));
-			g_prototype->update(new Symbol("resolve"), KFunctionWrapper(CompiledFunction::resolve));
-			g_prototype->update(new Symbol("optimize"), KFunctionWrapper(CompiledFunction::optimize));
+			g_prototype->update(sym("code"), KFunctionWrapper(CompiledFunction::code));
+			g_prototype->update(sym("resolve"), KFunctionWrapper(CompiledFunction::resolve));
+			g_prototype->update(sym("optimize"), KFunctionWrapper(CompiledFunction::optimize));
 		}
 		
 		return g_prototype;
@@ -375,7 +375,7 @@ namespace Kai {
 			}
 			
 			virtual llvm::Value * compile (Frame * frame) {
-				Compiler * c = frame->lookupAs<Compiler>(new Symbol("compiler"));
+				Compiler * c = frame->lookupAs<Compiler>(sym("compiler"));
 				
 				Value * lhs, * rhs;
 				frame->extract()[lhs][rhs];
@@ -397,7 +397,7 @@ namespace Kai {
 			}
 			
 			virtual llvm::Value * compile (Frame * frame) {
-				Compiler * c = frame->lookupAs<Compiler>(new Symbol("compiler"));
+				Compiler * c = frame->lookupAs<Compiler>(sym("compiler"));
 				
 				Value * lhs, * rhs;
 				frame->extract()[lhs][rhs];
@@ -415,8 +415,8 @@ namespace Kai {
 			g_prototype = new Table;
 			g_prototype->setPrototype(Value::globalPrototype());
 			
-			g_prototype->update(new Symbol("=="), new IntegerEquality);
-			g_prototype->update(new Symbol("%"), new IntegerModulus);
+			g_prototype->update(sym("=="), new IntegerEquality);
+			g_prototype->update(sym("%"), new IntegerModulus);
 		}
 		
 		return g_prototype;
@@ -567,18 +567,18 @@ namespace Kai {
 	}
 	
 	void CompiledType::import (Table * context) {
-		context->update(new Symbol("void"), KFunctionWrapper(CompiledType::voidType));
+		context->update(sym("void"), KFunctionWrapper(CompiledType::voidType));
 		
-		context->update(new Symbol("int"), KFunctionWrapper(CompiledType::intType));
-		context->update(new Symbol("float"), KFunctionWrapper(CompiledType::floatType));
-		context->update(new Symbol("function"), KFunctionWrapper(CompiledType::functionType));
+		context->update(sym("int"), KFunctionWrapper(CompiledType::intType));
+		context->update(sym("float"), KFunctionWrapper(CompiledType::floatType));
+		context->update(sym("function"), KFunctionWrapper(CompiledType::functionType));
 		
-		context->update(new Symbol("struct"), KFunctionWrapper(CompiledType::structType));
-		context->update(new Symbol("union"), KFunctionWrapper(CompiledType::unionType));
+		context->update(sym("struct"), KFunctionWrapper(CompiledType::structType));
+		context->update(sym("union"), KFunctionWrapper(CompiledType::unionType));
 		
-		context->update(new Symbol("array"), KFunctionWrapper(CompiledType::arrayType));
-		context->update(new Symbol("pointer"), KFunctionWrapper(CompiledType::pointerType));
-		context->update(new Symbol("vector"), KFunctionWrapper(CompiledType::vectorType));
+		context->update(sym("array"), KFunctionWrapper(CompiledType::arrayType));
+		context->update(sym("pointer"), KFunctionWrapper(CompiledType::pointerType));
+		context->update(sym("vector"), KFunctionWrapper(CompiledType::vectorType));
 	}
 
 #pragma mark -
@@ -621,7 +621,7 @@ namespace Kai {
 		}
 		
 		virtual llvm::Value * compile (Frame * frame) {
-			Compiler * c = frame->lookupAs<Compiler>(new Symbol("compiler"));
+			Compiler * c = frame->lookupAs<Compiler>(sym("compiler"));
 			
 			Value * varExpr;
 			frame->extract()(varExpr);
@@ -643,7 +643,7 @@ namespace Kai {
 		}
 		
 		virtual llvm::Value * compile (Frame * frame) {
-			Compiler * c = frame->lookupAs<Compiler>(new Symbol("compiler"));
+			Compiler * c = frame->lookupAs<Compiler>(sym("compiler"));
 			
 			Value * varExpr;
 			Value * valueExpr;
@@ -664,17 +664,17 @@ namespace Kai {
 			g_prototype = new Table;
 			g_prototype->setPrototype(Value::globalPrototype());
 			
-			g_prototype->update(new Symbol("load"), new BuiltinLoad);
-			g_prototype->update(new Symbol("store"), new BuiltinStore);
-			g_prototype->update(new Symbol("=="), new IntegerEquality);
-			g_prototype->update(new Symbol("%"), new IntegerModulus);
+			g_prototype->update(sym("load"), new BuiltinLoad);
+			g_prototype->update(sym("store"), new BuiltinStore);
+			g_prototype->update(sym("=="), new IntegerEquality);
+			g_prototype->update(sym("%"), new IntegerModulus);
 		}
 		
 		return g_prototype;
 	}
 	
 	void CompiledValue::import (Table * context) {
-		context->update(new Symbol("CompiledValue"), CompiledValue::globalPrototype());
+		context->update(sym("CompiledValue"), CompiledValue::globalPrototype());
 	}
 
 }
