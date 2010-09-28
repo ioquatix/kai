@@ -17,7 +17,7 @@ Goals for this project:
 
 mkdir build
 cd build
-cmake -DCMAKE_INSTALL_PREFIX=/usr/local/llvm-2.7 ..
+cmake -DCMAKE_INSTALL_PREFIX=/usr/local/llvm-2.7 -DCMAKE_BUILD_TYPE=Release ..
 sudo make install
 
 This will install llvm-2.7 into the correct location.
