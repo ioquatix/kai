@@ -467,6 +467,11 @@ namespace Kai {
 		return cell->tail();
 	}
 	
+	Value * Cell::list (Frame * frame)
+	{
+		return frame->operands();
+	}
+	
 	Value * Cell::prototype () {
 		return globalPrototype();
 	}
@@ -504,6 +509,7 @@ namespace Kai {
 	
 	void Cell::import (Table * context) {
 		context->update(new Symbol("Cell"), globalPrototype());
+		context->update(new Symbol("list"), KFunctionWrapper(Cell::list));
 	}
 
 #pragma mark -
