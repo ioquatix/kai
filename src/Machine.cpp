@@ -24,7 +24,7 @@ namespace Kai {
 			}
 			
 			static void import (Table * context) {
-				context->update(new Symbol("load"), KFunctionWrapper(Module::load));
+				context->update(sym("load"), KFunctionWrapper(Module::load));
 			}
 	};
 

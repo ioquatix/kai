@@ -16,7 +16,7 @@ namespace Kai {
 	BasicEditor::BasicEditor(Value * context)
 	{
 		Frame * frame = new Frame(context);
-		m_expressions = frame->lookupAs<Expressions>(new Symbol("expr"));
+		m_expressions = frame->lookupAs<Expressions>(sym("expr"));
 	}
 	
 	BasicEditor::~BasicEditor()

@@ -291,16 +291,16 @@ namespace Kai {
 	}
 	
 	void Frame::import (Table * context) {
-		context->update(new Symbol("this"), KFunctionWrapper(Frame::scope));
-		context->update(new Symbol("trace"), KFunctionWrapper(Frame::trace));
-		context->update(new Symbol("unwrap"), KFunctionWrapper(Frame::unwrap));
-		context->update(new Symbol("wrap"), KFunctionWrapper(Frame::wrap));
-		context->update(new Symbol("with"), KFunctionWrapper(Frame::with));
-		context->update(new Symbol("update"), KFunctionWrapper(Frame::update));
-		context->update(new Symbol("benchmark"), KFunctionWrapper(Frame::benchmark));
+		context->update(sym("this"), KFunctionWrapper(Frame::scope));
+		context->update(sym("trace"), KFunctionWrapper(Frame::trace));
+		context->update(sym("unwrap"), KFunctionWrapper(Frame::unwrap));
+		context->update(sym("wrap"), KFunctionWrapper(Frame::wrap));
+		context->update(sym("with"), KFunctionWrapper(Frame::with));
+		context->update(sym("update"), KFunctionWrapper(Frame::update));
+		context->update(sym("benchmark"), KFunctionWrapper(Frame::benchmark));
 
 
-		//context->update(new Symbol("defines"), KFunctionWrapper(Frame::where));
+		//context->update(sym("defines"), KFunctionWrapper(Frame::where));
 	}
 /*	
 	Value * Frame::where (Frame * frame)
@@ -387,7 +387,7 @@ namespace Kai {
 	Value * Frame::wrap (Frame * frame) {	
 		Value * function;
 		frame->extract()(function);
-		return new Wrapper(Cell::create(new Symbol("value"))(function));
+		return new Wrapper(Cell::create(sym("value"))(function));
 	}
 	
 	class Unwrapper : public Value {
@@ -404,7 +404,7 @@ namespace Kai {
 				Cell * operands = frame->operands();
 				Cell * message = new Cell(m_value);
 				Cell * next = message;
-				Symbol * value = new Symbol("value");
+				Symbol * value = sym("value");
 				
 				while (operands != NULL) {
 					next = next->append(
@@ -440,7 +440,7 @@ namespace Kai {
 		if (wrapper) {
 			return wrapper->value();
 		} else {
-			return new Unwrapper(Cell::create(new Symbol("value"))(function));
+			return new Unwrapper(Cell::create(sym("value"))(function));
 		}
 	}
 	

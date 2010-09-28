@@ -74,13 +74,13 @@ namespace Kai {
 	
 	llvm::Value * Value::compile (Frame * frame) {
 		// Return a new trampoline which will do the default evaluation of this.
-		Cell * message = Cell::create()(new Symbol("block"))(this);
+		Cell * message = Cell::create()(sym("block"))(this);
 		
 		// Build stack frame
 		Frame * next = new Frame(NULL, message, frame);
 		
 		// Get the function called block
-		Value * function = frame->lookup(new Symbol("block"));
+		Value * function = frame->lookup(sym("block"));
 		ensure(function != NULL);
 		
 		// This should return an appropriate trampoline
@@ -140,7 +140,7 @@ namespace Kai {
 #pragma mark Builtin Functions
 
 	void Value::import (Table * context) {
-		context->update(new Symbol("Value"), globalPrototype());
+		context->update(sym("Value"), globalPrototype());
 	}
 	
 	Value * Value::globalPrototype () {
@@ -149,17 +149,17 @@ namespace Kai {
 		if (!g_prototype) {
 			g_prototype = new Table;
 			
-			g_prototype->update(new Symbol("toString"), KFunctionWrapper(Value::toString));
-			g_prototype->update(new Symbol("toBoolean"), KFunctionWrapper(Value::toBoolean));
-			g_prototype->update(new Symbol("<=>"), KFunctionWrapper(Value::compare));
-			g_prototype->update(new Symbol("=="), KFunctionWrapper(Value::equal));
-			g_prototype->update(new Symbol("prototype"), KFunctionWrapper(Value::prototype));
-			g_prototype->update(new Symbol("value"), KFunctionWrapper(Value::value));
+			g_prototype->update(sym("toString"), KFunctionWrapper(Value::toString));
+			g_prototype->update(sym("toBoolean"), KFunctionWrapper(Value::toBoolean));
+			g_prototype->update(sym("<=>"), KFunctionWrapper(Value::compare));
+			g_prototype->update(sym("=="), KFunctionWrapper(Value::equal));
+			g_prototype->update(sym("prototype"), KFunctionWrapper(Value::prototype));
+			g_prototype->update(sym("value"), KFunctionWrapper(Value::value));
 			
-			g_prototype->update(new Symbol("sleep"), KFunctionWrapper(Value::sleep));
+			g_prototype->update(sym("sleep"), KFunctionWrapper(Value::sleep));
 			
-			g_prototype->update(new Symbol("lookup"), KFunctionWrapper(Value::lookup));
-			g_prototype->update(new Symbol("call"), KFunctionWrapper(Value::call));
+			g_prototype->update(sym("lookup"), KFunctionWrapper(Value::lookup));
+			g_prototype->update(sym("call"), KFunctionWrapper(Value::call));
 		}
 		
 		return g_prototype;
@@ -181,14 +181,14 @@ namespace Kai {
 		frame->extract()(self)(body);
 		
 		// Wrap self so we can pass it to other functions
-		self = Cell::create()(new Symbol("value"))(self);
+		self = Cell::create()(sym("value"))(self);
 		
 		Symbol * functionName = body->headAs<Symbol>();
 		
 		//std::cerr << "Calling " << Value::toString(functionName) << " for " << Value::toString(self) << std::endl;
 		
 		Cell * dispatch = Cell::create()
-			(new Symbol("lookup"))
+			(sym("lookup"))
 			(self)
 			(functionName);
 		
@@ -274,7 +274,7 @@ namespace Kai {
 		}
 		
 		if (c == COMPARISON_EQUAL) {
-			return new Symbol("true");
+			return sym("true");
 		} else {
 			return NULL;
 		}
@@ -377,7 +377,7 @@ namespace Kai {
 			marks.insert(this);
 			Cell * tail = this->tailAs<Cell>();
 			
-			if (tail && Value::equal(m_head, new Symbol("value"))) {
+			if (tail && Value::equal(m_head, sym("value"))) {
 				// Print out values using backtick if possible.
 				buffer << '`';
 				if (tail->head())
@@ -498,18 +498,18 @@ namespace Kai {
 		if (!g_prototype) {
 			g_prototype = new Table;
 			
-			g_prototype->update(new Symbol("new"), KFunctionWrapper(Cell::_new));
-			g_prototype->update(new Symbol("each"), KFunctionWrapper(Cell::each));
-			g_prototype->update(new Symbol("head"), KFunctionWrapper(Cell::head));
-			g_prototype->update(new Symbol("tail"), KFunctionWrapper(Cell::tail));
+			g_prototype->update(sym("new"), KFunctionWrapper(Cell::_new));
+			g_prototype->update(sym("each"), KFunctionWrapper(Cell::each));
+			g_prototype->update(sym("head"), KFunctionWrapper(Cell::head));
+			g_prototype->update(sym("tail"), KFunctionWrapper(Cell::tail));
 		}
 		
 		return g_prototype;
 	}
 	
 	void Cell::import (Table * context) {
-		context->update(new Symbol("Cell"), globalPrototype());
-		context->update(new Symbol("list"), KFunctionWrapper(Cell::list));
+		context->update(sym("Cell"), globalPrototype());
+		context->update(sym("list"), KFunctionWrapper(Cell::list));
 	}
 
 #pragma mark -
@@ -597,9 +597,9 @@ namespace Kai {
 		if (!g_prototype) {
 			g_prototype = new Table;
 			
-			g_prototype->update(new Symbol("+"), KFunctionWrapper(String::join));
-			g_prototype->update(new Symbol("size"), KFunctionWrapper(String::size));
-			g_prototype->update(new Symbol("at"), KFunctionWrapper(String::at));
+			g_prototype->update(sym("+"), KFunctionWrapper(String::join));
+			g_prototype->update(sym("size"), KFunctionWrapper(String::size));
+			g_prototype->update(sym("at"), KFunctionWrapper(String::at));
 			
 		}
 		
@@ -608,7 +608,7 @@ namespace Kai {
 	
 	void String::import(Table * context)
 	{
-		context->update(new Symbol("String"), globalPrototype());
+		context->update(sym("String"), globalPrototype());
 	}
 
 #pragma mark -
@@ -674,7 +674,7 @@ namespace Kai {
 	}
 
 	Symbol * Symbol::nilSymbol () {
-		return new Symbol("nil");
+		return sym("nil");
 	}
 	
 	Symbol * Symbol::falseSymbol () {
@@ -682,7 +682,7 @@ namespace Kai {
 	}
 	
 	Symbol * Symbol::trueSymbol () {
-		return new Symbol("true");
+		return sym("true");
 	}
 	
 	Value * Symbol::hash (Frame * frame) {
@@ -703,14 +703,14 @@ namespace Kai {
 		if (!g_prototype) {
 			g_prototype = new Table;
 			
-			g_prototype->update(new Symbol("hash"), KFunctionWrapper(Symbol::hash));
+			g_prototype->update(sym("hash"), KFunctionWrapper(Symbol::hash));
 		}
 		
 		return g_prototype;
 	}
 	
 	void Symbol::import (Table * context) {
-		context->update(new Symbol("Symbol"), globalPrototype());
+		context->update(sym("Symbol"), globalPrototype());
 	}
 
 #pragma mark -
@@ -806,10 +806,10 @@ namespace Kai {
 		if (!g_prototype) {
 			g_prototype = new Table;
 			
-			g_prototype->update(new Symbol("+"), KFunctionWrapper(Integer::sum));
-			g_prototype->update(new Symbol("-"), KFunctionWrapper(Integer::subtract));
-			g_prototype->update(new Symbol("*"), KFunctionWrapper(Integer::product));
-			g_prototype->update(new Symbol("%"), KFunctionWrapper(Integer::modulus));
+			g_prototype->update(sym("+"), KFunctionWrapper(Integer::sum));
+			g_prototype->update(sym("-"), KFunctionWrapper(Integer::subtract));
+			g_prototype->update(sym("*"), KFunctionWrapper(Integer::product));
+			g_prototype->update(sym("%"), KFunctionWrapper(Integer::modulus));
 		}
 		
 		return g_prototype;
@@ -832,7 +832,7 @@ namespace Kai {
 	}
 	
 	void Integer::import (Table * context) {
-		context->update(new Symbol("Integer"), globalPrototype());
+		context->update(sym("Integer"), globalPrototype());
 	}
 
 #pragma mark -
@@ -1097,19 +1097,19 @@ namespace Kai {
 			g_prototype = new Table;
 			g_prototype->setPrototype(Value::globalPrototype());
 			
-			g_prototype->update(new Symbol("new"), KFunctionWrapper(Table::table));
-			//g_prototype->update(new Symbol("update"), KFunctionWrapper(Table::update));
-			g_prototype->update(new Symbol("set"), KFunctionWrapper(Table::set));
-			g_prototype->update(new Symbol("get"), KFunctionWrapper(Table::lookup));
-			g_prototype->update(new Symbol("each"), KFunctionWrapper(Table::each));
-			g_prototype->update(new Symbol("prototype="), KFunctionWrapper(Table::setPrototype));
+			g_prototype->update(sym("new"), KFunctionWrapper(Table::table));
+			//g_prototype->update(sym("update"), KFunctionWrapper(Table::update));
+			g_prototype->update(sym("set"), KFunctionWrapper(Table::set));
+			g_prototype->update(sym("get"), KFunctionWrapper(Table::lookup));
+			g_prototype->update(sym("each"), KFunctionWrapper(Table::each));
+			g_prototype->update(sym("prototype="), KFunctionWrapper(Table::setPrototype));
 		}
 		
 		return g_prototype;
 	}
 	
 	void Table::import (Table * context) {
-		context->update(new Symbol("Table"), Table::globalPrototype());
+		context->update(sym("Table"), Table::globalPrototype());
 	}
 	
 #pragma mark -
@@ -1184,7 +1184,7 @@ namespace Kai {
 	}
 	
 	void Lambda::import (Table * context) {
-		context->update(new Symbol("lambda"), KFunctionWrapper(Lambda::lambda));
+		context->update(sym("lambda"), KFunctionWrapper(Lambda::lambda));
 	}
 	
 #pragma mark -
@@ -1305,8 +1305,8 @@ namespace Kai {
 			}
 			
 			virtual llvm::Value * compile (Frame * frame) {
-				Compiler * c = frame->lookupAs<Compiler>(new Symbol("compiler"));
-				Table * locals = frame->lookupAs<Table>(new Symbol("locals"));
+				Compiler * c = frame->lookupAs<Compiler>(sym("compiler"));
+				Table * locals = frame->lookupAs<Table>(sym("locals"));
 				
 				CompiledType * varType;
 				Symbol * varName;
@@ -1337,7 +1337,7 @@ namespace Kai {
 			}
 			
 			virtual llvm::Value * compile (Frame * frame) {
-				Compiler * c = frame->lookupAs<Compiler>(new Symbol("compiler"));
+				Compiler * c = frame->lookupAs<Compiler>(sym("compiler"));
 				
 				Value * expression = NULL;
 				
@@ -1379,11 +1379,11 @@ namespace Kai {
 			}
 			
 			virtual llvm::Value * compile (Frame * frame) {
-				//Compiler * c = frame->lookupAs<Compiler>(new Symbol("compiler"));
+				//Compiler * c = frame->lookupAs<Compiler>(sym("compiler"));
 				
 				// Setup the block local variables.
 				Table * locals = new Table;
-				locals->update(new Symbol("locals"), locals);
+				locals->update(sym("locals"), locals);
 				
 				Frame * next = new Frame(locals, frame);
 				
@@ -1424,7 +1424,7 @@ namespace Kai {
 			}
 			
 			virtual llvm::Value * compile (Frame * frame) {
-				Compiler * c = frame->lookupAs<Compiler>(new Symbol("compiler"));
+				Compiler * c = frame->lookupAs<Compiler>(sym("compiler"));
 				llvm::Function * function = c->builder()->GetInsertBlock()->getParent();
 
 				Value * condition, * trueClause, * falseClause;
@@ -1469,16 +1469,16 @@ namespace Kai {
 	};
 	
 	void Logic::import (Table * context) {
-		context->update(new Symbol("or"), KFunctionWrapper(Logic::or_));
-		context->update(new Symbol("and"), KFunctionWrapper(Logic::and_));
-		context->update(new Symbol("not"), KFunctionWrapper(Logic::not_));
+		context->update(sym("or"), KFunctionWrapper(Logic::or_));
+		context->update(sym("and"), KFunctionWrapper(Logic::and_));
+		context->update(sym("not"), KFunctionWrapper(Logic::not_));
 
-		context->update(new Symbol("block"), new BuiltinBlock);
-		context->update(new Symbol("return"), new BuiltinReturn);
+		context->update(sym("block"), new BuiltinBlock);
+		context->update(sym("return"), new BuiltinReturn);
 
-		context->update(new Symbol("when"), KFunctionWrapper(Logic::when));
-		context->update(new Symbol("if"), new BuiltinIf);
+		context->update(sym("when"), KFunctionWrapper(Logic::when));
+		context->update(sym("if"), new BuiltinIf);
 		
-		context->update(new Symbol("var"), new BuiltinVar);
+		context->update(sym("var"), new BuiltinVar);
 	}
 }
