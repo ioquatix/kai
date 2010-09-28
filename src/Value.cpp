@@ -848,7 +848,7 @@ namespace Kai {
 
 	Value * Table::update (Symbol * key, Value * value) {
 		assert(key != NULL);
-		assert(value != NULL);
+		//assert(value != NULL);
 			
 		unsigned index = key->hash() % m_size;
 		
