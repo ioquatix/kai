@@ -1150,16 +1150,6 @@ namespace Kai {
 		
 		frame->extract()[arguments][code];
 		
-		/*
-		if (arguments == NULL) {
-			throw Exception("Invalid Argument List", frame);
-		}
-		
-		if (code == NULL) {
-			throw Exception("Invalid Lambda Body", frame);
-		}
-		*/
-		
 		return new Lambda(frame, arguments, code);
 	}
 	
