@@ -732,20 +732,26 @@ namespace Kai {
 	Value * Integer::sum (Frame * frame) {
 		ValueT total = 0;
 		
+		// Evaluate the given arguments
 		Cell * args = frame->unwrap();
 		
 		while (args != NULL) {
+			// For each argument, extract it as an Integer value
 			Integer * integer = args->headAs<Integer>();
 			
 			if (integer) {
+				// If it was an integer, add its value to the total
 				total += integer->value();
 			} else {
+				// If it wasn't an integer, throw an exception.
 				throw Exception("Invalid Integer Value", frame);
 			}
 			
+			// Move to the next argument.
 			args = args->tailAs<Cell>();
 		}
 		
+		// Return a new integer with the calculated sum.
 		return new Integer(total);
 	}
 	
