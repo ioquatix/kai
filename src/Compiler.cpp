@@ -378,7 +378,7 @@ namespace Kai {
 				Compiler * c = frame->lookupAs<Compiler>(sym("compiler"));
 				
 				Value * lhs, * rhs;
-				frame->extract()[lhs][rhs];
+				frame->extract()(lhs)(rhs);
 
 				llvm::Value * result = c->builder()->CreateICmpEQ(lhs->compile(frame), rhs->compile(frame));
 				
@@ -397,11 +397,14 @@ namespace Kai {
 			}
 			
 			virtual llvm::Value * compile (Frame * frame) {
+				// Find the current compiler.
 				Compiler * c = frame->lookupAs<Compiler>(sym("compiler"));
 				
+				// Extract the arguments to the operator.
 				Value * lhs, * rhs;
-				frame->extract()[lhs][rhs];
-
+				frame->extract()(lhs)(rhs);
+				
+				// Return the LLVM remainder instruction with the two arguments.
 				llvm::Value * result = c->builder()->CreateURem(lhs->compile(frame), rhs->compile(frame));
 				
 				return result;
