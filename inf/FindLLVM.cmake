@@ -22,6 +22,7 @@ else (LLVM_LIBRARIES AND LLVM_INCLUDE_DIRS)
 			llvm/LLVMContext.h
 		PATHS
 			/usr/local/llvm-2.7/include
+			/usr/include
 	)
 
 	find_path(LLVM_LIB_PATH
@@ -29,6 +30,8 @@ else (LLVM_LIBRARIES AND LLVM_INCLUDE_DIRS)
 			libLLVMCore.a
 		PATHS
 			/usr/local/llvm-2.7/lib
+			/usr/lib64
+			/usr/lib
 	)
 	
 	find_path(LLVM_CONFIG
@@ -36,6 +39,7 @@ else (LLVM_LIBRARIES AND LLVM_INCLUDE_DIRS)
 			llvm-config
 		PATHS
 			/usr/local/llvm-2.7/bin
+			/usr/bin
 	)
 	
 	if (LLVM_LIB_PATH)
