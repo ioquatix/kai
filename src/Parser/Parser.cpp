@@ -79,10 +79,18 @@ namespace Kai {
 		
 		Token parseWhitespace (StringIteratorT begin, StringIteratorT end) {
 			Token t(begin);
+			StringIteratorT cur = begin;
 			
-			t += parseCharacters(t.end(), end, isWhitespace);
-			t += parseComment(t.end(), end);
-			t += parseCharacters(t.end(), end, isWhitespace);
+			while (true) {
+				t += parseCharacters(t.end(), end, isWhitespace);
+				t += parseComment(t.end(), end);
+				t += parseCharacters(t.end(), end, isWhitespace);
+				
+				if (t.end() == cur)
+					break;
+				
+				cur = t.end();
+			}
 			
 			return t;
 		}
