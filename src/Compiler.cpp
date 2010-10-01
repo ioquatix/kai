@@ -528,21 +528,6 @@ namespace Kai {
 		return new CompiledType(llvm::StructType::get(llvm::getGlobalContext(), types, packed));
 	}
 	
-	Value * CompiledType::unionType (Frame * frame) {
-		Cell * args = frame->unwrap();
-		std::vector<const llvm::Type*> types;
-		
-		while (args != NULL) {
-			CompiledType * element = args->headAs<CompiledType>();
-			
-			types.push_back(element->value());
-			
-			args = args->tailAs<Cell>();
-		}
-		
-		return new CompiledType(llvm::UnionType::get(&types[0], types.size()));
-	}
-	
 	Value * CompiledType::arrayType (Frame * frame) {
 		CompiledType * elementType;
 		Integer * numberOfElements;
@@ -577,7 +562,6 @@ namespace Kai {
 		context->update(sym("function"), KFunctionWrapper(CompiledType::functionType));
 		
 		context->update(sym("struct"), KFunctionWrapper(CompiledType::structType));
-		context->update(sym("union"), KFunctionWrapper(CompiledType::unionType));
 		
 		context->update(sym("array"), KFunctionWrapper(CompiledType::arrayType));
 		context->update(sym("pointer"), KFunctionWrapper(CompiledType::pointerType));

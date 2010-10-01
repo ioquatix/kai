@@ -21,7 +21,7 @@ else (LLVM_LIBRARIES AND LLVM_INCLUDE_DIRS)
 		NAMES
 			llvm/LLVMContext.h
 		PATHS
-			/usr/local/llvm-2.7/include
+			/usr/local/llvm-2.8/include
 			/usr/include
 	)
 
@@ -29,7 +29,7 @@ else (LLVM_LIBRARIES AND LLVM_INCLUDE_DIRS)
 		NAMES
 			libLLVMCore.a
 		PATHS
-			/usr/local/llvm-2.7/lib
+			/usr/local/llvm-2.8/lib
 			/usr/lib64
 			/usr/lib
 	)
@@ -38,7 +38,7 @@ else (LLVM_LIBRARIES AND LLVM_INCLUDE_DIRS)
 		NAMES
 			llvm-config
 		PATHS
-			/usr/local/llvm-2.7/bin
+			/usr/local/llvm-2.8/bin
 			/usr/bin
 	)
 	

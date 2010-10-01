@@ -17,10 +17,10 @@ Goals for this project:
 
 mkdir build
 cd build
-cmake -DCMAKE_INSTALL_PREFIX=/usr/local/llvm-2.7 -DCMAKE_BUILD_TYPE=Release ..
+cmake -DCMAKE_INSTALL_PREFIX=/usr/local/llvm-2.8 -DCMAKE_BUILD_TYPE=Release -DLLVM_TARGETS_TO_BUILD=X86 ..
 sudo make install
 
-This will install llvm-2.7 into the correct location.
+This will install llvm-2.8 into the correct location.
 
 (2) In the project directory
 

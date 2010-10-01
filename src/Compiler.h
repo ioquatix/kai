@@ -129,7 +129,6 @@ namespace Kai {
 			static Value * functionType (Frame * frame);
 			
 			static Value * structType (Frame * frame);
-			static Value * unionType (Frame * frame);
 			
 			static Value * arrayType (Frame * frame);
 			static Value * pointerType (Frame * frame);
