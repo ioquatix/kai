@@ -10,13 +10,16 @@
 #include "BasicEditor.h"
 #include "Value.h"
 #include "Frame.h"
+#include "Ensure.h"
 
 namespace Kai {
 
 	BasicEditor::BasicEditor(Value * context)
 	{
 		Frame * frame = new Frame(context);
-		m_expressions = frame->lookupAs<Expressions>(sym("expr"));
+		m_expressions = Expressions::fetch(frame);
+		
+		ensure(m_expressions != NULL);
 	}
 	
 	BasicEditor::~BasicEditor()

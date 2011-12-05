@@ -53,6 +53,43 @@ namespace Kai {
 		}
 	}
 	
+	Value * Tracer::dump(Frame * frame)
+	{
+		Tracer * tracer = NULL;
+		
+		frame->extract()(tracer);
+		
+		StringStreamT buffer;
+		tracer->dump(buffer);
+		
+		return new String(buffer.str());
+	}
+	
+	Value * Tracer::prototype ()
+	{
+		return globalPrototype();
+	}
+	
+	Value * Tracer::globalPrototype ()
+	{
+		static Table * g_prototype = NULL;
+		
+		if (!g_prototype) {
+			g_prototype = new Table;
+			g_prototype->setPrototype(Value::globalPrototype());
+			
+			g_prototype->update(sym("dump"), KFunctionWrapper(Tracer::dump));
+		}
+		
+		return g_prototype;
+	}
+	
+	void Tracer::import (Table * context)
+	{
+		context->update(sym("tracer"), globalTracer());
+		context->update(sym("Tracer"), globalPrototype());
+	}
+	
 	Tracer * Tracer::globalTracer ()
 	{
 		static Tracer * tracer = NULL;
@@ -89,12 +126,28 @@ namespace Kai {
 		m_arguments(previous->m_arguments)
 	{
 		m_depth = m_previous->m_depth + 1;
+		std::cerr << "Frame: " << this << " Arguments: " << arguments() << std::endl;
 	}
 
 	Frame::Frame (Value * scope, Cell * message, Frame * previous)
 		: m_previous(previous), m_scope(scope), m_message(message), m_function(NULL), m_arguments(NULL)
 	{
 		m_depth = m_previous->m_depth + 1;
+	}
+	
+	Frame::~Frame () {
+		std::cerr << "Deallocating frame " << this << std::endl;
+		
+		// Clean up a wee bit for debugging:
+		m_previous = NULL;
+		m_scope = NULL;
+		m_message = NULL;
+		m_function = NULL;
+		m_arguments = NULL;
+		
+		// Some markers for debugging:
+		m_arguments = (Cell*)0xdeadbeaf;
+		m_depth = -1;
 	}
 	
 	Value * Frame::lookup (Symbol * identifier, Frame *& frame)
@@ -121,22 +174,26 @@ namespace Kai {
 	}
 	
 	Value * Frame::apply () {
-		//std::cerr << "-- " << Value::toString(m_message) << " <= " << Value::toString(m_scope) << std::endl;
-		
-		//std::cerr << StringT(m_depth, '\t') << "Fetching Function " << Value::toString(m_message->head()) << std::endl;
-		
+#ifdef KAI_DEBUG
+		std::cerr << "-- " << Value::toString(m_message) << " <= " << Value::toString(m_scope) << std::endl;
+		std::cerr << StringT(m_depth, '\t') << "Fetching Function " << Value::toString(m_message->head()) << std::endl;
+#endif
+
 		m_function = m_message->head()->evaluate(this);
 
-		//std::cerr << StringT(m_depth, '\t') << "Executing Function " << Value::toString(m_function) << std::endl;
-		
-		//this->debug(true);
-		
+#ifdef KAI_DEBUG
+		std::cerr << StringT(m_depth, '\t') << "Executing Function " << Value::toString(m_function) << std::endl;		
+		this->debug(true);
+#endif
+
 		if (!m_function) {
 			throw Exception("Invalid Function", m_message->head(), this);
 		}
-		
+
+#ifdef KAI_TRACE
 		// trace will be deconstructed even in the event of an exception.
 		Trace trace(this);
+#endif
 		
 		Value * result = m_function->evaluate(this);
 		
@@ -145,18 +202,20 @@ namespace Kai {
 
 	Value * Frame::call (Value * scope, Cell * message)
 	{
-		// If scope is NULL, lookup proceeds to next level.
-		//if (scope == NULL) {
-		//	throw Exception("Invalid Scope", this);
-		//}
-		
 		if (message == NULL) {
 			throw Exception("Invalid Message", this);
 		}
 	
 		Frame * frame = new Frame(scope, message, this);
 		
-		return frame->apply();
+		std::cerr << "Stack pointer: " << (void*)&frame << std::endl;
+		std::cerr << "Allocating new frame at address " << frame << " from frame " << this << " in scope " << scope << " with message " << message << std::endl;
+		frame->debug(false);
+		
+		//return frame->apply();
+		Value * result = frame->apply();
+		
+		return result;
 	}
 
 	Cell * Frame::message () {
@@ -194,7 +253,9 @@ namespace Kai {
 			return NULL;
 	}
 
+	// With optimisations turned on, this function seems to cause stack frames to be reused and cause problems..!?
 	Cell * Frame::unwrap () {
+		std::cerr << "Unwrapping with frame: " << this << std::endl;
 		if (m_arguments != NULL) return m_arguments;
 		
 		Cell * last = NULL;
@@ -255,8 +316,10 @@ namespace Kai {
 			std::cerr << "\t Message: " << Value::toString(m_message) << std::endl;
 			std::cerr << "\t Function: " << Value::toString(cell.head()) << std::endl;
 			
-			if (cur->arguments())
+			if (cur->arguments()) {
+				std::cerr << "\t Arugment Ptr: " << cur->arguments() << std::endl;
 				std::cerr << "\t Arguments: " << Value::toString(cur->arguments()) << std::endl;
+			}
 			
 			cur = cur->previous();
 		} while (!cur->top() && ascend);
@@ -277,7 +340,7 @@ namespace Kai {
 		while (count > 0) {
 			result = exec->evaluate(frame);
 			
-			count--;
+			count--;			
 		}
 		
 		Time end;
@@ -298,6 +361,7 @@ namespace Kai {
 		context->update(sym("with"), KFunctionWrapper(Frame::with));
 		context->update(sym("update"), KFunctionWrapper(Frame::update));
 		context->update(sym("benchmark"), KFunctionWrapper(Frame::benchmark));
+		context->update(sym("tracer"), Tracer::globalTracer());
 
 
 		//context->update(sym("defines"), KFunctionWrapper(Frame::where));

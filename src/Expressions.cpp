@@ -46,6 +46,9 @@ namespace Kai {
 		self->add(new OperatorExpression);
 		self->add(new CellExpression);
 		
+		self->add(new ScopeExpression("$", "global-scope"));
+		self->add(new ScopeExpression("@", "instance-scope"));
+		
 		self->add(new ValueExpression);
 		self->add(new CallExpression);
 		self->add(new BlockExpression);
@@ -162,7 +165,11 @@ namespace Kai {
 	
 	void Expressions::import (Table * context) {
 		context->update(sym("Expressions"), globalPrototype());
-		context->update(sym("expr"), basicExpressions());
+		context->update(sym("expressions"), basicExpressions());
+	}
+	
+	Expressions * Expressions::fetch (Frame * frame) {
+		return frame->lookupAs<Expressions>(sym("expressions"));
 	}
 
 #pragma mark -
@@ -195,6 +202,37 @@ namespace Kai {
 		} else {
 			return ParseResult(token);
 		}
+	}
+	
+#pragma mark -
+
+	ScopeExpression::ScopeExpression(StringT prefix, StringT function)
+		: m_prefix(prefix), m_function(function)
+	{
+	
+	}
+	
+	ScopeExpression::~ScopeExpression() {
+	
+	}
+	
+	ParseResult ScopeExpression::parse (IExpressions * top, StringIteratorT begin, StringIteratorT end) {
+		Parser::Token token = Parser::parseConstant(begin, end, m_prefix);
+		
+		if (token) {
+			Parser::Token identifier = Parser::parseIdentifier(token.end(), end);
+			
+			if (identifier) {
+				token &= identifier;
+				
+				return ParseResult(token, Cell::create
+					(sym(m_function))
+					(sym(identifier.value())->asValue())
+				);
+			}
+		}
+
+		return ParseResult(token);
 	}
 	
 #pragma mark -
@@ -370,6 +408,6 @@ namespace Kai {
 			
 	Value * BlockExpression::convertToResult (Cell * items)
 	{
-		return new Cell(sym("block"), items);
+		return (new Cell(sym("block"), items))->asValue();
 	}
 }

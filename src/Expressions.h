@@ -22,7 +22,7 @@ namespace Kai {
 		enum {
 			OKAY = 0,
 			FAILED = 1,
-			INCOMPLETE = 3,
+			INCOMPLETE = 3
 		};
 		
 		typedef int Status;
@@ -68,6 +68,8 @@ namespace Kai {
 			static Value * globalPrototype ();
 			static void import (Table * context);
 			virtual Value * prototype ();
+			
+			static Expressions * fetch(Frame * frame);
 	};
 	
 	class StringExpression : public Value, virtual public IExpressions {
@@ -80,6 +82,18 @@ namespace Kai {
 	class SymbolExpression : public Value, virtual public IExpressions {
 		public:
 			virtual ~SymbolExpression();
+			
+			virtual ParseResult parse (IExpressions * top, StringIteratorT begin, StringIteratorT end);
+	};
+	
+	class ScopeExpression : public Value, virtual public IExpressions {
+		protected:
+			StringT m_prefix;
+			StringT m_function;
+			
+		public:
+			ScopeExpression (StringT prefix, StringT function);
+			virtual ~ScopeExpression ();
 			
 			virtual ParseResult parse (IExpressions * top, StringIteratorT begin, StringIteratorT end);
 	};

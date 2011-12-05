@@ -6,7 +6,6 @@
 //  Copyright 2010 Samuel Williams. All rights reserved.
 //
 
-ZERO_LINK=NO
 GCC_INLINES_ARE_PRIVATE_EXTERN=NO
 GCC_SYMBOLS_PRIVATE_EXTERN=NO
 
@@ -17,10 +16,10 @@ GC_LDFLAGS="-L$(GC_LIB_PATH)"
 GC_CFLAGS="-I$(GC_INC_PATH)"
 
 // llvm-config --ldflags --libs core jit native all
-LLVM_PATH=/usr/local/llvm-2.7
-LLVM_BIN_PATH=$(LLVM_PATH)/bin
-LLVM_LIB_PATH=$(LLVM_PATH)/lib
-LLVM_INC_PATH=$(LLVM_PATH)/include
+//LLVM_PATH=/usr/local/llvm-2.7
+//LLVM_BIN_PATH=$(LLVM_PATH)/bin
+//LLVM_LIB_PATH=$(LLVM_PATH)/lib
+//LLVM_INC_PATH=$(LLVM_PATH)/include
 
-LLVM_LDFLAGS="-L$(LLVM_LIB_PATH)" -lpthread -lm -lLLVMX86Disassembler -lLLVMX86AsmParser -lLLVMMCParser -lLLVMX86AsmPrinter -lLLVMX86CodeGen -lLLVMSelectionDAG -lLLVMBitReader -lLLVMAsmPrinter -lLLVMX86Info -lLLVMJIT -lLLVMExecutionEngine -lLLVMCodeGen -lLLVMScalarOpts -lLLVMInstCombine -lLLVMTransformUtils -lLLVMipo -lLLVMipa -lLLVMAnalysis -lLLVMTarget -lLLVMMC -lLLVMCore -lLLVMSupport -lLLVMSystem
-LLVM_CFLAGS="-I$(LLVM_INC_PATH)" -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS
+//LLVM_LDFLAGS="-L$(LLVM_LIB_PATH)" -lpthread -lm -lLLVMX86Disassembler -lLLVMX86AsmParser -lLLVMMCParser -lLLVMX86AsmPrinter -lLLVMX86CodeGen -lLLVMSelectionDAG -lLLVMBitReader -lLLVMAsmPrinter -lLLVMX86Info -lLLVMJIT -lLLVMExecutionEngine -lLLVMCodeGen -lLLVMScalarOpts -lLLVMInstCombine -lLLVMTransformUtils -lLLVMipo -lLLVMipa -lLLVMAnalysis -lLLVMTarget -lLLVMMC -lLLVMCore -lLLVMSupport -lLLVMSystem
+//LLVM_CFLAGS="-I$(LLVM_INC_PATH)" -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS

@@ -13,8 +13,6 @@
 #include "Kai.h"
 #include "Exception.h"
 
-#include <llvm/Value.h>
-
 #include <set>
 
 namespace Kai {
@@ -100,17 +98,14 @@ namespace Kai {
 			
 			/// Evaluate the current value in the given context.
 			virtual Value * evaluate (Frame * frame);
-			
-			/// Compile the value to an llvm Value
-			virtual llvm::Value * compile (Frame * frame);
-			
-			/// If the value contained is a compiled value, return it unevaluated.
-			virtual llvm::Value * compiledValue (Frame * frame);
 
 			static StringT toString (Value * value);
 			static bool toBoolean (Value * value);
 			static int compare(Value * lhs, Value * rhs);
 			static bool equal(Value * lhs, Value * rhs);
+			
+			// Returns (value {this})
+			Value * asValue ();
 			
 			// Converts the argument to a string value
 			static Value * toString (Frame * frame);
@@ -187,7 +182,6 @@ namespace Kai {
 			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation);
 			
 			virtual Value * evaluate (Frame * frame);
-			virtual llvm::Value * compile (Frame * frame);
 			
 			class ArgumentExtractor {
 				Frame * m_frame;
@@ -305,12 +299,6 @@ namespace Kai {
 
 #pragma mark -
 #pragma mark Symbol
-
-	template <typename SymbolNameT>
-	Symbol * sym(const SymbolNameT & name)
-	{
-		return new Symbol(name);
-	}
 	
 	class Symbol : public Value, virtual public gc_cleanup {
 		protected:
@@ -333,18 +321,24 @@ namespace Kai {
 			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation);
 			
 			virtual Value * evaluate (Frame * frame);
-			virtual llvm::Value * compile (Frame * frame);
 			
 			static Symbol * nilSymbol ();
 			static Symbol * falseSymbol ();
 			static Symbol * trueSymbol ();
 			
 			static Value * hash (Frame * frame);
+			static Value * assign (Frame * frame);
 			
 			virtual Value * prototype ();
 			static Value * globalPrototype ();
 			static void import (Table * context);
 	};
+	
+	template <typename SymbolNameT>
+	inline Symbol * sym(const SymbolNameT & name)
+	{
+		return new Symbol(name);
+	}
 
 #pragma mark -
 #pragma mark Integer
@@ -359,8 +353,6 @@ namespace Kai {
 		public:
 			Integer (ValueT value);
 			virtual ~Integer ();
-			
-			llvm::Value * compile (Frame * context);
 			
 			ValueT & value () { return m_value; }
 			
@@ -408,7 +400,7 @@ namespace Kai {
 		
 			virtual int compare (Value * other);
 			int compare (Table * other);
-			
+						
 			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation);
 		
 			virtual Value * lookup (Symbol * key);
@@ -441,27 +433,6 @@ namespace Kai {
 			
 			unsigned m_size;
 			Bin ** m_bins;
-	};
-
-#pragma mark -
-#pragma mark Lambda
-
-	class Lambda : public Value {
-		protected:
-			Frame * m_scope;
-			Cell * m_arguments;
-			Cell * m_code;
-			
-		public:
-			Lambda (Frame * scope, Cell * arguments, Cell * code);
-			virtual ~Lambda ();
-			
-			virtual Value * evaluate (Frame * frame);
-			
-			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation);
-			
-			static Value * lambda (Frame * frame);
-			static void import (Table *);
 	};
 	
 #pragma mark -

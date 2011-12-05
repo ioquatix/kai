@@ -16,6 +16,7 @@
 #include <iostream>
 #include <gc/gc.h>
 #include <stdio.h>
+#include <signal.h>
 
 #include "Value.h"
 #include "Parser/Parser.h"
@@ -24,9 +25,12 @@
 #include "Exception.h"
 #include "Terminal.h"
 #include "SourceCode.h"
-#include "Compiler.h"
 #include "Expressions.h"
 #include "BasicEditor.h"
+
+#include "Lambda.h"
+#include "Array.h"
+#include "System.h"
 
 namespace {
 
@@ -40,7 +44,7 @@ namespace {
 	
 		try {
 			Frame * frame = new Frame(context);
-			Expressions * expressions = frame->lookupAs<Expressions>(sym("expr"));
+			Expressions * expressions = Expressions::fetch(frame);
 			
 			value = expressions->parse(code).value;
 			
@@ -75,6 +79,24 @@ namespace {
 		return NULL;
 	}
 	
+	namespace GC {
+		int _stopFunc() {
+			return 0;
+		}
+		
+		Value * collect(Frame * frame) {
+			GC_try_to_collect(&_stopFunc);
+			
+			return NULL;
+		}
+		
+		Value * dump(Frame * frame) {
+			GC_dump();
+			
+			return NULL;
+		}
+	}
+	
 	Table * buildContext () {
 		Table * global = new Table;
 		global->setPrototype(Table::globalPrototype());
@@ -90,8 +112,11 @@ namespace {
 		Logic::import(global);
 		Expressions::import(global);
 		
-		Compiler::import(global);
-		CompiledType::import(global);
+		Array::import(global);
+		System::import(global);
+		
+		global->update(sym("gc-collect"), KFunctionWrapper(GC::collect));
+		global->update(sym("gc-dump"), KFunctionWrapper(GC::dump));
 		
 		Table * context = new Table;
 		context->setPrototype(global);
@@ -100,23 +125,38 @@ namespace {
 	}
 }
 
+void signalHang (int) {
+	puts("Segmentation Fault!\n");
+	for (;;) sleep(1);
+}
+
 int main (int argc, const char * argv[]) {
 	Time start;
 	
 	using namespace Kai;
 
 	GC_init();
+	//GC_disable();
+		
+	signal(SIGSEGV, signalHang);
 	
 	int result = 0;
 	Terminal console(STDIN_FILENO);
 	Table * context = buildContext();
 
 	BasicEditor editor(context);
-
-	if (argc == 2) {
-		SourceCode code(argv[1]);
-		
-		runCode(context, code, result);
+	
+	if (argc == 3) {
+		if (StringT(argv[1]) == "-x") {
+			SourceCode code("<cmd>", argv[2]);
+			runCode(context, code, result);
+		} else if (StringT(argv[1]) == "-f") {
+			SourceCode code(argv[2]);
+			runCode(context, code, result);
+		} else {
+			std::cerr << "Unknown option: '" << argv[1] << "'" << std::endl;
+			result = 10;
+		}
 	} else if (console.isTTY()) {
 		// Running interactively
 		TerminalEditor terminalEditor("kai> ");
@@ -144,9 +184,11 @@ int main (int argc, const char * argv[]) {
 		runCode(context, code, result);			
 	}
 	
+#ifdef KAI_TRACE
 	// Dump trace statistics.
 	std::cout << std::endl;
 	Tracer::globalTracer()->dump(std::cout);
+#endif
 	
 	return result;
 }

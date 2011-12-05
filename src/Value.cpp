@@ -16,15 +16,10 @@
 #include "Frame.h"
 #include "Exception.h"
 #include "Function.h"
-#include "Compiler.h"
 #include "Ensure.h"
 
 // For String constructor
 #include "Parser/Strings.h"
-
-#include <llvm/LLVMContext.h>
-#include <llvm/Type.h>
-#include <llvm/Constants.h>
 
 namespace Kai {
 
@@ -39,7 +34,7 @@ namespace Kai {
 	}
 
 	Value::~Value () {
-
+		
 	}
 	
 	void Value::toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) {
@@ -72,25 +67,10 @@ namespace Kai {
 		return this;
 	}
 	
-	llvm::Value * Value::compile (Frame * frame) {
-		// Return a new trampoline which will do the default evaluation of this.
-		Cell * message = Cell::create()(sym("block"))(this);
-		
-		// Build stack frame
-		Frame * next = new Frame(NULL, message, frame);
-		
-		// Get the function called block
-		Value * function = frame->lookup(sym("block"));
-		ensure(function != NULL);
-		
-		// This should return an appropriate trampoline
-		return function->compile(next);
+	Value * Value::asValue () {
+		return Cell::create(sym("value"))(this);
 	}
 	
-	llvm::Value * Value::compiledValue (Frame * frame) {
-		return this->compile(frame);
-	}
-
 	StringT Value::toString (Value * value) {
 		if (value) {
 			StringStreamT buffer;
@@ -166,15 +146,6 @@ namespace Kai {
 	}
 	
 	Value * Value::call (Frame * frame) {
-		/*
-			((lookup 'Table 'set) (this) 'call (lambda '(object function) '(block
-				((cell
-					(wrap (lookup object (head function)))
-					(cell object (tail function))
-				))
-			)))
-		*/
-		
 		Value * self;
 		Cell * body;
 		
@@ -422,17 +393,6 @@ namespace Kai {
 		return frame->call(NULL, this);
 	}
 	
-	llvm::Value * Cell::compile (Frame * frame) {
-		Symbol * name = headAs<Symbol>();
-		ensure(name != NULL);
-		
-		Value * function = frame->lookup(name);
-		ensure(function != NULL);
-		
-		Frame * next = new Frame(NULL, this, frame);
-		return function->compile(next);
-	}
-
 	Value * Cell::_new (Frame * frame) {
 		Value * self;
 		Value * head = NULL;
@@ -662,16 +622,6 @@ namespace Kai {
 			return this;
 		}
 	}
-	
-	llvm::Value * Symbol::compile (Frame * frame) {
-		Value * result = frame->lookup(this);
-		
-		if (result == NULL) {
-			return NULL;
-		}
-		
-		return result->compiledValue(frame);
-	}
 
 	Symbol * Symbol::nilSymbol () {
 		return sym("nil");
@@ -693,6 +643,23 @@ namespace Kai {
 		return new Integer(self->m_hash);
 	}
 	
+	Value * Symbol::assign (Frame * frame) {
+		Symbol * self;
+		Value * value;
+		
+		frame->extract()(self)[value];
+		
+		Table * scope = dynamic_cast<Table*>(frame->scope());
+		
+		if (scope) {
+			scope->update(self, value);
+		} else {
+			throw Exception("Invalid Scope", frame->scope(), frame);
+		}
+		
+		return value;
+	}
+	
 	Value * Symbol::prototype () {
 		return globalPrototype();
 	}
@@ -703,6 +670,7 @@ namespace Kai {
 		if (!g_prototype) {
 			g_prototype = new Table;
 			
+			g_prototype->update(sym("="), KFunctionWrapper(Symbol::assign));
 			g_prototype->update(sym("hash"), KFunctionWrapper(Symbol::hash));
 		}
 		
@@ -720,13 +688,6 @@ namespace Kai {
 	}
 
 	Integer::~Integer () {
-	}
-	
-	llvm::Value * Integer::compile (Frame * context) {
-		return llvm::ConstantInt::get(
-			(const llvm::Type*)llvm::Type::getInt32Ty(llvm::getGlobalContext()), 
-			llvm::APInt(sizeof(m_value) * 8, m_value, true)
-		);
 	}
 	
 	Value * Integer::sum (Frame * frame) {
@@ -931,6 +892,7 @@ namespace Kai {
 		
 		while (bin != NULL) {
 			if (key->compare(bin->key) == 0) {
+				// If key is the same, remove the bin, but skipping over it.
 				*next = bin->next;
 			}
 			
@@ -951,11 +913,11 @@ namespace Kai {
 
 	void Table::toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) {
 		if (marks.find(this) != marks.end()) {
-			buffer << "(table{" << this << "} ...)" << std::endl;
+			buffer << "(table@" << this << " ...)" << std::endl;
 		} else {
 			marks.insert(this);
 			
-			buffer << "(table{" << this << "}";
+			buffer << "(table@" << this;
 			
 			for (unsigned i = 0; i < m_size; i += 1) {
 				Bin * bin = m_bins[i];
@@ -1119,81 +1081,6 @@ namespace Kai {
 	}
 	
 #pragma mark -
-#pragma mark Lambda
-
-	Lambda::Lambda (Frame * scope, Cell * arguments, Cell * code)
-		: m_scope(scope), m_arguments(arguments), m_code(code) {
-		// Required if we inherit from gc_cleanup, as this will often create a circular finalisation reference
-		//GC_register_disappearing_link((void**)&m_scope);
-	}
-	
-	Lambda::~Lambda () {
-		
-	}
-	
-	Value * Lambda::evaluate (Frame * frame) {
-		Table * locals = new Table;
-		
-		Cell * names = m_arguments;
-		Cell * values = frame->unwrap();
-		while (names != NULL) {
-			if (values == NULL) {
-				throw Exception("Lambda Arity Mismatch", frame);
-			}
-			
-			locals->update(names->headAs<Symbol>(), values->head());
-			
-			names = names->tailAs<Cell>();
-			values = values->tailAs<Cell>();
-		}
-		
-		Frame * next = new Frame(locals, m_scope);
-		
-		if (m_code)
-			return m_code->evaluate(next);
-		else
-			return NULL;
-	}
-	
-	void Lambda::toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) {
-		buffer << "(lambda{" << this << "}";
-		if (marks.find(this) != marks.end()) {
-			buffer << ")";
-		} else {
-			buffer << " `";
-			
-			MarkedT recurse (marks);
-			recurse.insert(this);
-			
-			if (m_arguments)
-				m_arguments->toCode(buffer, recurse, indentation + 1);
-			else
-				buffer << "()";
-				
-			buffer << " `";
-			
-			if (m_code)
-				m_code->toCode(buffer, recurse, indentation + 1);
-			else
-				buffer << "()";
-			
-			buffer << ")";
-		}
-	}
-	
-	Value * Lambda::lambda (Frame * frame) {
-		Cell * arguments, * code;
-		
-		frame->extract()[arguments][code];
-		
-		return new Lambda(frame, arguments, code);
-	}
-	
-	void Lambda::import (Table * context) {
-		context->update(sym("lambda"), KFunctionWrapper(Lambda::lambda));
-	}
-	
-#pragma mark -
 #pragma mark Logic
 
 	// Builtin Logical Operations
@@ -1300,191 +1187,43 @@ namespace Kai {
 		Value * value;
 	};
 	
-	class BuiltinVar : public Value {
-		public:
-			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) {
-				buffer << "(builtin-var)";
-			}
-			
-			virtual Value * evaluate (Frame * frame) {
-				throw Exception("Not Implemented!", frame);
-			}
-			
-			virtual llvm::Value * compile (Frame * frame) {
-				Compiler * c = frame->lookupAs<Compiler>(sym("compiler"));
-				Table * locals = frame->lookupAs<Table>(sym("locals"));
-				
-				CompiledType * varType;
-				Symbol * varName;
-				
-				frame->extract()(varName)(varType);
-				
-				llvm::Value * var = c->builder()->CreateAlloca(varType->value());
-				locals->update(varName, new CompiledValue(var));
-				
-				return var;
-			}
-	};
-	
-	class BuiltinReturn : public Value {
-		public:
-			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) {
-				buffer << "(builtin-return)";
-			}
-			
-			virtual Value * evaluate (Frame * frame) {
-				Value * result = NULL;
-				
-				frame->extract()[result];
-				
-				ReturnValue r = {result};
-				
-				throw r;
-			}
-			
-			virtual llvm::Value * compile (Frame * frame) {
-				Compiler * c = frame->lookupAs<Compiler>(sym("compiler"));
-				
-				Value * expression = NULL;
-				
-				frame->extract(false)[expression];
-				
-				if (expression) {
-					llvm::Value * result = expression->compile(frame);
-					c->builder()->CreateRet(result);
-				} else {
-					c->builder()->CreateRetVoid();
-				}
-				
-				return NULL;
-			}
-	};
-	
-	class BuiltinBlock : public Value {
-		public:
-			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) {
-				buffer << "(builtin-block)";
-			}
-			
-			virtual Value * evaluate (Frame * frame) {
-				Value * result = NULL;
+	Value * Logic::return_ (Frame * frame) {
+		Value * result = NULL;
 		
-				try {
-					Cell * statements = frame->operands();
-					
-					while (statements != NULL) {
-						result = statements->head()->evaluate(frame);
-						
-						statements = statements->tailAs<Cell>();
-					}
-				} catch (ReturnValue r) {
-					return r.value;
-				}
-				
-				return result;
-			}
-			
-			virtual llvm::Value * compile (Frame * frame) {
-				//Compiler * c = frame->lookupAs<Compiler>(sym("compiler"));
-				
-				// Setup the block local variables.
-				Table * locals = new Table;
-				locals->update(sym("locals"), locals);
-				
-				Frame * next = new Frame(locals, frame);
-				
-				Cell * statements = frame->operands();
-				llvm::Value * result = NULL;				
+		frame->extract()[result];
 		
-				// Could check for getTerminator() and stop, or error.
-				while (statements != NULL) {
-					// std::cout << "Compiling Statement: " << Value::toString(statements->head()) << std::endl;
-					result = statements->head()->compile(next);
-					
-					statements = statements->tailAs<Cell>();
-				}
-								
-				return result;
-			}
-	};
-	
-	class BuiltinIf : public Value {
-		public:
-			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) {
-				buffer << "(builtin-if)";
-			}
+		ReturnValue r = {result};
 		
-			virtual Value * evaluate (Frame * frame) {
-				Value * condition, * trueClause, * falseClause;
-				
-				frame->extract(false)[condition][trueClause][falseClause];
-				
-				if (Value::toBoolean(condition->evaluate(frame))) {
-					return trueClause->evaluate(frame);
-				} else {
-					if (falseClause)
-						return falseClause->evaluate(frame);
-					else
-						return NULL;
-				}
-			}
-			
-			virtual llvm::Value * compile (Frame * frame) {
-				Compiler * c = frame->lookupAs<Compiler>(sym("compiler"));
-				llvm::Function * function = c->builder()->GetInsertBlock()->getParent();
-
-				Value * condition, * trueClause, * falseClause;
-				frame->extract(false)(condition)(trueClause)[falseClause];
-				
-				llvm::BasicBlock * trueBlock, * falseBlock;
-				trueBlock = llvm::BasicBlock::Create(llvm::getGlobalContext(), "true", function);
-				falseBlock = llvm::BasicBlock::Create(llvm::getGlobalContext(), "false", function);
-				
-				llvm::BasicBlock * nextBlock = NULL;
-				
-				llvm::Value * test = condition->compile(frame);
-				c->builder()->CreateCondBr(test, trueBlock, falseBlock);
-
-				c->builder()->SetInsertPoint(trueBlock);
-				llvm::Value * trueResult = trueClause->compile(frame);
-								
-				if (!trueBlock->getTerminator()) {
-					if (!nextBlock)
-						nextBlock = llvm::BasicBlock::Create(llvm::getGlobalContext(), "next", function);
-					
-					c->builder()->CreateBr(nextBlock);
-				}
-				
-				c->builder()->SetInsertPoint(falseBlock);
-				if (falseClause) {
-					falseClause->compile(frame);
-				}
-				
-				if (!falseBlock->getTerminator()) {
-					if (!nextBlock)
-						nextBlock = llvm::BasicBlock::Create(llvm::getGlobalContext(), "next", function);
-						
-					c->builder()->CreateBr(nextBlock);
-				}
-				
-				if (nextBlock)
-					c->builder()->SetInsertPoint(nextBlock);
-
-				return NULL;
-			}
-	};
+		throw r;
+	}
 	
+	Value * Logic::block (Frame * frame) {
+		Value * result = NULL;
+
+		try {
+			Cell * statements = frame->operands();
+			
+			while (statements != NULL) {
+				result = statements->head()->evaluate(frame);
+				
+				statements = statements->tailAs<Cell>();
+			}
+		} catch (ReturnValue r) {
+			return r.value;
+		}
+		
+		return result;
+	}
+		
 	void Logic::import (Table * context) {
 		context->update(sym("or"), KFunctionWrapper(Logic::or_));
 		context->update(sym("and"), KFunctionWrapper(Logic::and_));
 		context->update(sym("not"), KFunctionWrapper(Logic::not_));
 
-		context->update(sym("block"), new BuiltinBlock);
-		context->update(sym("return"), new BuiltinReturn);
+		context->update(sym("block"), KFunctionWrapper(Logic::block));
+		context->update(sym("return"), KFunctionWrapper(Logic::return_));
 
 		context->update(sym("when"), KFunctionWrapper(Logic::when));
-		context->update(sym("if"), new BuiltinIf);
-		
-		context->update(sym("var"), new BuiltinVar);
+		context->update(sym("if"), KFunctionWrapper(Logic::if_));
 	}
 }

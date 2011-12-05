@@ -13,6 +13,9 @@
 #include "Value.h"
 #include <map>
 
+// #define KAI_TRACE
+#define KAI_DEBUG
+
 namespace Kai {
 	
 	class Value;
@@ -40,6 +43,12 @@ namespace Kai {
 			void exit(Value* value);
 			
 			void dump(std::ostream & buffer);
+
+			static Value * dump(Frame * frame);
+			
+			virtual Value * prototype ();
+			static Value * globalPrototype ();
+			static void import (Table * context);
 			
 			static Tracer * globalTracer ();
 	};
@@ -47,7 +56,7 @@ namespace Kai {
 	/** The Frame class represents the stack of a running program, and is dynamically allocated.
 	
 	*/
-	class Frame : public gc {
+	class Frame : public gc_cleanup {
 		protected:
 			/// Previous stack frame
 			Frame * m_previous;
@@ -77,6 +86,8 @@ namespace Kai {
 			/// Create an intermediate stack frame as above, but with a given message.
 			Frame (Value * scope, Cell * message, Frame * previous);
 			
+			virtual ~Frame ();
+			
 			/// Lookup an identifier using the stack, starting at this frame.
 			Value * lookup (Symbol * identifier);
 			/// Lookup an identifier as above, but return the frame which defines the value.
@@ -87,8 +98,9 @@ namespace Kai {
 				return dynamic_cast<ValueT*>(lookup(identifier));
 			}
 			
-			// Should a message be restricted to a Cell, or is it suitable to be a Value ?
+			// Evaluate a given message in the specified scope.
 			Value * call (Value * scope, Cell * message);
+			Value * call (Cell * message) { return call(NULL, message); }
 			
 			/// Return the previous stack frame.
 			Frame * previous ();

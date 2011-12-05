@@ -46,9 +46,9 @@ namespace Kai {
 			
 			if (t += parseConstant(t.end(), end, OPEN_COMMENT)) {				
 				while (t.end() != end) {
-					Token u;
+					Token u = parseConstant(t.end(), end, CLOSE_COMMENT);
 					
-					if (u = parseConstant(t.end(), end, CLOSE_COMMENT)) {
+					if (u) {
 						t += u;
 						
 						return t;
@@ -66,11 +66,13 @@ namespace Kai {
 		Token parseComment (StringIteratorT begin, StringIteratorT end) {
 			Token t;
 			
-			if (t = parseSingleLineComment(begin, end)) {
+			t = parseSingleLineComment(begin, end);
+			if (t) {
 				return t;
 			}
 			
-			if (t = parseMultiLineComment(begin, end)) {
+			t = parseMultiLineComment(begin, end);
+			if (t) {
 				return t;
 			}
 			
@@ -107,10 +109,12 @@ namespace Kai {
 		Token parseDecimal (StringIteratorT begin, StringIteratorT end) {
 			static const StringT DECIMAL_POINT = ".";
 			
-			Token t(begin, DECIMAL), u;
+			Token t(begin, DECIMAL);
 			
 			if (t &= parseCharacters(t.end(), end, isNumeric)) {
-				if (u = parseConstant(t.end(), end, DECIMAL_POINT)) {
+				Token u;
+			
+				if ((u = parseConstant(t.end(), end, DECIMAL_POINT))) {
 					u &= parseCharacters(t.end(), end, isNumeric);
 					
 					if (u)
@@ -131,11 +135,11 @@ namespace Kai {
 				while (t.end() != end) {
 					Token u;
 					
-					if (u = parseConstant(t.end(), end, QUOTE)) {
+					if ((u = parseConstant(t.end(), end, QUOTE))) {
 						t += u;
 						
 						return t;
-					} else if (u = parseConstant(t.end(), end, ESCAPED_QUOTE)) {
+					} else if ((u = parseConstant(t.end(), end, ESCAPED_QUOTE))) {
 						t += u;
 					} else {
 						++t;
@@ -148,6 +152,14 @@ namespace Kai {
 			return t;
 		}
 		
+		bool isIdentifierStart (StringIteratorT i) {
+			return isAlpha(i) || *i == '_';
+		}
+		
+		bool isIdentifierMiddle (StringIteratorT i) {
+			return isAlphaNumeric(i) || *i == '_' || *i == '-';
+		}
+		
 		bool isIdentifierEnding (StringIteratorT i) {
 			return *i == '?' || *i == '!' || *i == '=';
 		}
@@ -156,10 +168,10 @@ namespace Kai {
 		Token parseIdentifier (StringIteratorT begin, StringIteratorT end) {
 			Token t(begin, SYMBOL);
 			
-			t &= parseCharacters(t.end(), end, isAlpha, Counter(1, 1));
+			t &= parseCharacters(t.end(), end, isIdentifierStart, Counter(1, 1));
 			if (!t) return t;
 			
-			t += parseCharacters(t.end(), end, isAlphaNumeric);
+			t += parseCharacters(t.end(), end, isIdentifierMiddle);
 			t += parseCharacters(t.end(), end, isIdentifierEnding, Counter(0, 1));
 			
 			return t;

@@ -15,10 +15,7 @@
 namespace Kai {
 
 	typedef Value * (*EvaluateFunctionT)(Frame *);
-	typedef llvm::Value * (*CompileFunctionT)(Frame *);
-	
-	llvm::Value * buildTrampoline (std::string name, EvaluateFunctionT function, Frame * frame);
-	
+		
 	template <Value * (*FunctionT)(Frame *)>
 	class BuiltinFunction : public Value {
 		protected:
@@ -32,23 +29,12 @@ namespace Kai {
 			virtual Value* evaluate (Frame * frame) {
 				return FunctionT(frame);
 			}
-			
-			virtual llvm::Value * compile (Frame * frame) {
-				//return buildTrampoline(m_name, FunctionT, frame);
-				Value * result = FunctionT(frame);
-				return result->compile(frame);
-			}
-			
-			virtual llvm::Value * compiledValue (Frame * frame) {
-				Value * result = FunctionT(frame);				
-				return result->compiledValue(frame);
-			}
-			
+						
 			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) {
 				buffer << "(builtin-function " << m_name << ")";
 			}
 	};
-
+	
 	#define KFunctionWrapper(function) new BuiltinFunction<&function>(#function)
 	
 	class DynamicFunction : public Value {

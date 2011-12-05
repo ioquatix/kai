@@ -19,5 +19,30 @@ namespace Kai {
 		Token parseDecimal (StringIteratorT begin, StringIteratorT end);
 		Token parseWhitespace (StringIteratorT begin, StringIteratorT end);
 		Token parseIdentifier (StringIteratorT begin, StringIteratorT end);
+		
+		/*
+			[(this) set grammar [Grammar new]]
+			
+			[grammar define `eol `(fn (begin end)
+				(var `token [Token new begin])
+				
+				
+				
+				(or (parse-string begin end ";") (parse-string "\n"))
+			)]
+		*/
+		/*
+		class Grammar
+		{
+			protected:
+				Table * m_rules;
+			
+			public:
+				/// [Grammar define name rule]
+				static Value * define(Frame * frame);
+				
+				static Value * parse(Frame * frame);
+		};
+		*/
 	}
 }
