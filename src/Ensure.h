@@ -14,9 +14,9 @@
 #include <string>
 
 #ifndef __GNUC__
-#define ensure(e) ::Kai::InternalError::ensureHandler(e, #e, __PRETTY_FUNCTION__, __FILE__, __LINE__)
+#define KAI_ENSURE(e) ::Kai::InternalError::ensureHandler(e, #e, __PRETTY_FUNCTION__, __FILE__, __LINE__)
 #else
-#define ensure(e) ::Kai::InternalError::ensureHandler(e, #e, __func__, __FILE__, __LINE__)
+#define KAI_ENSURE(e) ::Kai::InternalError::ensureHandler(e, #e, __func__, __FILE__, __LINE__)
 #endif
 
 namespace Kai {
@@ -36,10 +36,10 @@ namespace Kai {
 		/// A descriptive string relating to the assertion that failed.
 		virtual const char * what () const throw ();
 
-		/// The ensure() macro calls this function to handle throwing the actual exception.
+		/// The KAI_ENSURE() macro calls this function to handle throwing the actual exception.
 		static void ensureHandler (bool condition, const char * expression, const char * func, const char * file, unsigned line);
 	};
-
+	
 	
 }
 

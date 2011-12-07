@@ -19,7 +19,7 @@ namespace Kai {
 		Frame * frame = new Frame(context);
 		m_expressions = Expressions::fetch(frame);
 		
-		ensure(m_expressions != NULL);
+		KAI_ENSURE(m_expressions != NULL);
 	}
 	
 	BasicEditor::~BasicEditor()

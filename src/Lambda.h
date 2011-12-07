@@ -27,19 +27,19 @@ namespace Kai {
 
 	class Lambda : public Value {
 		protected:
-			Frame * m_scope;
-			Cell * m_arguments;
-			Cell * m_code;
+			Ref<Frame> m_scope;
+			Ref<Cell> m_arguments;
+			Ref<Cell> m_code;
 			
 		public:
 			Lambda (Frame * scope, Cell * arguments, Cell * code);
 			virtual ~Lambda ();
 			
-			virtual Value * evaluate (Frame * frame);
+			virtual Ref<Value> evaluate (Frame * frame);
 			
 			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation);
 			
-			static Value * lambda (Frame * frame);
+			static Ref<Value> lambda (Frame * frame);
 			static void import (Table *);
 	};
 

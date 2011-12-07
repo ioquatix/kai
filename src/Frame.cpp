@@ -39,7 +39,7 @@ namespace Kai {
 		buffer << "Tracer Statistics" << std::endl;
 		
 		for (StatisticsMapT::iterator iter = m_statistics.begin(); iter != m_statistics.end(); iter++) {
-			Value * function = iter->first;
+			const Ref<Value> function = iter->first;
 			Statistics & stats = iter->second;
 			
 			buffer << "\t";
@@ -53,7 +53,7 @@ namespace Kai {
 		}
 	}
 	
-	Value * Tracer::dump(Frame * frame)
+	Ref<Value> Tracer::dump(Frame * frame)
 	{
 		Tracer * tracer = NULL;
 		
@@ -65,12 +65,12 @@ namespace Kai {
 		return new String(buffer.str());
 	}
 	
-	Value * Tracer::prototype ()
+	Ref<Value> Tracer::prototype ()
 	{
 		return globalPrototype();
 	}
 	
-	Value * Tracer::globalPrototype ()
+	Ref<Value> Tracer::globalPrototype ()
 	{
 		static Table * g_prototype = NULL;
 		
@@ -126,7 +126,9 @@ namespace Kai {
 		m_arguments(previous->m_arguments)
 	{
 		m_depth = m_previous->m_depth + 1;
+#ifdef KAI_DEBUG
 		std::cerr << "Frame: " << this << " Arguments: " << arguments() << std::endl;
+#endif
 	}
 
 	Frame::Frame (Value * scope, Cell * message, Frame * previous)
@@ -136,23 +138,11 @@ namespace Kai {
 	}
 	
 	Frame::~Frame () {
-		std::cerr << "Deallocating frame " << this << std::endl;
-		
-		// Clean up a wee bit for debugging:
-		m_previous = NULL;
-		m_scope = NULL;
-		m_message = NULL;
-		m_function = NULL;
-		m_arguments = NULL;
-		
-		// Some markers for debugging:
-		m_arguments = (Cell*)0xdeadbeaf;
-		m_depth = -1;
 	}
 	
-	Value * Frame::lookup (Symbol * identifier, Frame *& frame)
+	Ref<Value> Frame::lookup (Symbol * identifier, Frame *& frame)
 	{
-		Value * result = NULL;
+		Ref<Value> result = NULL;
 		
 		if (m_scope) {
 			result = m_scope->lookup(identifier);
@@ -166,14 +156,14 @@ namespace Kai {
 		return result;
 	}
 	
-	Value * Frame::lookup (Symbol * identifier)
+	Ref<Value> Frame::lookup (Symbol * identifier)
 	{
 		Frame * frame = NULL;
 		
 		return lookup(identifier, frame);
 	}
 	
-	Value * Frame::apply () {
+	Ref<Value> Frame::apply () {
 #ifdef KAI_DEBUG
 		std::cerr << "-- " << Value::toString(m_message) << " <= " << Value::toString(m_scope) << std::endl;
 		std::cerr << StringT(m_depth, '\t') << "Fetching Function " << Value::toString(m_message->head()) << std::endl;
@@ -195,12 +185,10 @@ namespace Kai {
 		Trace trace(this);
 #endif
 		
-		Value * result = m_function->evaluate(this);
-		
-		return result;
+		return m_function->evaluate(this);
 	}
 
-	Value * Frame::call (Value * scope, Cell * message)
+	Ref<Value> Frame::call (Value * scope, Cell * message)
 	{
 		if (message == NULL) {
 			throw Exception("Invalid Message", this);
@@ -208,14 +196,13 @@ namespace Kai {
 	
 		Frame * frame = new Frame(scope, message, this);
 		
+#ifdef KAI_DEBUG
 		std::cerr << "Stack pointer: " << (void*)&frame << std::endl;
 		std::cerr << "Allocating new frame at address " << frame << " from frame " << this << " in scope " << scope << " with message " << message << std::endl;
 		frame->debug(false);
+#endif
 		
-		//return frame->apply();
-		Value * result = frame->apply();
-		
-		return result;
+		return frame->apply();
 	}
 
 	Cell * Frame::message () {
@@ -226,13 +213,13 @@ namespace Kai {
 		return m_previous;
 	}
 
-	Value * Frame::scope () {
-		Value * scope = m_scope;
+	Ref<Value> Frame::scope () {
+		Ref<Value> scope = m_scope;
 		
-		if (scope == NULL) {
+		if (!scope) {
 			Frame * cur = m_previous;
 			
-			while (scope == NULL && cur) {
+			while (!scope && cur) {
 				scope = cur->m_scope;
 				
 				cur = cur->m_previous;
@@ -242,7 +229,7 @@ namespace Kai {
 		return scope;
 	}
 
-	Value * Frame::function () {
+	Ref<Value> Frame::function () {
 		return m_function;
 	}
 
@@ -255,14 +242,16 @@ namespace Kai {
 
 	// With optimisations turned on, this function seems to cause stack frames to be reused and cause problems..!?
 	Cell * Frame::unwrap () {
+#ifdef KAI_DEBUG
 		std::cerr << "Unwrapping with frame: " << this << std::endl;
-		if (m_arguments != NULL) return m_arguments;
+#endif
+		if (m_arguments) return m_arguments;
 		
 		Cell * last = NULL;
 		Cell * cur = operands();
 		
 		while (cur) {
-			Value * value = NULL;
+			Ref<Value> value = NULL;
 			
 			// If cur->head() == NULL, the result is also NULL.
 			if (cur->head())
@@ -270,7 +259,7 @@ namespace Kai {
 			
 			last = Cell::append(last, value, m_arguments);
 			
-			cur = dynamic_cast<Cell*>(cur->tail());
+			cur = cur->tail().as<Cell>();
 		}
 		
 		return m_arguments;
@@ -325,11 +314,10 @@ namespace Kai {
 		} while (!cur->top() && ascend);
 	}
 	
-	Value * Frame::benchmark (Frame * frame)
+	Ref<Value> Frame::benchmark (Frame * frame)
 	{		
 		Integer * times;
-		Value * exec;
-		Value * result;
+		Value * exec, * result;
 		
 		frame->extract()(times)(exec);
 		
@@ -367,7 +355,7 @@ namespace Kai {
 		//context->update(sym("defines"), KFunctionWrapper(Frame::where));
 	}
 /*	
-	Value * Frame::where (Frame * frame)
+	Ref<Value> Frame::where (Frame * frame)
 	{
 		Symbol * identifier = NULL;
 		
@@ -380,7 +368,7 @@ namespace Kai {
 	}
 */	
 	// Attempt to update inplace a value in a frame
-	Value * Frame::update (Frame * frame)
+	Ref<Value> Frame::update (Frame * frame)
 	{
 		Symbol * identifier = NULL;
 		Value * newValue = NULL;
@@ -391,7 +379,7 @@ namespace Kai {
 		frame->lookup(identifier, location);
 		
 		if (location) {
-			Table * scope = dynamic_cast<Table*>(location->scope());
+			Table * scope = location->scope().as<Table>();
 			
 			if (scope) {
 				scope->update(identifier, newValue);
@@ -405,11 +393,11 @@ namespace Kai {
 		return newValue;		
 	}
 	
-	Value * Frame::scope (Frame * frame) {
+	Ref<Value> Frame::scope (Frame * frame) {
 		return frame->scope();
 	}
 	
-	Value * Frame::trace (Frame * frame) {
+	Ref<Value> Frame::trace (Frame * frame) {
 		Cell * arguments = frame->unwrap();
 		
 		std::cerr << Value::toString(frame->message()) << " -> " << Value::toString(arguments) << std::endl;
@@ -419,7 +407,7 @@ namespace Kai {
 	
 	class Wrapper : public Value {
 		protected:
-			Value * m_value;
+			Ref<Value> m_value;
 		
 		public:
 			Wrapper (Value * value) : m_value(value)
@@ -427,13 +415,13 @@ namespace Kai {
 			
 			}
 			
-			virtual Value * evaluate (Frame * frame) {
+			virtual Ref<Value> evaluate (Frame * frame) {
 				Cell * arguments = frame->unwrap();
 				Cell * message = new Cell(m_value, arguments);
 				return frame->call(NULL, message);
 			}
 			
-			Value * value ()
+			Ref<Value> value ()
 			{
 				return m_value;
 			}
@@ -448,7 +436,7 @@ namespace Kai {
 			}
 	};
 	
-	Value * Frame::wrap (Frame * frame) {	
+	Ref<Value> Frame::wrap (Frame * frame) {	
 		Value * function;
 		frame->extract()(function);
 		return new Wrapper(Cell::create(sym("value"))(function));
@@ -456,7 +444,7 @@ namespace Kai {
 	
 	class Unwrapper : public Value {
 		protected:
-			Value * m_value;
+			Ref<Value> m_value;
 			
 		public:
 			Unwrapper (Value * value) : m_value(value)
@@ -464,7 +452,7 @@ namespace Kai {
 			
 			}
 			
-			virtual Value * evaluate (Frame * frame) {
+			virtual Ref<Value> evaluate (Frame * frame) {
 				Cell * operands = frame->operands();
 				Cell * message = new Cell(m_value);
 				Cell * next = message;
@@ -481,7 +469,7 @@ namespace Kai {
 				return frame->call(NULL, message);
 			}
 			
-			Value * value ()
+			Ref<Value> value ()
 			{
 				return m_value;
 			}
@@ -496,11 +484,13 @@ namespace Kai {
 			}
 	};
 	
-	Value * Frame::unwrap (Frame * frame) {
+	Ref<Value> Frame::unwrap (Frame * frame) {
 		Value * function;
+		
 		frame->extract()(function);
 		
-		Wrapper * wrapper = dynamic_cast<Wrapper*>(function);
+		Wrapper * wrapper = ptr(function).as<Wrapper>();
+		
 		if (wrapper) {
 			return wrapper->value();
 		} else {
@@ -508,9 +498,9 @@ namespace Kai {
 		}
 	}
 	
-	Value * Frame::with (Frame * frame) {
+	Ref<Value> Frame::with (Frame * frame) {
 		Cell * cur = frame->operands();
-		Value * scope = frame->scope();
+		Ref<Value> scope = frame->scope();
 		Frame * next = frame;
 				
 		while (cur != NULL) {

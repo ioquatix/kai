@@ -132,7 +132,7 @@ namespace Kai {
 	
 #pragma mark -
 
-	Value * Expressions::parse (Frame * frame) {
+	Ref<Value> Expressions::parse (Frame * frame) {
 		Expressions * self;
 		String * codeString;
 		
@@ -147,11 +147,11 @@ namespace Kai {
 		}
 	}
 		
-	Value * Expressions::prototype () {
+	Ref<Value> Expressions::prototype () {
 		return globalPrototype();
 	}
 	
-	Value * Expressions::globalPrototype () {
+	Ref<Value> Expressions::globalPrototype () {
 		static Table * g_prototype = NULL;
 		
 		if (!g_prototype) {
@@ -291,7 +291,7 @@ namespace Kai {
 	
 	}
 	
-	Value * CellExpression::convertToResult (Cell * items)
+	Ref<Value> CellExpression::convertToResult (Cell * items)
 	{
 		return items;
 	}
@@ -383,7 +383,7 @@ namespace Kai {
 	
 	}
 
-	Value * CallExpression::convertToResult (Cell * items) {
+	Ref<Value> CallExpression::convertToResult (Cell * items) {
 		return Cell::create
 			(sym("call"))
 			(items->head())
@@ -406,7 +406,7 @@ namespace Kai {
 	
 	}
 			
-	Value * BlockExpression::convertToResult (Cell * items)
+	Ref<Value> BlockExpression::convertToResult (Cell * items)
 	{
 		return (new Cell(sym("block"), items))->asValue();
 	}

@@ -19,9 +19,6 @@
 #include <vector>
 #include <stdint.h>
 
-#include <gc/gc_cpp.h>
-#include <gc/gc_allocator.h>
-
 #define abstract = 0
 
 namespace Kai {

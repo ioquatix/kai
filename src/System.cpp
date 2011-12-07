@@ -30,18 +30,18 @@ namespace Kai {
 		
 	}
 	
-	Value * System::run (const PathT & path, Frame * frame) {
+	Ref<Value> System::run (const PathT & path, Frame * frame) {
 		SourceCode code(path);
 			
 		Expressions * expressions = Expressions::fetch(frame);
-		Value * value = expressions->parse(code).value;
-		Value * result = value->evaluate(frame);
+		Ref<Value> value = expressions->parse(code).value;
+		Ref<Value> result = value->evaluate(frame);
 		
 		return result;
 	}
 	
-	Value * System::compile (const PathT & path, Frame * frame) {
-		Value * config = run(path, frame);
+	Ref<Value> System::compile (const PathT & path, Frame * frame) {
+		Ref<Value> config = run(path, frame);
 		
 		if (!config) {
 			throw Exception("Could not read configuration table", frame);
@@ -75,7 +75,7 @@ namespace Kai {
 		Array::ConstIteratorT end = m_loadPaths->value().end();
 		
 		while (begin != end) {
-			String * base = dynamic_cast<String*>(*begin);
+			const String * base = begin->as<String>();
 			
 			path = base->value() + subPath;
 			
@@ -93,7 +93,7 @@ namespace Kai {
 		buffer << "(System@" << this << ")" << std::endl;
 	}
 	
-	Value * System::require (Frame * frame) {
+	Ref<Value> System::require (Frame * frame) {
 		System * system = NULL;
 		String * name = NULL;
 		
@@ -111,7 +111,7 @@ namespace Kai {
 		throw Exception("Could not find dependency", name, frame);
 	}
 	
-	Value * System::load (Frame * frame) {
+	Ref<Value> System::load (Frame * frame) {
 		System * system = NULL;
 		String * name = NULL;
 		
@@ -125,7 +125,7 @@ namespace Kai {
 		throw Exception("Could not find file", name, frame);
 	}
 	
-	Value * System::loadPaths (Frame * frame) {
+	Ref<Value> System::loadPaths (Frame * frame) {
 		System * system = NULL;
 		
 		frame->extract()(system);
@@ -133,10 +133,10 @@ namespace Kai {
 		return system->m_loadPaths;
 	}
 	
-	Value * System::workingDirectory (Frame * frame) {
+	Ref<Value> System::workingDirectory (Frame * frame) {
 		char * buf = getcwd(NULL, 0);
 		
-		ensure(buf != NULL);
+		KAI_ENSURE(buf != NULL);
 		
 		String * path = new String(buf);
 		
@@ -145,7 +145,7 @@ namespace Kai {
 		return path;
 	}
 	
-	Value * System::environment (Frame * frame) {
+	Ref<Value> System::environment (Frame * frame) {
 		Table * env = new Table;
 		
 		for (char **e = environ; *e; ++e) {
@@ -177,11 +177,11 @@ namespace Kai {
 		return env;
 	}
 	
-	Value * System::prototype () {
+	Ref<Value> System::prototype () {
 		return globalPrototype();
 	}
 	
-	Value * System::globalPrototype () {
+	Ref<Value> System::globalPrototype () {
 		static Table * g_prototype = NULL;
 		
 		if (g_prototype == NULL) {

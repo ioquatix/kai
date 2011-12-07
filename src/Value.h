@@ -12,6 +12,7 @@
 
 #include "Kai.h"
 #include "Exception.h"
+#include "Reference.h"
 
 #include <set>
 
@@ -26,7 +27,7 @@ namespace Kai {
 	class InvalidComparison {};
 	class InvalidInvocation {};
 	
-	typedef std::set<Value*> MarkedT;
+	typedef std::set<const Value *> MarkedT;
 	
 	class Frame;
 	class Table;
@@ -38,8 +39,8 @@ namespace Kai {
 	void debug (Value * value);
 	
 	template <typename ThisT>
-	inline static int derivedCompare (ThisT * lhs, Value * rhs) {
-		ThisT * other = dynamic_cast<ThisT *>(rhs);
+	inline static int derivedCompare (const ThisT * lhs, const Value * rhs) {
+		const ThisT * other = dynamic_cast<const ThisT *>(rhs);
 
 		if (other) {
 			return lhs->compare(other);
@@ -58,14 +59,14 @@ namespace Kai {
 		}
 	}
 	
-	class Value : virtual public gc {
+	class Value : virtual public SharedObject {
 		public:
 			Value ();
 			virtual ~Value ();
 
 			/// Compare the value with another value. Returns -1, 0, 1 depending on comparison result.
 			/// If objects cannot be compared, throws InvalidComparison exception.
-			virtual int compare (Value * other);
+			virtual int compare (const Value * other) const;
 			
 			template <typename LeftT, typename RightT>
 			static int compare (LeftT * lhs, RightT * rhs) {
@@ -81,9 +82,9 @@ namespace Kai {
 			}
 			
 			/// Write the value to the given buffer.
-			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation);
+			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const;
 						
-			inline void toCode(StringStreamT & buffer) {
+			inline void toCode(StringStreamT & buffer) const {
 				MarkedT marks;
 				toCode(buffer, marks, 0); 
 			}
@@ -91,50 +92,50 @@ namespace Kai {
 			void debug ();
 
 			/// Lookup the given identifier. Defers to prototype by default.
-			virtual Value * lookup (Symbol * identifier);
+			virtual Ref<Value> lookup (Symbol * identifier);
 			
 			/// A prototype specifies the behaviour of the current value.
-			virtual Value * prototype ();
+			virtual Ref<Value> prototype ();
 			
 			/// Evaluate the current value in the given context.
-			virtual Value * evaluate (Frame * frame);
+			virtual Ref<Value> evaluate (Frame * frame);
 
-			static StringT toString (Value * value);
-			static bool toBoolean (Value * value);
-			static int compare(Value * lhs, Value * rhs);
-			static bool equal(Value * lhs, Value * rhs);
+			static StringT toString (const Value * value);
+			static bool toBoolean (const Value * value);
+			static int compare(const Value * lhs, const Value * rhs);
+			static bool equal(const Value * lhs, const Value * rhs);
 			
 			// Returns (value {this})
-			Value * asValue ();
+			Ref<Value> asValue ();
 			
 			// Converts the argument to a string value
-			static Value * toString (Frame * frame);
+			static Ref<Value> toString (Frame * frame);
 			
 			// Converts the argument to a boolean symbol
-			static Value * toBoolean (Frame * frame);
+			static Ref<Value> toBoolean (Frame * frame);
 			
 			// Compares the given arguments
-			static Value * compare (Frame * frame);
+			static Ref<Value> compare (Frame * frame);
 			
 			// Compares the given values and returns a true/false value
-			static Value * equal (Frame * frame);
+			static Ref<Value> equal (Frame * frame);
 			
 			/// Returns a prototype for the given object.
-			static Value * prototype (Frame * frame);
+			static Ref<Value> prototype (Frame * frame);
 			
 			// Returns the arguments unevaluated
-			static Value * value (Frame * frame);
+			static Ref<Value> value (Frame * frame);
 			
 			// Evaluates arguments one at a time in result of the previous.
-			static Value * lookup (Frame * frame);
+			static Ref<Value> lookup (Frame * frame);
 			
 			// Performs a method call with the given function.
-			static Value * call (Frame * frame);
+			static Ref<Value> call (Frame * frame);
 			
-			static Value * sleep (Frame * frame);
+			static Ref<Value> sleep (Frame * frame);
 			
 			/// The global value prototype.
-			static Value * globalPrototype ();
+			static Ref<Value> globalPrototype ();
 			/// Import the global prototype and associated functions into an execution context.
 			static void import (Table * context);
 	};
@@ -144,27 +145,29 @@ namespace Kai {
 
 	class Cell : public Value {
 		protected:
-			Value * m_head;
-			Value * m_tail;
+			Ref<Value> m_head;
+			Ref<Value> m_tail;
 			
 		public:
 			Cell (Value * head = NULL, Value * tail = NULL);
 			virtual ~Cell ();
 			
-			Value * head () { return m_head; }
-			
-			template <typename ValueT>
-			ValueT * headAs () { return dynamic_cast<ValueT*>(m_head); }
-			
-			Value * tail () { return m_tail; }
-			
-			template <typename ValueT>
-			ValueT * tailAs () { return dynamic_cast<ValueT*>(m_tail); }
-			
+			Ref<Value> head () { return m_head; }
+			const Ref<Value> head () const { return m_head; }
+			Ref<Value> tail () { return m_tail; }
+			const Ref<Value> tail () const { return m_tail; }
+		
+			template <typename AnyT>
+			AnyT * headAs () { return m_head.as<AnyT>(); }
+
+			template <typename AnyT>
+			AnyT * tailAs () { return m_tail.as<AnyT>(); }
+		
 			Cell * insert (Value * value);
 			Cell * append (Value * value);
 			
-			static Cell * append (Cell * list, Value * item, Cell *& first) {
+			template <typename FirstT>
+			static Cell * append (Cell * list, Value * item, FirstT & first) {
 				if (list) {
 					return list->append(item);
 				} else {
@@ -174,14 +177,14 @@ namespace Kai {
 			
 			unsigned count ();
 			
-			virtual int compare (Value * other);
-			int compare (Cell * other);
+			virtual int compare (const Value * other) const;
+			int compare (const Cell * other) const;
 
-			virtual Value * prototype ();
+			virtual Ref<Value> prototype ();
 			
-			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation);
+			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const;
 			
-			virtual Value * evaluate (Frame * frame);
+			virtual Ref<Value> evaluate (Frame * frame);
 			
 			class ArgumentExtractor {
 				Frame * m_frame;
@@ -247,6 +250,10 @@ namespace Kai {
 					operator Cell* () {
 						return m_start;
 					}
+				
+					operator Ref<Value> () {
+						return m_start;
+					}
 			};
 
 			static inline ListBuilder create() {
@@ -259,21 +266,21 @@ namespace Kai {
 			}
 			
 			//% (prepend cell value) -> (cell value)
-			static Value * _new (Frame * frame);
-			static Value * head (Frame * frame);
-			static Value * tail (Frame * frame);
-			static Value * list (Frame * frame);
+			static Ref<Value> _new (Frame * frame);
+			static Ref<Value> head (Frame * frame);
+			static Ref<Value> tail (Frame * frame);
+			static Ref<Value> list (Frame * frame);
 			
-			static Value * each (Frame * frame);
+			static Ref<Value> each (Frame * frame);
 						
-			static Value * globalPrototype ();
+			static Ref<Value> globalPrototype ();
 			static void import (Table * context);
 	};
 
 #pragma mark -
 #pragma mark String
 
-	class String : public Value, virtual public gc_cleanup {
+	class String : public Value {
 		protected:
 			StringT m_value;
 			
@@ -282,25 +289,26 @@ namespace Kai {
 			virtual ~String ();
 			
 			StringT & value () { return m_value; }
+			const StringT & value () const { return m_value; }
 			
-			virtual int compare (Value * other);
-			int compare (String * other);
+			virtual int compare (const Value * other) const;
+			int compare (const String * other) const;
 			
-			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation);
+			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const;
 			
-			static Value * join(Frame * frame);
-			static Value * size(Frame * frame);
-			static Value * at(Frame * frame);
+			static Ref<Value> join(Frame * frame);
+			static Ref<Value> size(Frame * frame);
+			static Ref<Value> at(Frame * frame);
 			
-			virtual Value * prototype ();
-			static Value * globalPrototype ();
+			virtual Ref<Value> prototype ();
+			static Ref<Value> globalPrototype ();
 			static void import (Table * context);
 	};
 
 #pragma mark -
 #pragma mark Symbol
 	
-	class Symbol : public Value, virtual public gc_cleanup {
+	class Symbol : public Value {
 		protected:
 			const StringT m_value;
 			const int m_hash;
@@ -315,22 +323,22 @@ namespace Kai {
 			
 			int hash () const { return m_hash; }
 			
-			virtual int compare (Value * other);
-			int compare (Symbol * other);
+			virtual int compare (const Value * other) const;
+			int compare (const Symbol * other) const;
 			
-			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation);
+			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const;
 			
-			virtual Value * evaluate (Frame * frame);
+			virtual Ref<Value> evaluate (Frame * frame);
 			
 			static Symbol * nilSymbol ();
 			static Symbol * falseSymbol ();
 			static Symbol * trueSymbol ();
 			
-			static Value * hash (Frame * frame);
-			static Value * assign (Frame * frame);
+			static Ref<Value> hash (Frame * frame);
+			static Ref<Value> assign (Frame * frame);
 			
-			virtual Value * prototype ();
-			static Value * globalPrototype ();
+			virtual Ref<Value> prototype ();
+			static Ref<Value> globalPrototype ();
 			static void import (Table * context);
 	};
 	
@@ -356,19 +364,19 @@ namespace Kai {
 			
 			ValueT & value () { return m_value; }
 			
-			virtual Value * prototype ();
+			virtual Ref<Value> prototype ();
 			
-			virtual int compare (Value * other);
-			int compare (Integer * other);
+			virtual int compare (const Value * other) const;
+			int compare (const Integer * other) const;
 			
-			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation);
+			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const;
 			
-			static Value * sum (Frame * frame);
-			static Value * product (Frame * frame);
-			static Value * subtract (Frame * frame);
-			static Value * modulus (Frame * frame);
+			static Ref<Value> sum (Frame * frame);
+			static Ref<Value> product (Frame * frame);
+			static Ref<Value> subtract (Frame * frame);
+			static Ref<Value> modulus (Frame * frame);
 			
-			static Value * globalPrototype ();
+			static Ref<Value> globalPrototype ();
 			static void import (Table * context);
 	};
 
@@ -377,62 +385,54 @@ namespace Kai {
 
 	class Table : public Value {
 		public:
-			struct Bin : public gc {
-				Symbol * key;
-				Value * value;
+			struct Bin {
+				Ref<Symbol> key;
+				Ref<Value> value;
 				Bin * next;
 			};
 			
 		public:
-			Table (int size = 16);
-			virtual ~Table ();
-			
-		protected:
-			Table (int size, bool allocate);
-			
-		public:			
-			// Inline table allocation
-			static Table * allocate (int size = 16);
+			Table(int size = 16);
+			virtual ~Table();
 			
 			Bin * find (Symbol * key);
-			Value * update (Symbol * key, Value * value);
-			Value * remove (Symbol * key);
+			Ref<Value> update (Symbol * key, Value * value);
+			Ref<Value> remove (Symbol * key);
 		
-			virtual int compare (Value * other);
-			int compare (Table * other);
+			virtual int compare (const Value * other) const;
+			int compare (const Table * other) const;
 						
-			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation);
+			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const;
 		
-			virtual Value * lookup (Symbol * key);
+			virtual Ref<Value> lookup (Symbol * key);
 						
 			void setPrototype (Value * prototype);
-			virtual Value * prototype ();
+			virtual Ref<Value> prototype ();
 			
 			//% (table [key, value])
-			static Value * table (Frame * frame);
+			static Ref<Value> table (Frame * frame);
 			
 			//% (update table key value) -> old_value
-			static Value * update (Frame * frame);
+			static Ref<Value> update (Frame * frame);
 
-			static Value * set (Frame * frame);
+			static Ref<Value> set (Frame * frame);
 			
 			//% (lookup table key) -> value || nil
-			static Value * lookup (Frame * frame);
+			static Ref<Value> lookup (Frame * frame);
 
 			// Iteration over key/value pairs
-			static Value * each (Frame * frame);
+			static Ref<Value> each (Frame * frame);
 			
 			// % (setPrototype table value)
-			static Value * setPrototype (Frame * frame);
+			static Ref<Value> setPrototype (Frame * frame);
 			
-			static Value * globalPrototype ();
+			static Ref<Value> globalPrototype ();
 			static void import (Table *);
 			
 		protected:
-			Value * m_prototype;
+			Ref<Value> m_prototype;
 			
-			unsigned m_size;
-			Bin ** m_bins;
+			std::vector<Bin*> m_bins;
 	};
 	
 #pragma mark -
@@ -440,20 +440,20 @@ namespace Kai {
 
 	class Logic {			
 		public:
-			static Value * or_ (Frame * frame);
-			static Value * and_ (Frame * frame);
-			static Value * not_ (Frame * frame);
+			static Ref<Value> or_ (Frame * frame);
+			static Ref<Value> and_ (Frame * frame);
+			static Ref<Value> not_ (Frame * frame);
 		
-			static Value * when (Frame * frame);
-			static Value * if_ (Frame * frame);
+			static Ref<Value> when (Frame * frame);
+			static Ref<Value> if_ (Frame * frame);
 			
-			static Value * block (Frame * frame);
-			static Value * return_ (Frame * frame);
+			static Ref<Value> block (Frame * frame);
+			static Ref<Value> return_ (Frame * frame);
 			
-			static Value * trueValue ();
-			static Value * falseValue ();
-			static Value * anythingValue ();
-			static Value * nothingValue ();
+			static Ref<Value> trueValue ();
+			static Ref<Value> falseValue ();
+			static Ref<Value> anythingValue ();
+			static Ref<Value> nothingValue ();
 			
 			static void import (Table *);
 	};

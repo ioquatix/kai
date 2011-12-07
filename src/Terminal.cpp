@@ -33,11 +33,11 @@ namespace Kai {
 	}
 
 	void Terminal::getCurrentSettings () {
-		ensure(tcgetattr(m_fileno, &m_settings) == 0);
+		KAI_ENSURE(tcgetattr(m_fileno, &m_settings) == 0);
 	}
 
 	void Terminal::updateTerminalSettings (int optional_actions) const {
-		ensure(tcsetattr(m_fileno, optional_actions, &m_settings) == 0);
+		KAI_ENSURE(tcsetattr(m_fileno, optional_actions, &m_settings) == 0);
 	}
 
 	void Terminal::updateFlags (unsigned flags, bool state) {

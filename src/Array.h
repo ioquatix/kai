@@ -15,11 +15,11 @@
 
 namespace Kai {
 	
-	typedef gc_allocator<Value*> ValuePointerAllocatorT;
+	//typedef gc_allocator<Value*> ValuePointerAllocatorT;
 	
 	class Array : public Value {
 		public:
-			typedef std::deque<Value*, ValuePointerAllocatorT> ArrayT;
+			typedef std::deque<Ref<Value>> ArrayT;
 			typedef ArrayT::iterator IteratorT;
 			typedef ArrayT::const_iterator ConstIteratorT;
 			
@@ -32,35 +32,35 @@ namespace Kai {
 			
 			ArrayT & value () { return m_value; }
 						
-			virtual int compare (Value * other);
-			int compare (Array * other);
+			virtual int compare (const Value * other) const;
+			int compare (const Array * other) const;
 			
 			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation);
 			
-			static Value * _new (Frame * frame);
+			static Ref<Value> _new (Frame * frame);
 			
-			static Value * minimum (Frame * frame);
-			static Value * maximum (Frame * frame);
-			static Value * at (Frame * frame);
+			static Ref<Value> minimum (Frame * frame);
+			static Ref<Value> maximum (Frame * frame);
+			static Ref<Value> at (Frame * frame);
 						
-			static Value * push_back(Frame * frame);
-			static Value * pop_back(Frame * frame);			
-			static Value * push_front(Frame * frame);
-			static Value * pop_front(Frame * frame);
+			static Ref<Value> push_back(Frame * frame);
+			static Ref<Value> pop_back(Frame * frame);			
+			static Ref<Value> push_front(Frame * frame);
+			static Ref<Value> pop_front(Frame * frame);
 			
-			static Value * append(Frame * frame);
-			static Value * prepend(Frame * frame);
-			static Value * insert(Frame * frame);
+			static Ref<Value> append(Frame * frame);
+			static Ref<Value> prepend(Frame * frame);
+			static Ref<Value> insert(Frame * frame);
 			
-			static Value * includes(Frame * frame);
+			static Ref<Value> includes(Frame * frame);
 			
-			static Value * each(Frame * frame);
-			static Value * collect(Frame * frame);
-			static Value * select(Frame * frame);
-			static Value * find(Frame * frame);
+			static Ref<Value> each(Frame * frame);
+			static Ref<Value> collect(Frame * frame);
+			static Ref<Value> select(Frame * frame);
+			static Ref<Value> find(Frame * frame);
 			
-			virtual Value * prototype ();
-			static Value * globalPrototype ();
+			virtual Ref<Value> prototype ();
+			static Ref<Value> globalPrototype ();
 			static void import (Table * context);
 	};
 	

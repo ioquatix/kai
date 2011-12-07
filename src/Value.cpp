@@ -37,12 +37,12 @@ namespace Kai {
 		
 	}
 	
-	void Value::toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) {
+	void Value::toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const {
 		buffer << "(value{" << this << "})";
 	}
 	
-	Value * Value::lookup (Symbol * identifier) {
-		Value * proto = prototype();
+	Ref<Value> Value::lookup (Symbol * identifier) {
+		Ref<Value> proto = prototype();
 		
 		if (proto) {
 			return proto->lookup(identifier);
@@ -51,11 +51,11 @@ namespace Kai {
 		return NULL;
 	}
 	
-	Value * Value::prototype () {
+	Ref<Value> Value::prototype () {
 		return globalPrototype();
 	}
 
-	int Value::compare (Value * other) {
+	int Value::compare (const Value * other) const {
 		throw InvalidComparison();
 	}
 
@@ -63,15 +63,15 @@ namespace Kai {
 		std::cerr << toString(this) << std::endl;
 	}
 
-	Value * Value::evaluate (Frame * frame) {
+	Ref<Value> Value::evaluate (Frame * frame) {
 		return this;
 	}
 	
-	Value * Value::asValue () {
+	Ref<Value> Value::asValue () {
 		return Cell::create(sym("value"))(this);
 	}
 	
-	StringT Value::toString (Value * value) {
+	StringT Value::toString (const Value * value) {
 		if (value) {
 			StringStreamT buffer;
 			value->toCode(buffer);
@@ -81,7 +81,7 @@ namespace Kai {
 		}
 	}
 	
-	bool Value::toBoolean (Value * value) {
+	bool Value::toBoolean (const Value * value) {
 		if (value) {
 			return true;
 		}
@@ -89,7 +89,7 @@ namespace Kai {
 		return false;
 	}
 	
-	int Value::compare (Value * lhs, Value * rhs) {
+	int Value::compare (const Value * lhs, const Value * rhs) {
 		if (lhs && rhs) {
 			// Both values are non-NULL
 			return lhs->compare(rhs);
@@ -108,7 +108,7 @@ namespace Kai {
 		throw InvalidComparison();
 	}
 	
-	bool Value::equal(Value * lhs, Value * rhs)
+	bool Value::equal(const Value * lhs, const Value * rhs)
 	{
 		try {
 			return Value::compare(lhs, rhs) == COMPARISON_EQUAL;
@@ -123,7 +123,7 @@ namespace Kai {
 		context->update(sym("Value"), globalPrototype());
 	}
 	
-	Value * Value::globalPrototype () {
+	Ref<Value> Value::globalPrototype () {
 		static Table * g_prototype = NULL;
 		
 		if (!g_prototype) {
@@ -145,7 +145,7 @@ namespace Kai {
 		return g_prototype;
 	}
 	
-	Value * Value::call (Frame * frame) {
+	Ref<Value> Value::call (Frame * frame) {
 		Value * self;
 		Cell * body;
 		
@@ -170,12 +170,12 @@ namespace Kai {
 		return call->evaluate(frame);
 	}
 	
-	Value * Value::lookup (Frame * frame) {		
+	Ref<Value> Value::lookup (Frame * frame) {		
 		Cell * cur = frame->operands();
-		Value * value = NULL;
+		Ref<Value> value = NULL;
 		
-		while (cur != NULL) {
-			if (cur->head() == NULL) {
+		while (cur) {
+			if (!cur->head()) {
 				throw Exception("Invalid Name", cur, frame);
 			}
 			
@@ -184,7 +184,7 @@ namespace Kai {
 			Cell * tail = cur->tailAs<Cell>();
 			if (!tail) break;
 			
-			if (value == NULL) {
+			if (!value) {
 				throw Exception("Null Scope", cur->head(), frame);
 			}
 			
@@ -195,7 +195,7 @@ namespace Kai {
 		return value;
 	}
 	
-	Value * Value::toString (Frame * frame) {
+	Ref<Value> Value::toString (Frame * frame) {
 		Value * value;
 		
 		frame->extract()[value];
@@ -203,7 +203,7 @@ namespace Kai {
 		return new String(Value::toString(value));
 	}
 	
-	Value * Value::toBoolean (Frame * frame) {
+	Ref<Value> Value::toBoolean (Frame * frame) {
 		Value * value;
 		
 		frame->extract()[value];
@@ -215,7 +215,7 @@ namespace Kai {
 		}
 	}
 	
-	Value * Value::compare (Frame * frame) {
+	Ref<Value> Value::compare (Frame * frame) {
 		Value * lhs, * rhs;
 		
 		frame->extract()[lhs][rhs];
@@ -231,7 +231,7 @@ namespace Kai {
 		return new Integer(c);
 	}
 	
-	Value * Value::equal (Frame * frame) {
+	Ref<Value> Value::equal (Frame * frame) {
 		Value * lhs, * rhs;
 		
 		frame->extract()[lhs][rhs];
@@ -251,7 +251,7 @@ namespace Kai {
 		}
 	}
 	
-	Value * Value::sleep (Frame * frame)
+	Ref<Value> Value::sleep (Frame * frame)
 	{
 		Integer * duration;
 		frame->extract()(duration);
@@ -261,7 +261,7 @@ namespace Kai {
 		return NULL;
 	}
 	
-	Value * Value::prototype (Frame * frame) {
+	Ref<Value> Value::prototype (Frame * frame) {
 		Value * value = NULL;
 		
 		frame->extract()[value];
@@ -269,7 +269,7 @@ namespace Kai {
 		return value->prototype();
 	}
 	
-	Value * Value::value (Frame * frame) {
+	Ref<Value> Value::value (Frame * frame) {
 		if (frame->operands()) {
 			return frame->operands()->head();
 		}
@@ -300,7 +300,7 @@ namespace Kai {
 		Cell * end = this;
 		
 		while (end != NULL) {
-			Cell * next = dynamic_cast<Cell*>(end->m_tail);
+			Cell * next = end->m_tail.as<Cell>();
 			
 			if (next)
 				end = next;
@@ -319,7 +319,7 @@ namespace Kai {
 		unsigned result = 0;
 		
 		while (end != NULL) {
-			end = dynamic_cast<Cell*>(end->m_tail);
+			end = end->m_tail.as<Cell>();
 			
 			result += 1;
 		}
@@ -327,11 +327,11 @@ namespace Kai {
 		return result;
 	}
 
-	int Cell::compare (Value * other) {
+	int Cell::compare (const Value * other) const {
 		return derivedCompare(this, other);
 	}
 
-	int Cell::compare (Cell * other) {
+	int Cell::compare (const Cell * other) const {
 		int result = Value::compare(m_head, other->m_head);
 		
 		if (result == 0) {
@@ -341,12 +341,12 @@ namespace Kai {
 		}
 	}
 
-	void Cell::toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) {
+	void Cell::toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const {
 		if (marks.find(this) != marks.end()) {
 			buffer << "(cell{" << this << "})";
 		} else {
 			marks.insert(this);
-			Cell * tail = this->tailAs<Cell>();
+			const Cell * tail = m_tail.as<Cell>();
 			
 			if (tail && Value::equal(m_head, sym("value"))) {
 				// Print out values using backtick if possible.
@@ -359,7 +359,7 @@ namespace Kai {
 				// Otherwise, print out as a bracketed list.
 				buffer << '(';
 				
-				Cell * cur = this;
+				const Cell * cur = this;
 				
 				while (cur) {
 					if (cur->m_head)
@@ -370,7 +370,7 @@ namespace Kai {
 					if (cur->m_tail) {
 						buffer << ' ';
 						
-						Cell * next = dynamic_cast<Cell*>(cur->m_tail);
+						const Cell * next = cur->m_tail.as<Cell>();
 						
 						if (next) {
 							cur = next;
@@ -389,21 +389,19 @@ namespace Kai {
 		}
 	}
 
-	Value * Cell::evaluate (Frame * frame) {
+	Ref<Value> Cell::evaluate (Frame * frame) {
 		return frame->call(NULL, this);
 	}
 	
-	Value * Cell::_new (Frame * frame) {
-		Value * self;
-		Value * head = NULL;
-		Value * tail = NULL;
+	Ref<Value> Cell::_new (Frame * frame) {
+		Value * self, * head = NULL, * tail = NULL;
 		
 		frame->extract()[self][head][tail];
 		
 		return new Cell(head, tail);
 	}
 	
-	Value * Cell::head (Frame * frame) {
+	Ref<Value> Cell::head (Frame * frame) {
 		Cell * cell;
 		
 		frame->extract()[cell];
@@ -415,7 +413,7 @@ namespace Kai {
 		return cell->head();
 	}
 	
-	Value * Cell::tail (Frame * frame) {
+	Ref<Value> Cell::tail (Frame * frame) {
 		Cell * cell;
 		
 		frame->extract()[cell];
@@ -427,16 +425,16 @@ namespace Kai {
 		return cell->tail();
 	}
 	
-	Value * Cell::list (Frame * frame)
+	Ref<Value> Cell::list (Frame * frame)
 	{
 		return frame->operands();
 	}
 	
-	Value * Cell::prototype () {
+	Ref<Value> Cell::prototype () {
 		return globalPrototype();
 	}
 	
-	Value * Cell::each (Frame * frame) {
+	Ref<Value> Cell::each (Frame * frame) {
 		Cell * cell;
 		Value * callback;
 		
@@ -452,7 +450,7 @@ namespace Kai {
 		return NULL;
 	}
 	
-	Value * Cell::globalPrototype () {
+	Ref<Value> Cell::globalPrototype () {
 		static Table * g_prototype = NULL;
 		
 		if (!g_prototype) {
@@ -485,19 +483,19 @@ namespace Kai {
 
 	}
 
-	int String::compare (Value * other) {
+	int String::compare (const Value * other) const {
 		return derivedCompare(this, other);
 	}
 
-	int String::compare (String * other) {
+	int String::compare (const String * other) const {
 		return m_value.compare(other->m_value);
 	}
 
-	void String::toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) {
+	void String::toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const {
 		buffer << Parser::escapeString(m_value);
 	}
 	
-	Value * String::join(Frame * frame)
+	Ref<Value> String::join(Frame * frame)
 	{
 		StringStreamT buffer;
 		String * self;
@@ -521,7 +519,7 @@ namespace Kai {
 		return new String(buffer.str());
 	}
 	
-	Value * String::size (Frame * frame)
+	Ref<Value> String::size (Frame * frame)
 	{
 		String * self;
 		frame->extract()(self);
@@ -529,7 +527,7 @@ namespace Kai {
 		return new Integer(self->value().size());
 	}
 	
-	Value * String::at (Frame * frame)
+	Ref<Value> String::at (Frame * frame)
 	{
 		String * self;
 		Integer * offset;
@@ -545,12 +543,12 @@ namespace Kai {
 		return new String(character);
 	}
 	
-	Value * String::prototype()
+	Ref<Value> String::prototype()
 	{
 		return globalPrototype();
 	}
 	
-	Value * String::globalPrototype()
+	Ref<Value> String::globalPrototype()
 	{
 		static Table * g_prototype = NULL;
 		
@@ -597,11 +595,11 @@ namespace Kai {
 
 	}
 
-	int Symbol::compare (Value * other) {
+	int Symbol::compare (const Value * other) const {
 		return derivedCompare(this, other);
 	}
 
-	int Symbol::compare (Symbol * other) {
+	int Symbol::compare (const Symbol * other) const {
 		int result = clampComparison(m_hash - other->m_hash);
 		
 		if (result == 0) {
@@ -611,11 +609,11 @@ namespace Kai {
 		return result;
 	}
 
-	void Symbol::toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) {
+	void Symbol::toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const {
 		buffer << m_value;
 	}
 
-	Value * Symbol::evaluate (Frame * frame) {
+	Ref<Value> Symbol::evaluate (Frame * frame) {
 		if (m_value[0] != ':') {
 			return frame->lookup(this);
 		} else {
@@ -635,7 +633,7 @@ namespace Kai {
 		return sym("true");
 	}
 	
-	Value * Symbol::hash (Frame * frame) {
+	Ref<Value> Symbol::hash (Frame * frame) {
 		Symbol * self;
 		
 		frame->extract()(self);
@@ -643,13 +641,13 @@ namespace Kai {
 		return new Integer(self->m_hash);
 	}
 	
-	Value * Symbol::assign (Frame * frame) {
+	Ref<Value> Symbol::assign (Frame * frame) {
 		Symbol * self;
 		Value * value;
 		
 		frame->extract()(self)[value];
 		
-		Table * scope = dynamic_cast<Table*>(frame->scope());
+		Table * scope = frame->scope().as<Table>();
 		
 		if (scope) {
 			scope->update(self, value);
@@ -660,11 +658,11 @@ namespace Kai {
 		return value;
 	}
 	
-	Value * Symbol::prototype () {
+	Ref<Value> Symbol::prototype () {
 		return globalPrototype();
 	}
 	
-	Value * Symbol::globalPrototype () {
+	Ref<Value> Symbol::globalPrototype () {
 		static Table * g_prototype = NULL;
 		
 		if (!g_prototype) {
@@ -690,7 +688,7 @@ namespace Kai {
 	Integer::~Integer () {
 	}
 	
-	Value * Integer::sum (Frame * frame) {
+	Ref<Value> Integer::sum (Frame * frame) {
 		ValueT total = 0;
 		
 		// Evaluate the given arguments
@@ -716,7 +714,7 @@ namespace Kai {
 		return new Integer(total);
 	}
 	
-	Value * Integer::subtract (Frame * frame) {
+	Ref<Value> Integer::subtract (Frame * frame) {
 		ValueT total = 0;
 		Integer * first;
 		
@@ -739,7 +737,7 @@ namespace Kai {
 		return new Integer(total);
 	}
 	
-	Value * Integer::product (Frame * frame) {
+	Ref<Value> Integer::product (Frame * frame) {
 		ValueT total = 1;
 		
 		Cell * args = frame->unwrap();
@@ -759,7 +757,7 @@ namespace Kai {
 		return new Integer(total);
 	}
 	
-	Value * Integer::modulus (Frame * frame) {
+	Ref<Value> Integer::modulus (Frame * frame) {
 		Integer * number, * base;
 		
 		frame->extract()[number][base];
@@ -767,7 +765,7 @@ namespace Kai {
 		return new Integer(number->value() % base->value());
 	}
 	
-	Value * Integer::globalPrototype () {
+	Ref<Value> Integer::globalPrototype () {
 		static Table * g_prototype = NULL;
 		
 		if (!g_prototype) {
@@ -782,19 +780,19 @@ namespace Kai {
 		return g_prototype;
 	}
 	
-	Value * Integer::prototype () {		
+	Ref<Value> Integer::prototype () {		
 		return globalPrototype();
 	}
 
-	int Integer::compare (Value * other) {
+	int Integer::compare (const Value * other) const {
 		return derivedCompare(this, other);
 	}
 
-	int Integer::compare (Integer * other) {
+	int Integer::compare (const Integer * other) const {
 		return clampComparison(other->m_value - m_value);
 	}
 
-	void Integer::toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) {
+	void Integer::toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const {
 		buffer << m_value;
 	}
 	
@@ -805,32 +803,28 @@ namespace Kai {
 #pragma mark -
 #pragma mark Table
 
-	Table::Table (int size) : m_size(size) {
+	Table::Table (int size) : m_prototype(NULL) {
 		assert(size >= 1);
 		
-		m_bins = (Bin**)GC_malloc(sizeof(Bin*) * size);
+		m_bins.resize(size);
 	}
 
 	Table::~Table () {
-
-	}
-	
-	Table::Table (int size, bool allocate) {
-		assert(size >= 1);
-		
-		m_bins = (Bin**)(this + sizeof(Table));
-	}
-
-	Table * Table::allocate (int size) {	
-		Table * table = (Table*)GC_malloc(sizeof(Table) + sizeof(Bin*) * size);
-		
-		return new(table) Table(size, false);
+		for (Bin * bin : m_bins) {
+			while (bin) {
+				Bin * next = bin->next;
+				
+				delete bin;
+				
+				bin = next;
+			}
+		}
 	}
 
 	Table::Bin * Table::find (Symbol * key) {
 		assert(key != NULL);
 		
-		Bin * bin = m_bins[key->hash() % m_size];
+		Bin * bin = m_bins[key->hash() % m_bins.size()];
 		
 		while (bin != NULL) {
 			if (key->compare(bin->key) == 0) {
@@ -843,18 +837,18 @@ namespace Kai {
 		return NULL;
 	}
 
-	Value * Table::update (Symbol * key, Value * value) {
+	Ref<Value> Table::update (Symbol * key, Value * value) {
 		assert(key != NULL);
 		//assert(value != NULL);
 			
-		unsigned index = key->hash() % m_size;
+		unsigned index = key->hash() % m_bins.size();
 		
 		Bin * bin = m_bins[index];
 		
 		if (bin) {
 			while (1) {
 				if (key->compare(bin->key) == 0) {
-					Value * old = bin->value;
+					Ref<Value> old = bin->value;
 					
 					bin->value = value;
 					
@@ -883,11 +877,11 @@ namespace Kai {
 		return NULL;
 	}
 
-	Value * Table::remove (Symbol * key) {
+	Ref<Value> Table::remove (Symbol * key) {
 		assert(key != NULL);
 		
 		// The place where we should write the pointer to the next value
-		Bin ** next = &m_bins[key->hash() % m_size];
+		Bin ** next = &m_bins[key->hash() % m_bins.size()];
 		Bin * bin = *next;
 		
 		while (bin != NULL) {
@@ -903,15 +897,15 @@ namespace Kai {
 		return NULL;
 	}
 
-	int Table::compare (Value * other) {
+	int Table::compare (const Value * other) const {
 		return derivedCompare(this, other);
 	}
 
-	int Table::compare (Table * other) {
+	int Table::compare (const Table * other) const {
 		throw InvalidComparison();
 	}
 
-	void Table::toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) {
+	void Table::toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const {
 		if (marks.find(this) != marks.end()) {
 			buffer << "(table@" << this << " ...)" << std::endl;
 		} else {
@@ -919,7 +913,7 @@ namespace Kai {
 			
 			buffer << "(table@" << this;
 			
-			for (unsigned i = 0; i < m_size; i += 1) {
+			for (unsigned i = 0; i < m_bins.size(); i += 1) {
 				Bin * bin = m_bins[i];
 				
 				while (bin != NULL) {
@@ -936,7 +930,7 @@ namespace Kai {
 		}
 	}
 
-	Value * Table::lookup (Symbol * key) {
+	Ref<Value> Table::lookup (Symbol * key) {
 		Bin * bin = find(key);
 		
 		if (bin) {
@@ -953,13 +947,13 @@ namespace Kai {
 		m_prototype = prototype;
 	}
 	
-	Value * Table::prototype () {
+	Ref<Value> Table::prototype () {
 		return m_prototype;
 	}
 	
 #pragma mark Builtins
 	
-	Value * Table::table (Frame * frame) {
+	Ref<Value> Table::table (Frame * frame) {
 		Table * table = new Table;
 		Cell * args = frame->unwrap();
 
@@ -982,7 +976,7 @@ namespace Kai {
 		return table;
 	}
 
-	Value * Table::update (Frame * frame) {
+	Ref<Value> Table::update (Frame * frame) {
 		Table * table = NULL;
 		Symbol * key = NULL;
 		Value * value = NULL;
@@ -990,27 +984,27 @@ namespace Kai {
 		frame->extract()(table)(key)(value);
 		
 		if (value == NULL)
-			return table->remove(key);
-		else
 			return table->update(key, value);
+		else
+			return table->remove(key);
 	}
 	
-	Value * Table::set (Frame * frame) {
+	Ref<Value> Table::set (Frame * frame) {
 		Table * table = NULL;
 		Symbol * key = NULL;
 		Value * value = NULL;
 		
 		frame->extract()(table)(key)[value];
 		
-		if (value == NULL)
-			table->remove(key);
-		else
+		if (value)
 			table->update(key, value);
+		else
+			table->remove(key);
 		
 		return value;
 	}
 	
-	Value * Table::lookup (Frame * frame) {
+	Ref<Value> Table::lookup (Frame * frame) {
 		Table * table = NULL;
 		Symbol * key = NULL;
 		
@@ -1027,13 +1021,13 @@ namespace Kai {
 		return table->lookup(key);
 	}
 	
-	Value * Table::each (Frame * frame) {
+	Ref<Value> Table::each (Frame * frame) {
 		Table * table;
 		Value * callback;
 		
 		frame->extract()[table][callback];
 		
-		for (unsigned i = 0; i < table->m_size; i += 1) {
+		for (unsigned i = 0; i < table->m_bins.size(); i += 1) {
 			Bin * cur = table->m_bins[i];
 			
 			while (cur != NULL) {
@@ -1047,7 +1041,7 @@ namespace Kai {
 		return NULL;
 	}
 	
-	Value * Table::setPrototype (Frame * frame) {
+	Ref<Value> Table::setPrototype (Frame * frame) {
 		Table * table = NULL;
 		Value * prototype = NULL;
 		
@@ -1058,7 +1052,7 @@ namespace Kai {
 		return prototype;
 	}
 	
-	Value * Table::globalPrototype () {
+	Ref<Value> Table::globalPrototype () {
 		static Table * g_prototype = NULL;
 		
 		if (!g_prototype) {
@@ -1084,11 +1078,11 @@ namespace Kai {
 #pragma mark Logic
 
 	// Builtin Logical Operations
-	Value * Logic::or_ (Frame * frame) {
+	Ref<Value> Logic::or_ (Frame * frame) {
 		Cell * cur = frame->operands();
 		
 		while (cur != NULL) {
-			Value * value = cur->head()->evaluate(frame);
+			Ref<Value> value = cur->head()->evaluate(frame);
 			
 			if (Value::toBoolean(value)) {
 				return value;
@@ -1100,11 +1094,11 @@ namespace Kai {
 		return Symbol::falseSymbol();
 	}
 	
-	Value * Logic::and_ (Frame * frame) {
+	Ref<Value> Logic::and_ (Frame * frame) {
 		Cell * cur = frame->operands();
 		
 		while (cur != NULL) {
-			Value * value = cur->head()->evaluate(frame);
+			Ref<Value> value = cur->head()->evaluate(frame);
 			
 			if (!Value::toBoolean(value)) {
 				return Symbol::falseSymbol();					
@@ -1116,7 +1110,7 @@ namespace Kai {
 		return Symbol::trueSymbol();		
 	}
 	
-	Value * Logic::not_ (Frame * frame) {
+	Ref<Value> Logic::not_ (Frame * frame) {
 		Cell * cur = frame->unwrap();
 		
 		if (cur == NULL)
@@ -1129,7 +1123,7 @@ namespace Kai {
 		return Symbol::trueSymbol();
 	}
 
-	Value * Logic::when (Frame * frame) {
+	Ref<Value> Logic::when (Frame * frame) {
 		Cell::ArgumentExtractor args(frame, frame->operands());
 		
 		Value * value;
@@ -1152,7 +1146,7 @@ namespace Kai {
 		return NULL;
 	}
 	
-	Value * Logic::if_ (Frame * frame) {
+	Ref<Value> Logic::if_ (Frame * frame) {
 		Value * condition, * trueClause, * falseClause;
 		
 		frame->extract(false)[condition][trueClause][falseClause];
@@ -1167,27 +1161,27 @@ namespace Kai {
 		}
 	}
 	
-	Value * Logic::trueValue () {
+	Ref<Value> Logic::trueValue () {
 		return NULL;
 	}
 	
-	Value * Logic::falseValue () {
+	Ref<Value> Logic::falseValue () {
 		return NULL;
 	}
 	
-	Value * Logic::anythingValue () {
+	Ref<Value> Logic::anythingValue () {
 		return NULL;
 	}
 	
-	Value * Logic::nothingValue () {
+	Ref<Value> Logic::nothingValue () {
 		return NULL;
 	}
 	
 	struct ReturnValue {
-		Value * value;
+		Ref<Value> value;
 	};
 	
-	Value * Logic::return_ (Frame * frame) {
+	Ref<Value> Logic::return_ (Frame * frame) {
 		Value * result = NULL;
 		
 		frame->extract()[result];
@@ -1197,8 +1191,8 @@ namespace Kai {
 		throw r;
 	}
 	
-	Value * Logic::block (Frame * frame) {
-		Value * result = NULL;
+	Ref<Value> Logic::block (Frame * frame) {
+		Ref<Value> result = NULL;
 
 		try {
 			Cell * statements = frame->operands();

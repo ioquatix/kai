@@ -39,9 +39,9 @@ namespace Kai {
 			
 			public:
 				/// [Grammar define name rule]
-				static Value * define(Frame * frame);
+				static Ref<Value> define(Frame * frame);
 				
-				static Value * parse(Frame * frame);
+				static Ref<Value> parse(Frame * frame);
 		};
 		*/
 	}

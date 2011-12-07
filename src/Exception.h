@@ -12,6 +12,7 @@
 
 #include <exception>
 #include "Kai.h"
+#include "Reference.h"
 
 namespace Kai {
 
@@ -22,10 +23,8 @@ namespace Kai {
 	class Exception {
 		protected:
 			StringT m_what;
-
-			Value * m_value;
-						
-			Frame * m_frame;
+			Ref<Value> m_value;			
+			Ref<Frame> m_frame;
 			
 		public:
 			Exception(StringT what, Frame * frame);

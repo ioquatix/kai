@@ -14,9 +14,10 @@
 */
 
 #include <iostream>
-#include <gc/gc.h>
 #include <stdio.h>
 #include <signal.h>
+
+#include "Reference.h"
 
 #include "Value.h"
 #include "Parser/Parser.h"
@@ -36,15 +37,15 @@ namespace {
 
 	using namespace Kai;
 	
-	Value * runCode (Table * context, SourceCode & code, int & status) {
-		Value * value = NULL, * result = NULL;
+	Ret<Value> runCode (Table * context, SourceCode & code, int & status) {
+		Ref<Value> value = NULL, result = NULL;
 
 		// Execution status
 		status = 0;
 	
 		try {
-			Frame * frame = new Frame(context);
-			Expressions * expressions = Expressions::fetch(frame);
+			Ref<Frame> frame = new Frame(context);
+			Ref<Expressions> expressions = Expressions::fetch(frame);
 			
 			value = expressions->parse(code).value;
 			
@@ -79,24 +80,6 @@ namespace {
 		return NULL;
 	}
 	
-	namespace GC {
-		int _stopFunc() {
-			return 0;
-		}
-		
-		Value * collect(Frame * frame) {
-			GC_try_to_collect(&_stopFunc);
-			
-			return NULL;
-		}
-		
-		Value * dump(Frame * frame) {
-			GC_dump();
-			
-			return NULL;
-		}
-	}
-	
 	Table * buildContext () {
 		Table * global = new Table;
 		global->setPrototype(Table::globalPrototype());
@@ -115,9 +98,6 @@ namespace {
 		Array::import(global);
 		System::import(global);
 		
-		global->update(sym("gc-collect"), KFunctionWrapper(GC::collect));
-		global->update(sym("gc-dump"), KFunctionWrapper(GC::dump));
-		
 		Table * context = new Table;
 		context->setPrototype(global);
 		
@@ -134,10 +114,7 @@ int main (int argc, const char * argv[]) {
 	Time start;
 	
 	using namespace Kai;
-
-	GC_init();
-	//GC_disable();
-		
+	
 	signal(SIGSEGV, signalHang);
 	
 	int result = 0;
@@ -166,7 +143,7 @@ int main (int argc, const char * argv[]) {
 		std::cerr << "Startup time = " << (Time() - start) << std::endl;
 		
 		while (terminalEditor.readInput(buffer, editor)) {
-			Value * value;
+			Ref<Value> value;
 							
 			SourceCode currentLine("<stdin>", buffer.str());
 						

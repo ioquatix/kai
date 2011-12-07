@@ -20,10 +20,10 @@ namespace Kai {
 		Array * m_loadPaths;
 		
 		// Run a script at the given path
-		Value * run (const PathT & path, Frame * frame);
+		Ref<Value> run (const PathT & path, Frame * frame);
 		
 		// Load an obeject file at the given path
-		Value * compile (const PathT & path, Frame * frame);
+		Ref<Value> compile (const PathT & path, Frame * frame);
 		
 	public:
 		System();
@@ -33,14 +33,14 @@ namespace Kai {
 		
 		virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation);
 		
-		static Value * load (Frame * frame);
-		static Value * require (Frame * frame);
-		static Value * loadPaths (Frame * frame);
-		static Value * workingDirectory (Frame * frame);
-		static Value * environment (Frame * frame);
+		static Ref<Value> load (Frame * frame);
+		static Ref<Value> require (Frame * frame);
+		static Ref<Value> loadPaths (Frame * frame);
+		static Ref<Value> workingDirectory (Frame * frame);
+		static Ref<Value> environment (Frame * frame);
 		
-		virtual Value * prototype ();
-		static Value * globalPrototype ();
+		virtual Ref<Value> prototype ();
+		static Ref<Value> globalPrototype ();
 		static void import (Table * context);
 	};
 	

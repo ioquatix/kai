@@ -25,7 +25,7 @@ namespace Kai {
 		
 	}
 	
-	Value * Lambda::evaluate (Frame * frame) {
+	Ref<Value> Lambda::evaluate (Frame * frame) {
 		Table * locals = new Table;
 		
 		Cell * names = m_arguments;
@@ -78,7 +78,7 @@ namespace Kai {
 		}
 	}
 	
-	Value * Lambda::lambda (Frame * frame) {
+	Ref<Value> Lambda::lambda (Frame * frame) {
 		Cell * arguments, * code;
 		
 		frame->extract()[arguments][code];

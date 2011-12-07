@@ -14,7 +14,7 @@
 #include <map>
 
 // #define KAI_TRACE
-#define KAI_DEBUG
+// #define KAI_DEBUG
 
 namespace Kai {
 	
@@ -35,7 +35,7 @@ namespace Kai {
 				uint64_t count;
 			};
 			
-			typedef std::map<Value*, Statistics> StatisticsMapT;
+			typedef std::map<Ref<Value>, Statistics> StatisticsMapT;
 			StatisticsMapT m_statistics;
 			
 		public:
@@ -44,10 +44,10 @@ namespace Kai {
 			
 			void dump(std::ostream & buffer);
 
-			static Value * dump(Frame * frame);
+			static Ref<Value> dump(Frame * frame);
 			
-			virtual Value * prototype ();
-			static Value * globalPrototype ();
+			virtual Ref<Value> prototype ();
+			static Ref<Value> globalPrototype ();
 			static void import (Table * context);
 			
 			static Tracer * globalTracer ();
@@ -56,24 +56,25 @@ namespace Kai {
 	/** The Frame class represents the stack of a running program, and is dynamically allocated.
 	
 	*/
-	class Frame : public gc_cleanup {
+	class Frame : public SharedObject {
 		protected:
 			/// Previous stack frame
-			Frame * m_previous;
+			Ref<Frame> m_previous;
 			
 			/// The scope of the stack frame, if any.
-			Value * m_scope;
+			Ref<Value> m_scope;
 			
 			/// The original message which created this frame, if any.
-			Cell * m_message;
+			Ref<Cell> m_message;
 			
 			/// The evaluated function.
-			Value * m_function;
+			Ref<Value> m_function;
+			
 			/// The unwrapped arguments.
-			Cell * m_arguments;
+			Ref<Cell> m_arguments;
 			
 			/// Given a stack frame, apply the function to the arguments.
-			Value * apply ();
+			Ref<Value> apply ();
 			
 			/// For debugging - the depth of the stack.
 			unsigned m_depth;
@@ -89,30 +90,30 @@ namespace Kai {
 			virtual ~Frame ();
 			
 			/// Lookup an identifier using the stack, starting at this frame.
-			Value * lookup (Symbol * identifier);
+			Ref<Value> lookup (Symbol * identifier);
 			/// Lookup an identifier as above, but return the frame which defines the value.
-			Value * lookup (Symbol * identifier, Frame *& frame);
+			Ref<Value> lookup (Symbol * identifier, Frame *& frame);
 			
 			template <typename ValueT>
-			ValueT * lookupAs (Symbol * identifier) {
-				return dynamic_cast<ValueT*>(lookup(identifier));
+			Ref<ValueT> lookupAs (Symbol * identifier) {
+				return lookup(identifier).as<ValueT>();
 			}
 			
 			// Evaluate a given message in the specified scope.
-			Value * call (Value * scope, Cell * message);
-			Value * call (Cell * message) { return call(NULL, message); }
+			Ref<Value> call (Value * scope, Cell * message);
+			Ref<Value> call (Cell * message) { return call(NULL, message); }
 			
 			/// Return the previous stack frame.
 			Frame * previous ();
 			
 			/// This function searches up the stack for the current scope.
-			Value * scope ();
+			Ref<Value> scope ();
 
 			/// Return the message (m o1 o2 o3) if it is defined.
 			Cell * message ();
 			
 			/// Return the defined function (m), if it is known.
-			Value * function ();
+			Ref<Value> function ();
 			/// Return the operands (o1 o2 o3) if they are given.
 			Cell * operands ();
 			/// Evaluate the operands in the current stack frame.
@@ -128,28 +129,28 @@ namespace Kai {
 			static void import (Table * context);
 			
 			// Returns the frame which defines a given symbol
-			//static Value * where (Frame * frame);
+			//static Ref<Value> where (Frame * frame);
 			
 			// Attempt to update inplace a value in a frame
-			static Value * update (Frame * frame);
+			static Ref<Value> update (Frame * frame);
 			
 			// Returns the caller of the current frame, similar to the "this" keyword.
-			static Value * scope (Frame * frame);
+			static Ref<Value> scope (Frame * frame);
 			
 			// Marks a trace point in the stack frame, and prints out the given unwrapped arguments.
-			static Value * trace (Frame * frame);
+			static Ref<Value> trace (Frame * frame);
 
 			// Run the enclosed code and report the amount of time taken.
-			static Value * benchmark (Frame * frame);
+			static Ref<Value> benchmark (Frame * frame);
 			
 			// Returns the arguments evaluated in the caller's context.
-			static Value * unwrap (Frame * frame);
+			static Ref<Value> unwrap (Frame * frame);
 			
 			// Returns a function such that when evaluated, returns the arguments unevaluated.
-			static Value * wrap (Frame * frame);
+			static Ref<Value> wrap (Frame * frame);
 			
 			// Processing
-			static Value * with (Frame * frame);
+			static Ref<Value> with (Frame * frame);
 	};
 }
 

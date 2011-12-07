@@ -16,7 +16,7 @@ namespace Kai {
 
 	typedef Value * (*EvaluateFunctionT)(Frame *);
 		
-	template <Value * (*FunctionT)(Frame *)>
+	template <Ref<Value> (*FunctionT)(Frame *)>
 	class BuiltinFunction : public Value {
 		protected:
 			const char * m_name;
@@ -26,7 +26,7 @@ namespace Kai {
 			
 			}
 			
-			virtual Value* evaluate (Frame * frame) {
+			virtual Ref<Value> evaluate (Frame * frame) {
 				return FunctionT(frame);
 			}
 						
@@ -45,7 +45,7 @@ namespace Kai {
 			DynamicFunction (EvaluateFunctionT evaluateFunction);
 			virtual ~DynamicFunction ();
 			
-			virtual Value * evaluate (Frame * frame);
+			virtual Ref<Value> evaluate (Frame * frame);
 			
 			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation);
 	};	

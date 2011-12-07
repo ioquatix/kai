@@ -31,7 +31,7 @@ namespace Kai {
 		ParseResult(Parser::Token _token, Value * _value = NULL, Status status = OKAY);
 
 		Parser::Token token;
-		Value * value;
+		Ref<Value> value;
 		Status status;
 		
 		bool isOkay() { return token && status == OKAY; }
@@ -48,8 +48,8 @@ namespace Kai {
 	
 	class Expressions : public Value, public virtual IExpressions {
 		protected:
-			typedef traceable_allocator<IExpressions*> AllocatorT;
-			typedef std::list<IExpressions*, AllocatorT> ParsersT;
+			//typedef traceable_allocator<IExpressions*> AllocatorT;
+			typedef std::list<IExpressions*> ParsersT;
 			ParsersT m_parsers;
 						
 		public:
@@ -64,10 +64,10 @@ namespace Kai {
 			
 			void add (IExpressions * parser);
 			
-			static Value * parse (Frame * frame);
-			static Value * globalPrototype ();
+			static Ref<Value> parse (Frame * frame);
+			static Ref<Value> globalPrototype ();
 			static void import (Table * context);
-			virtual Value * prototype ();
+			virtual Ref<Value> prototype ();
 			
 			static Expressions * fetch(Frame * frame);
 	};
@@ -121,7 +121,7 @@ namespace Kai {
 			StringT m_open, m_close;
 			
 			CellExpression(StringT open, StringT close);
-			virtual Value * convertToResult (Cell * items);
+			virtual Ref<Value> convertToResult (Cell * items);
 			
 		public:
 			CellExpression();
@@ -139,7 +139,7 @@ namespace Kai {
 	
 	class CallExpression : public CellExpression {
 		protected:
-			virtual Value * convertToResult (Cell * items);
+			virtual Ref<Value> convertToResult (Cell * items);
 
 		public:
 			CallExpression();
@@ -148,7 +148,7 @@ namespace Kai {
 	
 	class BlockExpression : public CellExpression {
 		protected:
-			virtual Value * convertToResult (Cell * items);
+			virtual Ref<Value> convertToResult (Cell * items);
 
 		public:
 			BlockExpression();

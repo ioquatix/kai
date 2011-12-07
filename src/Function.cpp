@@ -27,7 +27,7 @@ namespace Kai {
 		
 	}
 
-	Value * DynamicFunction::evaluate (Frame * frame) {
+	Ref<Value> DynamicFunction::evaluate (Frame * frame) {
 		return m_evaluateFunction(frame);
 	}
 

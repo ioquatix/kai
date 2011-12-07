@@ -23,12 +23,12 @@ namespace Kai {
 	
 	}
 	
-	int Array::compare (Value * other)
+	int Array::compare (const Value * other) const
 	{
 		return derivedCompare(this, other);
 	}
 	
-	int Array::compare (Array * other)
+	int Array::compare (const Array * other) const
 	{
 		ComparisonResult result = m_value.size() - other->m_value.size();
 		
@@ -72,7 +72,7 @@ namespace Kai {
 		}
 	}
 	
-	Value * Array::_new (Frame * frame)
+	Ref<Value> Array::_new (Frame * frame)
 	{
 		Array * array = new Array();
 		Cell * items = frame->unwrap()->tailAs<Cell>();
@@ -86,22 +86,22 @@ namespace Kai {
 		return array;
 	}
 	
-	Value * Array::minimum (Frame * frame)
+	Ref<Value> Array::minimum (Frame * frame)
 	{
 		return NULL;
 	}
 	
-	Value * Array::maximum (Frame * frame)
+	Ref<Value> Array::maximum (Frame * frame)
 	{
 		return NULL;
 	}
 	
-	Value * Array::at (Frame * frame)
+	Ref<Value> Array::at (Frame * frame)
 	{
 		return NULL;
 	}
 	
-	Value * Array::push_back(Frame * frame)
+	Ref<Value> Array::push_back(Frame * frame)
 	{
 		Array * self = NULL;
 		Value * value = NULL;
@@ -112,12 +112,12 @@ namespace Kai {
 		return self;
 	}
 	
-	Value * Array::pop_back(Frame * frame)
+	Ref<Value> Array::pop_back(Frame * frame)
 	{
 		return NULL;
 	}
 				
-	Value * Array::push_front(Frame * frame)
+	Ref<Value> Array::push_front(Frame * frame)
 	{
 		Array * self = NULL;
 		Value * value = NULL;
@@ -128,40 +128,40 @@ namespace Kai {
 		return self;
 	}
 	
-	Value * Array::pop_front(Frame * frame)
+	Ref<Value> Array::pop_front(Frame * frame)
 	{
 		return NULL;
 	}
 	
 	
-	Value * Array::append(Frame * frame)
+	Ref<Value> Array::append(Frame * frame)
 	{
 		return NULL;
 	}
 	
-	Value * Array::prepend(Frame * frame)
+	Ref<Value> Array::prepend(Frame * frame)
 	{
 		return NULL;
 	}
 	
-	Value * Array::insert(Frame * frame)
-	{
-		return NULL;
-	}
-	
-	
-	Value * Array::includes(Frame * frame)
+	Ref<Value> Array::insert(Frame * frame)
 	{
 		return NULL;
 	}
 	
 	
-	Value * Array::each(Frame * frame)
+	Ref<Value> Array::includes(Frame * frame)
 	{
 		return NULL;
 	}
 	
-	Value * Array::collect(Frame * frame)
+	
+	Ref<Value> Array::each(Frame * frame)
+	{
+		return NULL;
+	}
+	
+	Ref<Value> Array::collect(Frame * frame)
 	{
 		Array * self = NULL;
 		Value * function = NULL;
@@ -172,7 +172,7 @@ namespace Kai {
 		
 		for (IteratorT a = self->m_value.begin(); a != self->m_value.end(); a++) {
 			Cell * message = Cell::create(function)(*a);
-			Value * v = frame->call(message);
+			Ref<Value> v = frame->call(message);
 			
 			result->m_value.push_back(v);
 		}
@@ -180,22 +180,22 @@ namespace Kai {
 		return result;
 	}
 	
-	Value * Array::select(Frame * frame)
+	Ref<Value> Array::select(Frame * frame)
 	{
 		return NULL;
 	}
 	
-	Value * Array::find(Frame * frame)
+	Ref<Value> Array::find(Frame * frame)
 	{
 		return NULL;
 	}
 	
-	Value * Array::prototype ()
+	Ref<Value> Array::prototype ()
 	{
 		return globalPrototype();
 	}
 	
-	Value * Array::Array::globalPrototype ()
+	Ref<Value> Array::Array::globalPrototype ()
 	{
 		static Table * g_prototype = NULL;
 		
