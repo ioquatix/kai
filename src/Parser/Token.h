@@ -11,6 +11,7 @@
 #define _KAI_PARSER_TOKEN_H
 
 #include "../Kai.h"
+#include "../Unicode/Unicode.h"
 
 namespace Kai {
 	class SourceCode;
@@ -143,14 +144,22 @@ namespace Kai {
 			
 			unsigned count () const;
 		};
-		
-		typedef bool(*ParserPredicate)(StringIteratorT);
-		
+				
 		template <typename PredicateT>
 		Token parseCharacters (StringIteratorT begin, StringIteratorT end, PredicateT predicate) {
 			StringIteratorT s = begin;
 			
-			while (s != end && predicate(s)) s++;
+			while (s != end) {
+				StringIteratorT t = s;
+				
+				Unicode::CodePointT codePoint = Unicode::next(t, end);
+				
+				if (predicate(codePoint)) {
+					s = t;
+				} else {
+					break;
+				}
+			}
 			
 			if (s == begin)
 				return Token();
@@ -162,8 +171,16 @@ namespace Kai {
 		Token parseCharacters (StringIteratorT begin, StringIteratorT end, PredicateT predicate, Counter counter) {
 			StringIteratorT s = begin;
 			
-			while (s != end && predicate(s)) {
-				s++;
+			while (s != end) {
+				StringIteratorT t = s;
+				
+				Unicode::CodePointT codePoint = Unicode::next(t, end);
+				
+				if (predicate(codePoint)) {
+					s = t;
+				} else {
+					break;
+				}
 				
 				if (!counter.update()) break;
 			}
@@ -185,16 +202,6 @@ namespace Kai {
 		}
 		
 		Token parseConstant (StringIteratorT begin, StringIteratorT end, const StringT & constant);
-		
-		bool isAlpha (StringIteratorT i);
-		bool isNumeric (StringIteratorT i);
-		bool isAlphaNumeric (StringIteratorT i);
-		
-		bool isTab (StringIteratorT i);
-		bool isSpace (StringIteratorT i);
-		bool isWhitespace (StringIteratorT i);
-		bool isNewline (StringIteratorT i);
-		bool isNotNewline (StringIteratorT i);
 		
 #pragma mark -
 #pragma mark Operator Parsing

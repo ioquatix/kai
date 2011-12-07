@@ -32,7 +32,7 @@ namespace Kai {
 			Token t(begin, COMMENTS);
 			
 			if (t &= parseConstant(t.end(), end, SINGLE_LINE_COMMENT)) {
-				t += parseCharacters(t.end(), end, &isNotNewline);
+				t += parseCharacters(t.end(), end, &Unicode::isNotNewline);
 			}
 			
 			return t;
@@ -84,9 +84,9 @@ namespace Kai {
 			StringIteratorT cur = begin;
 			
 			while (true) {
-				t += parseCharacters(t.end(), end, isWhitespace);
+				t += parseCharacters(t.end(), end, Unicode::isWhitespace);
 				t += parseComment(t.end(), end);
-				t += parseCharacters(t.end(), end, isWhitespace);
+				t += parseCharacters(t.end(), end, Unicode::isWhitespace);
 				
 				if (t.end() == cur)
 					break;
@@ -101,7 +101,7 @@ namespace Kai {
 			Token t(begin, NUMBER);
 			
 			t += parseConstant(t.end(), end, "-");
-			t &= parseCharacters(t.end(), end, isNumeric);
+			t &= parseCharacters(t.end(), end, Unicode::isNumeric);
 			
 			return t;
 		}
@@ -111,11 +111,11 @@ namespace Kai {
 			
 			Token t(begin, DECIMAL);
 			
-			if (t &= parseCharacters(t.end(), end, isNumeric)) {
+			if (t &= parseCharacters(t.end(), end, Unicode::isNumeric)) {
 				Token u;
 			
 				if ((u = parseConstant(t.end(), end, DECIMAL_POINT))) {
-					u &= parseCharacters(t.end(), end, isNumeric);
+					u &= parseCharacters(t.end(), end, Unicode::isNumeric);
 					
 					if (u)
 						t += u;
@@ -152,16 +152,16 @@ namespace Kai {
 			return t;
 		}
 		
-		bool isIdentifierStart (StringIteratorT i) {
-			return isAlpha(i) || *i == '_';
+		bool isIdentifierStart (Unicode::CodePointT codePoint) {
+			return Unicode::isLetter(codePoint) || codePoint == '_';
 		}
 		
-		bool isIdentifierMiddle (StringIteratorT i) {
-			return isAlphaNumeric(i) || *i == '_' || *i == '-';
+		bool isIdentifierMiddle (Unicode::CodePointT codePoint) {
+			return Unicode::isLetter(codePoint) || Unicode::isAlphaNumeric(codePoint) || codePoint == '_' || codePoint == '-';
 		}
 		
-		bool isIdentifierEnding (StringIteratorT i) {
-			return *i == '?' || *i == '!' || *i == '=';
+		bool isIdentifierEnding (Unicode::CodePointT codePoint) {
+			return codePoint == '?' || codePoint == '!' || codePoint == '=';
 		}
 	
 		// Parses a variable name

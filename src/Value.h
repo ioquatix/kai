@@ -299,6 +299,10 @@ namespace Kai {
 			static Ref<Value> join(Frame * frame);
 			static Ref<Value> size(Frame * frame);
 			static Ref<Value> at(Frame * frame);
+		
+			// These two functions are unicode aware
+			static Ref<Value> length(Frame * frame);
+			static Ref<Value> each(Frame * frame);
 			
 			virtual Ref<Value> prototype ();
 			static Ref<Value> globalPrototype ();

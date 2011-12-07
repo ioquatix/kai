@@ -313,37 +313,5 @@ namespace Kai {
 				return Token();
 			}
 		}
-		
-		bool isAlpha (StringIteratorT i) {
-			return (*i >= 'a' && *i <= 'z') || (*i >= 'A' && *i <= 'Z') || *i == '_';
-		}
-		
-		bool isNumeric (StringIteratorT i) {
- 			return (*i >= '0' && *i <= '9');
-		}
-		
-		bool isAlphaNumeric (StringIteratorT i) {
-			return isAlpha(i) || isNumeric(i);
-		}
-		
-		bool isTab (StringIteratorT i) {
-			return *i == '\t';
-		}
-		
-		bool isSpace (StringIteratorT i) {
-			return *i == ' ';
-		}
-		
-		bool isWhitespace (StringIteratorT i) {
-			return *i == ' ' || *i == '\t' || *i == '\r' || *i == '\n';
-		}
-		
-		bool isNewline (StringIteratorT i) {
-			return *i == '\r' || *i == '\n';
-		}
-		
-		bool isNotNewline (StringIteratorT i) {
-			return !isNewline(i);
-		}
 	}
 }

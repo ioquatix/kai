@@ -18,6 +18,8 @@
 #include "Function.h"
 #include "Ensure.h"
 
+#include "Unicode/Unicode.h"
+
 // For String constructor
 #include "Parser/Strings.h"
 
@@ -543,6 +545,45 @@ namespace Kai {
 		return new String(character);
 	}
 	
+	Ref<Value> String::length (Frame * frame)
+	{
+		String * self;
+		
+		frame->extract()(self);
+		
+		std::size_t result = utf8::distance(self->m_value.begin(), self->m_value.end());
+		
+		return new Integer(result);
+	}
+	
+	Ref<Value> String::each (Frame * frame)
+	{
+		String * self;
+		Value * function;
+		
+		frame->extract()(self)(function);
+				
+		StringT::iterator current = self->m_value.begin();
+		StringT::iterator previous = current;
+		
+		Cell * last = NULL, * first = NULL;
+		
+		while (current != self->m_value.end()) {
+			uint32_t value = utf8::next(current, self->m_value.end());
+			
+			// Create a buffer to contain the single character:			
+			String * character = new String(StringT(previous, current));
+			Cell * message = Cell::create(function)(character);
+			Ref<Value> result = frame->call(message);
+
+			last = Cell::append(last, result, first);
+			
+			previous = current;
+		}
+		
+		return first;
+	}
+	
 	Ref<Value> String::prototype()
 	{
 		return globalPrototype();
@@ -558,6 +599,9 @@ namespace Kai {
 			g_prototype->update(sym("+"), KFunctionWrapper(String::join));
 			g_prototype->update(sym("size"), KFunctionWrapper(String::size));
 			g_prototype->update(sym("at"), KFunctionWrapper(String::at));
+			
+			g_prototype->update(sym("each"), KFunctionWrapper(String::each));
+			g_prototype->update(sym("length"), KFunctionWrapper(String::length));
 			
 		}
 		
