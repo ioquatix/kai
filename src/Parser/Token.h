@@ -41,6 +41,8 @@ namespace Kai {
 				typedef ChildrenT::iterator IteratorT;
 				
 			protected:
+				bool m_invalid;
+				
 				StringIteratorT m_begin, m_end;
 
 				Identity m_identity;

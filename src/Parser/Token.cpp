@@ -58,20 +58,20 @@ namespace Kai {
 			}
 		}
 	
-		Token::Token () : m_identity(UNIMPORTANT) {
+		Token::Token () : m_invalid(true), m_identity(UNIMPORTANT) {
 		}
 
-		Token::Token (StringIteratorT begin, Identity identity) : m_begin(begin), m_end(begin), m_identity(identity) {
+		Token::Token (StringIteratorT begin, Identity identity) : m_invalid(false), m_begin(begin), m_end(begin), m_identity(identity) {
 		}
 		
-		Token::Token (StringIteratorT begin, StringIteratorT end, Identity identity) : m_begin(begin), m_end(end), m_identity(identity) {
+		Token::Token (StringIteratorT begin, StringIteratorT end, Identity identity) : m_invalid(false), m_begin(begin), m_end(end), m_identity(identity) {
 		}
 		
-		Token::Token (const Token& current, StringIteratorT end) : m_begin(current.begin()), m_end(end), m_identity(UNIMPORTANT) {
+		Token::Token (const Token& current, StringIteratorT end) : m_invalid(false), m_begin(current.begin()), m_end(end), m_identity(UNIMPORTANT) {
 		}
 		
 		bool Token::isValid () const {
-			return m_begin != StringIteratorT();
+			return !m_invalid;
 		}
 		
 		unsigned Token::length () const {
@@ -121,8 +121,7 @@ namespace Kai {
 			if (other.isValid()) {
 				add(other, true);
 			} else {
-				// Become invalid
-				m_begin = StringIteratorT();
+				m_invalid = true;
 			}
 			
 			return *this;
