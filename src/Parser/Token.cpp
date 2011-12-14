@@ -44,10 +44,10 @@ namespace Kai {
 		}
 	
 		void Token::add (const Token& other, bool merge) {
-			if (other.begin() < m_begin || m_begin == StringIteratorT())
+			if (other.begin() < m_begin || !isValid())
 				m_begin = other.begin();
 			
-			if (other.end() > m_end || m_end == StringIteratorT())
+			if (other.end() > m_end || !isValid())
 				m_end = other.end();
 			
 			// Insert the children of the token in at some point:
@@ -82,7 +82,7 @@ namespace Kai {
 		}
 		
 		StringT Token::value () const {
-			if (m_begin != StringIteratorT())
+			if (isValid())
 				return StringT(m_begin, m_end);
 			else
 				return "";

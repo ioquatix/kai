@@ -17,7 +17,7 @@ namespace Kai {
 	
 	class System : public Value {
 	protected:
-		Array * m_loadPaths;
+		Ref<Array> m_loadPaths;
 		
 		// Run a script at the given path
 		Ref<Value> run (const PathT & path, Frame * frame);

@@ -55,6 +55,8 @@ namespace Kai {
 		public:
 			Expressions ();
 			virtual ~Expressions ();
+		
+			virtual void mark();
 			
 			static Expressions * basicExpressions ();
 			

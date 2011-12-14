@@ -48,7 +48,7 @@ namespace Kai {
 			++i;
 			--end;
 			
-			for (; i != end; ++i) {
+			for (; i < end; ++i) {
 				if (*i == '\\') {
 					++i;
 					

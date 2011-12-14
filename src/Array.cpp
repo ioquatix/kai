@@ -50,7 +50,7 @@ namespace Kai {
 		return 0;
 	}
 	
-	void Array::toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation)
+	void Array::toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const
 	{
 		if (marks.find(this) != marks.end()) {
 			buffer << "(Array@" << this << " ...)";
@@ -195,11 +195,11 @@ namespace Kai {
 		return globalPrototype();
 	}
 	
-	Ref<Value> Array::Array::globalPrototype ()
+	Ref<Value> Array::globalPrototype ()
 	{
-		static Table * g_prototype = NULL;
+		static Ref<Table> g_prototype;
 		
-		if (g_prototype == NULL) {
+		if (!g_prototype) {
 			g_prototype = new Table();
 			
 			g_prototype->update(sym("push-back!"), KFunctionWrapper(Array::push_back));

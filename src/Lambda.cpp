@@ -25,6 +25,16 @@ namespace Kai {
 		
 	}
 	
+	void Lambda::mark() {
+		if (marked()) return;
+		
+		Value::mark();
+		
+		if (m_scope) m_scope->mark();
+		if (m_arguments) m_arguments->mark();
+		if (m_code) m_code->mark();
+	}
+	
 	Ref<Value> Lambda::evaluate (Frame * frame) {
 		Table * locals = new Table;
 		
@@ -42,7 +52,7 @@ namespace Kai {
 		}
 		
 		// Give the execution scope access to the executing lambda:
-		locals->update(sym("caller"), this);
+		locals->update(sym("recurse"), this);
 		
 		Frame * next = new Frame(locals, m_scope);
 		

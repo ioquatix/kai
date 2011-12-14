@@ -13,6 +13,7 @@
 #include "Kai.h"
 #include "Exception.h"
 #include "Reference.h"
+#include "Memory/ObjectAllocator.h"
 
 #include <set>
 
@@ -59,7 +60,7 @@ namespace Kai {
 		}
 	}
 	
-	class Value : virtual public SharedObject {
+	class Value : public ManagedObject {
 		public:
 			Value ();
 			virtual ~Value ();
@@ -134,8 +135,11 @@ namespace Kai {
 			
 			static Ref<Value> sleep (Frame * frame);
 			
+			static Ref<Value> memory_address(Frame * frame);
+		
 			/// The global value prototype.
 			static Ref<Value> globalPrototype ();
+		
 			/// Import the global prototype and associated functions into an execution context.
 			static void import (Table * context);
 	};
@@ -145,12 +149,14 @@ namespace Kai {
 
 	class Cell : public Value {
 		protected:
-			Ref<Value> m_head;
-			Ref<Value> m_tail;
+			Ptr<Value> m_head;
+			Ptr<Value> m_tail;
 			
 		public:
 			Cell (Value * head = NULL, Value * tail = NULL);
 			virtual ~Cell ();
+		
+			virtual void mark();
 			
 			Ref<Value> head () { return m_head; }
 			const Ref<Value> head () const { return m_head; }
@@ -357,7 +363,7 @@ namespace Kai {
 
 	class Integer : public Value {
 		public:
-			typedef int32_t ValueT;
+			typedef int ValueT;
 			
 		protected:
 			ValueT m_value;
@@ -390,14 +396,16 @@ namespace Kai {
 	class Table : public Value {
 		public:
 			struct Bin {
-				Ref<Symbol> key;
-				Ref<Value> value;
+				Symbol * key;
+				Value * value;
 				Bin * next;
 			};
 			
 		public:
 			Table(int size = 16);
 			virtual ~Table();
+		
+			virtual void mark();
 			
 			Bin * find (Symbol * key);
 			Ref<Value> update (Symbol * key, Value * value);

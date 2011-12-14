@@ -30,7 +30,7 @@ namespace Kai {
 				return FunctionT(frame);
 			}
 						
-			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) {
+			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const {
 				buffer << "(builtin-function " << m_name << ")";
 			}
 	};

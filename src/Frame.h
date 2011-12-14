@@ -56,22 +56,22 @@ namespace Kai {
 	/** The Frame class represents the stack of a running program, and is dynamically allocated.
 	
 	*/
-	class Frame : public SharedObject {
+	class Frame : public ManagedObject {
 		protected:
 			/// Previous stack frame
-			Ref<Frame> m_previous;
+			Ptr<Frame> m_previous;
 			
 			/// The scope of the stack frame, if any.
-			Ref<Value> m_scope;
+			Ptr<Value> m_scope;
 			
 			/// The original message which created this frame, if any.
-			Ref<Cell> m_message;
+			Ptr<Cell> m_message;
 			
 			/// The evaluated function.
-			Ref<Value> m_function;
+			Ptr<Value> m_function;
 			
 			/// The unwrapped arguments.
-			Ref<Cell> m_arguments;
+			Ptr<Cell> m_arguments;
 			
 			/// Given a stack frame, apply the function to the arguments.
 			Ref<Value> apply ();
@@ -88,6 +88,8 @@ namespace Kai {
 			Frame (Value * scope, Cell * message, Frame * previous);
 			
 			virtual ~Frame ();
+					
+			virtual void mark();
 			
 			/// Lookup an identifier using the stack, starting at this frame.
 			Ref<Value> lookup (Symbol * identifier);

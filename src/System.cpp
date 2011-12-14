@@ -182,9 +182,9 @@ namespace Kai {
 	}
 	
 	Ref<Value> System::globalPrototype () {
-		static Table * g_prototype = NULL;
+		static Ref<Table> g_prototype;
 		
-		if (g_prototype == NULL) {
+		if (!g_prototype) {
 			g_prototype = new Table();
 			
 			g_prototype->update(sym("require"), KFunctionWrapper(System::require));

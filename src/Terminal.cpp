@@ -64,16 +64,32 @@ namespace Kai {
 	bool TerminalEditor::readInput (StringT & buffer, StringT & prompt)
 	{
 		std::cout << prompt;
-		std::getline(std::cin, buffer);
-		return std::cin.good();
+		
+		// This function has some bugs in libc++, temporary fix:
+		//std::getline(std::cin, buffer);
+		
+		StringT::value_type c;
+		while (1) {
+			c = getc(stdin);
+			
+			if (c == '\b')
+				buffer.resize(buffer.size() - 1);
+			else if (c == '\n')
+				break;
+			else
+				buffer += c;
+		}
+		
+		return !feof(stdin);
 	}
 	
 	bool TerminalEditor::readInput (StringStreamT & buffer, IEditor & editor)
 	{
-		StringT input;
 		StringT prompt = editor.firstPrompt();
 		
 		do {
+			StringT input = "";
+			
 			if (!readInput(input, prompt))
 				return false;
 			

@@ -72,7 +72,7 @@ namespace Kai {
 	
 	Ref<Value> Tracer::globalPrototype ()
 	{
-		static Table * g_prototype = NULL;
+		static Ref<Table> g_prototype;
 		
 		if (!g_prototype) {
 			g_prototype = new Table;
@@ -140,6 +140,18 @@ namespace Kai {
 	Frame::~Frame () {
 	}
 	
+	void Frame::mark() {
+		if (marked()) return;
+		
+		ManagedObject::mark();
+		
+		if (m_previous) m_previous->mark();
+		if (m_scope) m_scope->mark();
+		if (m_message) m_message->mark();
+		if (m_function) m_function->mark();
+		if (m_arguments) m_arguments->mark();
+	}
+	
 	Ref<Value> Frame::lookup (Symbol * identifier, Frame *& frame)
 	{
 		Ref<Value> result = NULL;
@@ -194,7 +206,7 @@ namespace Kai {
 			throw Exception("Invalid Message", this);
 		}
 	
-		Frame * frame = new Frame(scope, message, this);
+		Ref<Frame> frame = new Frame(scope, message, this);
 		
 #ifdef KAI_DEBUG
 		std::cerr << "Stack pointer: " << (void*)&frame << std::endl;
@@ -299,16 +311,20 @@ namespace Kai {
 			
 			std::cerr << "Frame " << cur << ":" << std::endl;
 			
+#ifdef KAI_DEBUG
 			if (cur->scope())
 				std::cerr << "\t Scope: " << Value::toString(cur->scope()) << std::endl;
+#endif
 			
 			std::cerr << "\t Message: " << Value::toString(m_message) << std::endl;
 			std::cerr << "\t Function: " << Value::toString(cell.head()) << std::endl;
 			
+#ifdef KAI_DEBUG
 			if (cur->arguments()) {
 				std::cerr << "\t Arugment Ptr: " << cur->arguments() << std::endl;
 				std::cerr << "\t Arguments: " << Value::toString(cur->arguments()) << std::endl;
 			}
+#endif
 			
 			cur = cur->previous();
 		} while (!cur->top() && ascend);

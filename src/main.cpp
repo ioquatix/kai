@@ -37,7 +37,10 @@ namespace {
 
 	using namespace Kai;
 	
-	Ret<Value> runCode (Table * context, SourceCode & code, int & status) {
+	// Example:
+	// ["Möbius Frequency" each (lambda `(chr) `[chr size])]
+	
+	Ref<Value> runCode (Ref<Table> context, SourceCode & code, int & status) {
 		Ref<Value> value = NULL, result = NULL;
 
 		// Execution status
@@ -48,6 +51,9 @@ namespace {
 			Ref<Expressions> expressions = Expressions::fetch(frame);
 			
 			value = expressions->parse(code).value;
+			
+			// Run the garbage collector for the memory pool that contains value.
+			value->allocator()->collect();
 			
 			if (value) {
 				result = value->evaluate(frame);
@@ -80,8 +86,15 @@ namespace {
 		return NULL;
 	}
 	
-	Table * buildContext () {
-		Table * global = new Table;
+	// ["Möbius Frequency" each (lambda `(chr) `[chr size])]
+	
+	Ref<Value> managed_memory_debug(Frame * frame) {
+		frame->allocator()->debug();
+		return NULL;
+	}
+	
+	Ref<Table> buildContext () {
+		Ref<Table> global = new Table;
 		global->setPrototype(Table::globalPrototype());
 				
 		Integer::import(global);
@@ -98,9 +111,11 @@ namespace {
 		Array::import(global);
 		System::import(global);
 		
+		global->update(sym("gc-debug"), KFunctionWrapper(managed_memory_debug));
+		
 		Table * context = new Table;
 		context->setPrototype(global);
-		
+				
 		return context;
 	}
 }
@@ -119,7 +134,7 @@ int main (int argc, const char * argv[]) {
 	
 	int result = 0;
 	Terminal console(STDIN_FILENO);
-	Table * context = buildContext();
+	Ref<Table> context = buildContext();
 
 	BasicEditor editor(context);
 	

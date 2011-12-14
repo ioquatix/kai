@@ -126,13 +126,14 @@ namespace Kai {
 	}
 	
 	Ref<Value> Value::globalPrototype () {
-		static Table * g_prototype = NULL;
+		static Ref<Table> g_prototype;
 		
 		if (!g_prototype) {
 			g_prototype = new Table;
 			
-			g_prototype->update(sym("toString"), KFunctionWrapper(Value::toString));
-			g_prototype->update(sym("toBoolean"), KFunctionWrapper(Value::toBoolean));
+			g_prototype->update(sym("memory-address"), KFunctionWrapper(Value::memory_address));
+			g_prototype->update(sym("to-string"), KFunctionWrapper(Value::toString));
+			g_prototype->update(sym("to-boolean"), KFunctionWrapper(Value::toBoolean));
 			g_prototype->update(sym("<=>"), KFunctionWrapper(Value::compare));
 			g_prototype->update(sym("=="), KFunctionWrapper(Value::equal));
 			g_prototype->update(sym("prototype"), KFunctionWrapper(Value::prototype));
@@ -263,10 +264,18 @@ namespace Kai {
 		return NULL;
 	}
 	
+	Ref<Value> Value::memory_address(Frame * frame) {
+		Value * value;
+		
+		frame->extract()(value);
+		
+		return new Integer((intptr_t)value);
+	}
+	
 	Ref<Value> Value::prototype (Frame * frame) {
 		Value * value = NULL;
 		
-		frame->extract()[value];
+		frame->extract()(value);
 		
 		return value->prototype();
 	}
@@ -288,6 +297,15 @@ namespace Kai {
 
 	Cell::~Cell () {
 
+	}
+	
+	void Cell::mark() {
+		if (marked()) return;
+		
+		Value::mark();
+		
+		if (m_head) m_head->mark();
+		if (m_tail) m_tail->mark();
 	}
 
 	Cell * Cell::insert (Value * value) {
@@ -453,7 +471,7 @@ namespace Kai {
 	}
 	
 	Ref<Value> Cell::globalPrototype () {
-		static Table * g_prototype = NULL;
+		static Ref<Table> g_prototype;
 		
 		if (!g_prototype) {
 			g_prototype = new Table;
@@ -591,7 +609,7 @@ namespace Kai {
 	
 	Ref<Value> String::globalPrototype()
 	{
-		static Table * g_prototype = NULL;
+		static Ref<Table> g_prototype;
 		
 		if (!g_prototype) {
 			g_prototype = new Table;
@@ -707,7 +725,7 @@ namespace Kai {
 	}
 	
 	Ref<Value> Symbol::globalPrototype () {
-		static Table * g_prototype = NULL;
+		static Ref<Table> g_prototype;
 		
 		if (!g_prototype) {
 			g_prototype = new Table;
@@ -810,7 +828,7 @@ namespace Kai {
 	}
 	
 	Ref<Value> Integer::globalPrototype () {
-		static Table * g_prototype = NULL;
+		static Ref<Table> g_prototype;
 		
 		if (!g_prototype) {
 			g_prototype = new Table;
@@ -865,6 +883,21 @@ namespace Kai {
 		}
 	}
 
+	void Table::mark() {
+		if (marked()) return;
+		
+		Value::mark();
+		
+		for (Bin * bin : m_bins) {
+			while (bin) {
+				bin->key->mark();
+				bin->value->mark();
+				
+				bin = bin->next;
+			}
+		}
+	}
+	
 	Table::Bin * Table::find (Symbol * key) {
 		assert(key != NULL);
 		
@@ -882,8 +915,7 @@ namespace Kai {
 	}
 
 	Ref<Value> Table::update (Symbol * key, Value * value) {
-		assert(key != NULL);
-		//assert(value != NULL);
+		KAI_ENSURE(key != NULL);
 			
 		unsigned index = key->hash() % m_bins.size();
 		
@@ -891,6 +923,9 @@ namespace Kai {
 		
 		if (bin) {
 			while (1) {
+				KAI_ENSURE(bin);
+				KAI_ENSURE(bin->key);
+				
 				if (key->compare(bin->key) == 0) {
 					Ref<Value> old = bin->value;
 					
@@ -1097,7 +1132,7 @@ namespace Kai {
 	}
 	
 	Ref<Value> Table::globalPrototype () {
-		static Table * g_prototype = NULL;
+		static Ref<Table> g_prototype;
 		
 		if (!g_prototype) {
 			g_prototype = new Table;

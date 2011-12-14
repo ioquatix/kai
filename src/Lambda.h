@@ -27,13 +27,15 @@ namespace Kai {
 
 	class Lambda : public Value {
 		protected:
-			Ref<Frame> m_scope;
-			Ref<Cell> m_arguments;
-			Ref<Cell> m_code;
+			Ptr<Frame> m_scope;
+			Ptr<Cell> m_arguments;
+			Ptr<Cell> m_code;
 			
 		public:
 			Lambda (Frame * scope, Cell * arguments, Cell * code);
 			virtual ~Lambda ();
+		
+			virtual void mark();
 			
 			virtual Ref<Value> evaluate (Frame * frame);
 			

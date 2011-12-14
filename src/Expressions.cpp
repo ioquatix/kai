@@ -37,6 +37,20 @@ namespace Kai {
 	
 	}
 	
+	void Expressions::mark() {
+		if (marked()) return;
+		
+		Value::mark();
+		
+		for (IExpressions * parser : m_parsers) {
+			Value * value = dynamic_cast<Value *>(parser);
+			
+			if (value) {
+				value->mark();
+			}
+		}
+	}
+	
 	Expressions * Expressions::basicExpressions () {
 		Expressions * self = new Expressions;
 
@@ -52,7 +66,7 @@ namespace Kai {
 		self->add(new ValueExpression);
 		self->add(new CallExpression);
 		self->add(new BlockExpression);
-		
+				
 		return self;
 	}
 	
@@ -95,7 +109,7 @@ namespace Kai {
 		begin = Parser::parseWhitespace(begin, end).end();
 		
 		if (begin < end) {
-			for (ParsersT::iterator iter = m_parsers.begin(); iter != m_parsers.end(); iter++) {
+			for (ParsersT::iterator iter = m_parsers.begin(); iter != m_parsers.end(); iter++) {				
 				result = (*iter)->parse(this, begin, end);
 				status |= result.status;
 								
@@ -152,7 +166,7 @@ namespace Kai {
 	}
 	
 	Ref<Value> Expressions::globalPrototype () {
-		static Table * g_prototype = NULL;
+		static Ref<Table> g_prototype;
 		
 		if (!g_prototype) {
 			g_prototype = new Table;
@@ -302,7 +316,8 @@ namespace Kai {
 			
 	ParseResult CellExpression::parse (IExpressions * top, StringIteratorT begin, StringIteratorT end) {
 		Parser::Token t(begin, Parser::CELL);
-		Cell * first = NULL, * list = NULL;
+		Ref<Cell> first, list;
+		
 		ParseResult::Status status = ParseResult::OKAY;
 		
 		Parser::Token failedToken;
@@ -408,6 +423,6 @@ namespace Kai {
 			
 	Ref<Value> BlockExpression::convertToResult (Cell * items)
 	{
-		return (new Cell(sym("block"), items))->asValue();
+		return new Cell(sym("block"), items);
 	}
 }

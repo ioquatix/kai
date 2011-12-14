@@ -35,7 +35,7 @@ namespace Kai {
 			virtual int compare (const Value * other) const;
 			int compare (const Array * other) const;
 			
-			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation);
+			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const;
 			
 			static Ref<Value> _new (Frame * frame);
 			
