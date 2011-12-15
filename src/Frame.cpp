@@ -316,12 +316,12 @@ namespace Kai {
 				std::cerr << "\t Scope: " << Value::toString(cur->scope()) << std::endl;
 #endif
 			
-			std::cerr << "\t Message: " << Value::toString(m_message) << std::endl;
+
 			std::cerr << "\t Function: " << Value::toString(cell.head()) << std::endl;
+			std::cerr << "\t Message: " << Value::toString(m_message) << std::endl;
 			
 #ifdef KAI_DEBUG
 			if (cur->arguments()) {
-				std::cerr << "\t Arugment Ptr: " << cur->arguments() << std::endl;
 				std::cerr << "\t Arguments: " << Value::toString(cur->arguments()) << std::endl;
 			}
 #endif
