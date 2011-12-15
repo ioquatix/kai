@@ -52,7 +52,8 @@ namespace Kai {
 		}
 		
 		// Give the execution scope access to the executing lambda:
-		locals->update(sym("recurse"), this);
+		locals->update(sym("caller"), frame->scope());
+		locals->update(sym("callee"), this);
 		
 		Frame * next = new Frame(locals, m_scope);
 		
