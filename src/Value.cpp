@@ -155,7 +155,7 @@ namespace Kai {
 		frame->extract()(self)(body);
 		
 		// Wrap self so we can pass it to other functions
-		self = Cell::create()(sym("value"))(self);
+		self = self->asValue();
 		
 		Symbol * functionName = body->headAs<Symbol>();
 		
