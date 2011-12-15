@@ -446,29 +446,6 @@ namespace Kai {
 			
 			std::vector<Bin*> m_bins;
 	};
-	
-#pragma mark -
-#pragma mark Logic
-
-	class Logic {			
-		public:
-			static Ref<Value> or_ (Frame * frame);
-			static Ref<Value> and_ (Frame * frame);
-			static Ref<Value> not_ (Frame * frame);
-		
-			static Ref<Value> when (Frame * frame);
-			static Ref<Value> if_ (Frame * frame);
-			
-			static Ref<Value> block (Frame * frame);
-			static Ref<Value> return_ (Frame * frame);
-			
-			static Ref<Value> trueValue ();
-			static Ref<Value> falseValue ();
-			static Ref<Value> anythingValue ();
-			static Ref<Value> nothingValue ();
-			
-			static void import (Table *);
-	};
-
 }
+
 #endif

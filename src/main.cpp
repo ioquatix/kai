@@ -30,6 +30,7 @@
 #include "BasicEditor.h"
 
 #include "Lambda.h"
+#include "Logic.h"
 #include "Array.h"
 #include "System.h"
 
