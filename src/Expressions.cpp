@@ -10,11 +10,12 @@
 #include "Expressions.h"
 #include "Frame.h"
 #include "Function.h"
+#include "Lambda.h"
 
 namespace Kai {
 	
-	ParseResult::ParseResult()
-		: value(NULL), status(FAILED)
+	ParseResult::ParseResult(Status _status)
+		: value(NULL), status(_status)
 	{
 	
 	}
@@ -65,6 +66,7 @@ namespace Kai {
 		
 		self->add(new ValueExpression);
 		self->add(new CallExpression);
+		self->add(new LambdaExpression);
 		self->add(new BlockExpression);
 				
 		return self;
@@ -294,13 +296,13 @@ namespace Kai {
 #pragma mark -
 
 	CellExpression::CellExpression(StringT open, StringT close)
-		: m_open(open), m_close(close)
+		: m_open(open), m_close(close), m_header(false)
 	{
 	
 	}
 			
 	CellExpression::CellExpression()
-		: m_open("("), m_close(")")
+		: m_open("("), m_close(")"), m_header(false)
 	{
 	
 	}
@@ -313,7 +315,11 @@ namespace Kai {
 	CellExpression::~CellExpression() {
 	
 	}
-			
+	
+	ParseResult CellExpression::parseHeader(IExpressions * top, StringIteratorT begin, StringIteratorT end) {
+		return ParseResult(ParseResult::FAILED);
+	}
+	
 	ParseResult CellExpression::parse (IExpressions * top, StringIteratorT begin, StringIteratorT end) {
 		Parser::Token t(begin, Parser::CELL);
 		Ref<Cell> first, list;
@@ -323,12 +329,22 @@ namespace Kai {
 		Parser::Token failedToken;
 		
 		if (t &= Parser::parseConstant(t.end(), end, m_open)) {
+			bool header = m_header;
+			
 			while (true) {
-				// Eat any whitespace before the expression because otherwise if the expression fails to parse we might
-				// be left with erroneous whitespace..
-				t += Parser::parseWhitespace(t.end(), end);
-
-				ParseResult result = top->parse(top, t.end(), end);
+				ParseResult result;
+				
+				if (header) {
+					result = parseHeader(top, t.end(), end);
+					header = false;
+				} else {
+					// Eat any whitespace before the expression because otherwise if the expression fails to parse we might
+					// be left with erroneous whitespace..
+					t += Parser::parseWhitespace(t.end(), end);
+					
+					result = top->parse(top, t.end(), end);
+				}
+				
 				status |= result.status;
 				
 				if (result.isOkay()) {
@@ -354,14 +370,11 @@ namespace Kai {
 			
 			// If the list is parsed correctly, token will be valid.
 			// Otherwise, it is either failed or incomplete.
-			if (t)
-				status = ParseResult::OKAY;
-			
-			if (failedToken && status == ParseResult::FAILED) {
-				t = failedToken;
+			if (t || status == ParseResult::OKAY) {
+				return ParseResult(t, convertToResult(first), ParseResult::OKAY);
+			} else {
+				return ParseResult(failedToken, NULL, status);
 			}
-			
-			return ParseResult(t, convertToResult(first), status);
 		}
 		
 		return ParseResult();
@@ -424,5 +437,66 @@ namespace Kai {
 	Ref<Value> BlockExpression::convertToResult (Cell * items)
 	{
 		return new Cell(sym("block"), items);
+	}
+
+#pragma mark -	
+	LambdaExpression::LambdaExpression() {
+		m_header = true;
+	}
+	
+	LambdaExpression::~LambdaExpression() {
+		
+	}
+	
+	ParseResult LambdaExpression::parseHeader(IExpressions * top, StringIteratorT begin, StringIteratorT end) {
+		SymbolExpression symbol_expression;
+		
+		Parser::Token t(begin, Parser::CELL);
+		Ref<Cell> first, list;
+		
+		if (t &= Parser::parseConstant(t.end(), end, "|")) {
+			while (1) {
+				Parser::Token q = Parser::parseConstant(t.end(), end, "|");
+				
+				if (q) {
+					t &= q;
+					
+					return ParseResult(t, first);
+				} else {
+					ParseResult result = symbol_expression.parse(top, t.end(), end);
+					
+					if (result.isOkay()) {
+						list = Cell::append(list, result.value, first);
+						t << result.token;
+					} else {
+						// Is this the correct behaviour to return a partial failure?
+						result.status = ParseResult::FAILED;
+						
+						return result;
+					}
+				}
+				
+				t += Parser::parseWhitespace(t.end(), end);
+			}
+		} else {
+			return ParseResult();
+		}
+	}
+	
+	Ref<Value> LambdaExpression::convertToResult (Cell * items) {
+		KAI_ENSURE(items);
+		
+		Value * arguments = items->head();
+		Value * body = items->tail();
+		
+		if (arguments != NULL) {
+			arguments = arguments->asValue();
+		}
+		
+		if (body != NULL) {
+			body = (new Cell(sym("block"), body))->asValue();
+		}
+		
+		return Cell::create(sym("lambda"))(arguments)(body);
 	}
 }

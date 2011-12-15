@@ -27,7 +27,7 @@ namespace Kai {
 		
 		typedef int Status;
 		
-		ParseResult();
+		ParseResult(Status status = FAILED);
 		ParseResult(Parser::Token _token, Value * _value = NULL, Status status = OKAY);
 
 		Parser::Token token;
@@ -121,10 +121,12 @@ namespace Kai {
 	class CellExpression : public Value, virtual public IExpressions {
 		protected:
 			StringT m_open, m_close;
+			bool m_header;
 			
 			CellExpression(StringT open, StringT close);
 			virtual Ref<Value> convertToResult (Cell * items);
 			
+			virtual ParseResult parseHeader(IExpressions * top, StringIteratorT begin, StringIteratorT end);
 		public:
 			CellExpression();
 			virtual ~CellExpression();
@@ -155,6 +157,17 @@ namespace Kai {
 		public:
 			BlockExpression();
 			virtual ~BlockExpression();
+	};
+	
+	class LambdaExpression : public BlockExpression {
+		protected:
+			virtual Ref<Value> convertToResult (Cell * items);
+			
+			virtual ParseResult parseHeader(IExpressions * top, StringIteratorT begin, StringIteratorT end);
+
+		public:
+			LambdaExpression();
+			virtual ~LambdaExpression();
 	};
 }
 
