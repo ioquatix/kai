@@ -21,9 +21,11 @@
 #define MAP_ANONYMOUS MAP_ANON
 #endif
 
+// These are only for debugging - behaviour of memory allocation may be substantially changed/broken.
 //#define KAI_MEMORY_DEBUG_GC
-#define KAI_MEMORY_DEBUG_ALLOC
+//#define KAI_MEMORY_DEBUG_ALLOC
 //#define KAI_MEMORY_DEBUG_FREE
+//#define KAI_MEMORY_USE_MALLOC
 
 namespace Kai {
 	namespace Memory {
@@ -42,6 +44,10 @@ namespace Kai {
 		}
 		
 		ObjectAllocator * ObjectAllocation::allocator() {
+#ifdef KAI_MEMORY_USE_MALLOC
+			return NULL;
+#endif
+			
 			ObjectAllocation * current = this;
 			
 			while (!(current->_flags & Memory::FRONT)) {
@@ -255,6 +261,9 @@ namespace Kai {
 		KAI_ENSURE(allocator);
 		
 		void * result = allocator->allocate(size);
+#ifdef KAI_MEMORY_USE_MALLOC
+		void * result = malloc(size);
+#endif
 		
 		if (result == NULL)
 			throw std::bad_alloc();
