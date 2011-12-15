@@ -12,6 +12,8 @@
 
 #include "Value.h"
 
+#define KAI_BUILTIN_FUNCTION(function) (new ::Kai::BuiltinFunction<&function>(#function))
+
 namespace Kai {
 
 	typedef Value * (*EvaluateFunctionT)(Frame *);
@@ -34,9 +36,7 @@ namespace Kai {
 				buffer << "(builtin-function " << m_name << ")";
 			}
 	};
-	
-	#define KFunctionWrapper(function) new BuiltinFunction<&function>(#function)
-	
+		
 	class DynamicFunction : public Value {
 		protected:
 			EvaluateFunctionT m_evaluateFunction;

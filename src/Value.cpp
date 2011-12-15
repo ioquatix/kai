@@ -131,18 +131,18 @@ namespace Kai {
 		if (!g_prototype) {
 			g_prototype = new Table;
 			
-			g_prototype->update(sym("memory-address"), KFunctionWrapper(Value::memory_address));
-			g_prototype->update(sym("to-string"), KFunctionWrapper(Value::toString));
-			g_prototype->update(sym("to-boolean"), KFunctionWrapper(Value::toBoolean));
-			g_prototype->update(sym("<=>"), KFunctionWrapper(Value::compare));
-			g_prototype->update(sym("=="), KFunctionWrapper(Value::equal));
-			g_prototype->update(sym("prototype"), KFunctionWrapper(Value::prototype));
-			g_prototype->update(sym("value"), KFunctionWrapper(Value::value));
+			g_prototype->update(sym("memory-address"), KAI_BUILTIN_FUNCTION(Value::memory_address));
+			g_prototype->update(sym("to-string"), KAI_BUILTIN_FUNCTION(Value::toString));
+			g_prototype->update(sym("to-boolean"), KAI_BUILTIN_FUNCTION(Value::toBoolean));
+			g_prototype->update(sym("<=>"), KAI_BUILTIN_FUNCTION(Value::compare));
+			g_prototype->update(sym("=="), KAI_BUILTIN_FUNCTION(Value::equal));
+			g_prototype->update(sym("prototype"), KAI_BUILTIN_FUNCTION(Value::prototype));
+			g_prototype->update(sym("value"), KAI_BUILTIN_FUNCTION(Value::value));
 			
-			g_prototype->update(sym("sleep"), KFunctionWrapper(Value::sleep));
+			g_prototype->update(sym("sleep"), KAI_BUILTIN_FUNCTION(Value::sleep));
 			
-			g_prototype->update(sym("lookup"), KFunctionWrapper(Value::lookup));
-			g_prototype->update(sym("call"), KFunctionWrapper(Value::call));
+			g_prototype->update(sym("lookup"), KAI_BUILTIN_FUNCTION(Value::lookup));
+			g_prototype->update(sym("call"), KAI_BUILTIN_FUNCTION(Value::call));
 		}
 		
 		return g_prototype;
@@ -476,10 +476,10 @@ namespace Kai {
 		if (!g_prototype) {
 			g_prototype = new Table;
 			
-			g_prototype->update(sym("new"), KFunctionWrapper(Cell::_new));
-			g_prototype->update(sym("each"), KFunctionWrapper(Cell::each));
-			g_prototype->update(sym("head"), KFunctionWrapper(Cell::head));
-			g_prototype->update(sym("tail"), KFunctionWrapper(Cell::tail));
+			g_prototype->update(sym("new"), KAI_BUILTIN_FUNCTION(Cell::_new));
+			g_prototype->update(sym("each"), KAI_BUILTIN_FUNCTION(Cell::each));
+			g_prototype->update(sym("head"), KAI_BUILTIN_FUNCTION(Cell::head));
+			g_prototype->update(sym("tail"), KAI_BUILTIN_FUNCTION(Cell::tail));
 		}
 		
 		return g_prototype;
@@ -487,7 +487,7 @@ namespace Kai {
 	
 	void Cell::import (Table * context) {
 		context->update(sym("Cell"), globalPrototype());
-		context->update(sym("list"), KFunctionWrapper(Cell::list));
+		context->update(sym("list"), KAI_BUILTIN_FUNCTION(Cell::list));
 	}
 
 #pragma mark -
@@ -614,12 +614,12 @@ namespace Kai {
 		if (!g_prototype) {
 			g_prototype = new Table;
 			
-			g_prototype->update(sym("+"), KFunctionWrapper(String::join));
-			g_prototype->update(sym("size"), KFunctionWrapper(String::size));
-			g_prototype->update(sym("at"), KFunctionWrapper(String::at));
+			g_prototype->update(sym("+"), KAI_BUILTIN_FUNCTION(String::join));
+			g_prototype->update(sym("size"), KAI_BUILTIN_FUNCTION(String::size));
+			g_prototype->update(sym("at"), KAI_BUILTIN_FUNCTION(String::at));
 			
-			g_prototype->update(sym("each"), KFunctionWrapper(String::each));
-			g_prototype->update(sym("length"), KFunctionWrapper(String::length));
+			g_prototype->update(sym("each"), KAI_BUILTIN_FUNCTION(String::each));
+			g_prototype->update(sym("length"), KAI_BUILTIN_FUNCTION(String::length));
 			
 		}
 		
@@ -650,7 +650,6 @@ namespace Kai {
 	}
 
 	Symbol::Symbol (const StringT & value) : m_value(value), m_hash(calculateHash(value)) {
-
 	}
 
 	Symbol::~Symbol () {
@@ -730,8 +729,8 @@ namespace Kai {
 		if (!g_prototype) {
 			g_prototype = new Table;
 			
-			g_prototype->update(sym("="), KFunctionWrapper(Symbol::assign));
-			g_prototype->update(sym("hash"), KFunctionWrapper(Symbol::hash));
+			g_prototype->update(sym("="), KAI_BUILTIN_FUNCTION(Symbol::assign));
+			g_prototype->update(sym("hash"), KAI_BUILTIN_FUNCTION(Symbol::hash));
 		}
 		
 		return g_prototype;
@@ -833,10 +832,10 @@ namespace Kai {
 		if (!g_prototype) {
 			g_prototype = new Table;
 			
-			g_prototype->update(sym("+"), KFunctionWrapper(Integer::sum));
-			g_prototype->update(sym("-"), KFunctionWrapper(Integer::subtract));
-			g_prototype->update(sym("*"), KFunctionWrapper(Integer::product));
-			g_prototype->update(sym("%"), KFunctionWrapper(Integer::modulus));
+			g_prototype->update(sym("+"), KAI_BUILTIN_FUNCTION(Integer::sum));
+			g_prototype->update(sym("-"), KAI_BUILTIN_FUNCTION(Integer::subtract));
+			g_prototype->update(sym("*"), KAI_BUILTIN_FUNCTION(Integer::product));
+			g_prototype->update(sym("%"), KAI_BUILTIN_FUNCTION(Integer::modulus));
 		}
 		
 		return g_prototype;
@@ -900,7 +899,7 @@ namespace Kai {
 	
 	Table::Bin * Table::find (Symbol * key) {
 		assert(key != NULL);
-		
+				
 		Bin * bin = m_bins[key->hash() % m_bins.size()];
 		
 		while (bin != NULL) {
@@ -914,7 +913,7 @@ namespace Kai {
 		return NULL;
 	}
 
-	Ref<Value> Table::update (Symbol * key, Value * value) {
+	Ref<Value> Table::update (Symbol * key, Value * value) {		
 		KAI_ENSURE(key != NULL);
 			
 		unsigned index = key->hash() % m_bins.size();
@@ -1138,12 +1137,12 @@ namespace Kai {
 			g_prototype = new Table;
 			g_prototype->setPrototype(Value::globalPrototype());
 			
-			g_prototype->update(sym("new"), KFunctionWrapper(Table::table));
-			//g_prototype->update(sym("update"), KFunctionWrapper(Table::update));
-			g_prototype->update(sym("set"), KFunctionWrapper(Table::set));
-			g_prototype->update(sym("get"), KFunctionWrapper(Table::lookup));
-			g_prototype->update(sym("each"), KFunctionWrapper(Table::each));
-			g_prototype->update(sym("prototype="), KFunctionWrapper(Table::setPrototype));
+			g_prototype->update(sym("new"), KAI_BUILTIN_FUNCTION(Table::table));
+			//g_prototype->update(sym("update"), KAI_BUILTIN_FUNCTION(Table::update));
+			g_prototype->update(sym("set"), KAI_BUILTIN_FUNCTION(Table::set));
+			g_prototype->update(sym("get"), KAI_BUILTIN_FUNCTION(Table::lookup));
+			g_prototype->update(sym("each"), KAI_BUILTIN_FUNCTION(Table::each));
+			g_prototype->update(sym("prototype="), KAI_BUILTIN_FUNCTION(Table::setPrototype));
 		}
 		
 		return g_prototype;

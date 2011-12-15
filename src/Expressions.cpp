@@ -173,7 +173,7 @@ namespace Kai {
 		if (!g_prototype) {
 			g_prototype = new Table;
 			
-			g_prototype->update(sym("parse"), KFunctionWrapper(Expressions::parse));
+			g_prototype->update(sym("parse"), KAI_BUILTIN_FUNCTION(Expressions::parse));
 		}
 		
 		return g_prototype;

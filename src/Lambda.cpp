@@ -98,7 +98,7 @@ namespace Kai {
 	}
 	
 	void Lambda::import (Table * context) {
-		context->update(sym("lambda"), KFunctionWrapper(Lambda::lambda));
+		context->update(sym("lambda"), KAI_BUILTIN_FUNCTION(Lambda::lambda));
 	}
 
 }

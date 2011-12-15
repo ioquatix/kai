@@ -78,7 +78,7 @@ namespace Kai {
 			g_prototype = new Table;
 			g_prototype->setPrototype(Value::globalPrototype());
 			
-			g_prototype->update(sym("dump"), KFunctionWrapper(Tracer::dump));
+			g_prototype->update(sym("dump"), KAI_BUILTIN_FUNCTION(Tracer::dump));
 		}
 		
 		return g_prototype;
@@ -358,17 +358,17 @@ namespace Kai {
 	}
 	
 	void Frame::import (Table * context) {
-		context->update(sym("this"), KFunctionWrapper(Frame::scope));
-		context->update(sym("trace"), KFunctionWrapper(Frame::trace));
-		context->update(sym("unwrap"), KFunctionWrapper(Frame::unwrap));
-		context->update(sym("wrap"), KFunctionWrapper(Frame::wrap));
-		context->update(sym("with"), KFunctionWrapper(Frame::with));
-		context->update(sym("update"), KFunctionWrapper(Frame::update));
-		context->update(sym("benchmark"), KFunctionWrapper(Frame::benchmark));
+		context->update(sym("this"), KAI_BUILTIN_FUNCTION(Frame::scope));
+		context->update(sym("trace"), KAI_BUILTIN_FUNCTION(Frame::trace));
+		context->update(sym("unwrap"), KAI_BUILTIN_FUNCTION(Frame::unwrap));
+		context->update(sym("wrap"), KAI_BUILTIN_FUNCTION(Frame::wrap));
+		context->update(sym("with"), KAI_BUILTIN_FUNCTION(Frame::with));
+		context->update(sym("update"), KAI_BUILTIN_FUNCTION(Frame::update));
+		context->update(sym("benchmark"), KAI_BUILTIN_FUNCTION(Frame::benchmark));
 		context->update(sym("tracer"), Tracer::globalTracer());
 
 
-		//context->update(sym("defines"), KFunctionWrapper(Frame::where));
+		//context->update(sym("defines"), KAI_BUILTIN_FUNCTION(Frame::where));
 	}
 /*	
 	Ref<Value> Frame::where (Frame * frame)

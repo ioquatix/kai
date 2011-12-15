@@ -202,13 +202,13 @@ namespace Kai {
 		if (!g_prototype) {
 			g_prototype = new Table();
 			
-			g_prototype->update(sym("push-back!"), KFunctionWrapper(Array::push_back));
-			g_prototype->update(sym("pop-back!"), KFunctionWrapper(Array::pop_back));
-			g_prototype->update(sym("push-front!"), KFunctionWrapper(Array::push_front));
-			g_prototype->update(sym("pop-front!"), KFunctionWrapper(Array::pop_front));
-			g_prototype->update(sym("at"), KFunctionWrapper(Array::push_back));
+			g_prototype->update(sym("push-back!"), KAI_BUILTIN_FUNCTION(Array::push_back));
+			g_prototype->update(sym("pop-back!"), KAI_BUILTIN_FUNCTION(Array::pop_back));
+			g_prototype->update(sym("push-front!"), KAI_BUILTIN_FUNCTION(Array::push_front));
+			g_prototype->update(sym("pop-front!"), KAI_BUILTIN_FUNCTION(Array::pop_front));
+			g_prototype->update(sym("at"), KAI_BUILTIN_FUNCTION(Array::push_back));
 			
-			g_prototype->update(sym("new"), KFunctionWrapper(Array::_new));
+			g_prototype->update(sym("new"), KAI_BUILTIN_FUNCTION(Array::_new));
 		}
 		
 		return g_prototype;

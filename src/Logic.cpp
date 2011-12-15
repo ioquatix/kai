@@ -144,14 +144,14 @@ namespace Kai {
 	}
 	
 	void Logic::import (Table * context) {
-		context->update(sym("or"), KFunctionWrapper(Logic::or_));
-		context->update(sym("and"), KFunctionWrapper(Logic::and_));
-		context->update(sym("not"), KFunctionWrapper(Logic::not_));
+		context->update(sym("or"), KAI_BUILTIN_FUNCTION(Logic::or_));
+		context->update(sym("and"), KAI_BUILTIN_FUNCTION(Logic::and_));
+		context->update(sym("not"), KAI_BUILTIN_FUNCTION(Logic::not_));
 		
-		context->update(sym("block"), KFunctionWrapper(Logic::block));
-		context->update(sym("return"), KFunctionWrapper(Logic::return_));
+		context->update(sym("block"), KAI_BUILTIN_FUNCTION(Logic::block));
+		context->update(sym("return"), KAI_BUILTIN_FUNCTION(Logic::return_));
 		
-		context->update(sym("when"), KFunctionWrapper(Logic::when));
-		context->update(sym("if"), KFunctionWrapper(Logic::if_));
+		context->update(sym("when"), KAI_BUILTIN_FUNCTION(Logic::when));
+		context->update(sym("if"), KAI_BUILTIN_FUNCTION(Logic::if_));
 	}
 }

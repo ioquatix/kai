@@ -112,7 +112,7 @@ namespace {
 		Array::import(global);
 		System::import(global);
 		
-		global->update(sym("gc-debug"), KFunctionWrapper(managed_memory_debug));
+		global->update(sym("gc-debug"), KAI_BUILTIN_FUNCTION(managed_memory_debug));
 		
 		Table * context = new Table;
 		context->setPrototype(global);

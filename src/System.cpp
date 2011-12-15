@@ -187,11 +187,11 @@ namespace Kai {
 		if (!g_prototype) {
 			g_prototype = new Table();
 			
-			g_prototype->update(sym("require"), KFunctionWrapper(System::require));
-			g_prototype->update(sym("load"), KFunctionWrapper(System::load));
-			g_prototype->update(sym("loadPaths"), KFunctionWrapper(System::loadPaths));
-			g_prototype->update(sym("workingDirectory"), KFunctionWrapper(System::workingDirectory));
-			g_prototype->update(sym("environment"), KFunctionWrapper(System::environment));
+			g_prototype->update(sym("require"), KAI_BUILTIN_FUNCTION(System::require));
+			g_prototype->update(sym("load"), KAI_BUILTIN_FUNCTION(System::load));
+			g_prototype->update(sym("loadPaths"), KAI_BUILTIN_FUNCTION(System::loadPaths));
+			g_prototype->update(sym("workingDirectory"), KAI_BUILTIN_FUNCTION(System::workingDirectory));
+			g_prototype->update(sym("environment"), KAI_BUILTIN_FUNCTION(System::environment));
 		}
 		
 		return g_prototype;
