@@ -39,7 +39,7 @@ namespace Kai {
 			
 			virtual Ref<Value> evaluate (Frame * frame);
 			
-			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation);
+			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const;
 			
 			static Ref<Value> lambda (Frame * frame);
 			static void import (Table *);

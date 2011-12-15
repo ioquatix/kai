@@ -89,7 +89,7 @@ namespace Kai {
 		return false;
 	}
 	
-	void System::toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) {
+	void System::toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const {
 		buffer << "(System@" << this << ")" << std::endl;
 	}
 	

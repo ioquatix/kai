@@ -31,7 +31,7 @@ namespace Kai {
 		
 		bool find (const StringT & subPath, StringT & fullPath);
 		
-		virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation);
+		virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const;
 		
 		static Ref<Value> load (Frame * frame);
 		static Ref<Value> require (Frame * frame);

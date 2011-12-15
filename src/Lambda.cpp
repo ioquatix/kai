@@ -62,7 +62,7 @@ namespace Kai {
 			return NULL;
 	}
 	
-	void Lambda::toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) {
+	void Lambda::toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const {
 		buffer << "(lambda{" << this << "}";
 		if (marks.find(this) != marks.end()) {
 			buffer << ")";
