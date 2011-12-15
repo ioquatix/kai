@@ -15,6 +15,8 @@
 		7E3EA3FB117F189A00F6C40B /* SourceCode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7E3EA3FA117F189A00F6C40B /* SourceCode.cpp */; };
 		7E3EA40C117F1A4400F6C40B /* Kai.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7E3EA40B117F1A4400F6C40B /* Kai.cpp */; };
 		7E3EA43B117F1C7800F6C40B /* Ensure.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7E3EA43A117F1C7800F6C40B /* Ensure.cpp */; };
+		7E4F5754149A1F4100A6DB0C /* Integer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7E4F5752149A1F4100A6DB0C /* Integer.cpp */; };
+		7E4F5758149A221000A6DB0C /* Logic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7E4F5757149A221000A6DB0C /* Logic.cpp */; };
 		7E5405A311ED517A00F8898D /* Parser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7E4A1F9411CA26520066C220 /* Parser.cpp */; };
 		7E5B6335148D7E9100027AF5 /* Reference.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7E5B6334148D7E9100027AF5 /* Reference.cpp */; };
 		7E5B6365148E4D8D00027AF5 /* Unicode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7E5B635D148E4D8D00027AF5 /* Unicode.cpp */; };
@@ -90,6 +92,10 @@
 		7E3EA439117F1C7800F6C40B /* Ensure.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Ensure.h; sourceTree = "<group>"; };
 		7E3EA43A117F1C7800F6C40B /* Ensure.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Ensure.cpp; sourceTree = "<group>"; };
 		7E4A1F9411CA26520066C220 /* Parser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Parser.cpp; sourceTree = "<group>"; };
+		7E4F5752149A1F4100A6DB0C /* Integer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Integer.cpp; sourceTree = "<group>"; };
+		7E4F5753149A1F4100A6DB0C /* Integer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Integer.h; sourceTree = "<group>"; };
+		7E4F5756149A220100A6DB0C /* Logic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Logic.h; sourceTree = "<group>"; };
+		7E4F5757149A221000A6DB0C /* Logic.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Logic.cpp; sourceTree = "<group>"; };
 		7E5405A511ED518400F8898D /* Parser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Parser.h; sourceTree = "<group>"; };
 		7E5B6333148D7E9100027AF5 /* Reference.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Reference.h; sourceTree = "<group>"; };
 		7E5B6334148D7E9100027AF5 /* Reference.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Reference.cpp; sourceTree = "<group>"; };
@@ -161,6 +167,7 @@
 				7E3EA3FA117F189A00F6C40B /* SourceCode.cpp */,
 				7E3EA3F6117F17FB00F6C40B /* Terminal.h */,
 				7E3EA3F7117F17FB00F6C40B /* Terminal.cpp */,
+				7E4F5751149A1F4100A6DB0C /* Math */,
 				7E5B639C14962F0C00027AF5 /* Memory */,
 				7E5B6359148E4D8C00027AF5 /* Unicode */,
 				7E8799BF11A4CD8A00051ED4 /* Parser */,
@@ -200,8 +207,19 @@
 				7E33136D1174388400DC72B5 /* Exception.cpp */,
 				7EC7BDEA123A9BAA0018AEA2 /* Expressions.h */,
 				7EC7BDEB123A9BAA0018AEA2 /* Expressions.cpp */,
+				7E4F5756149A220100A6DB0C /* Logic.h */,
+				7E4F5757149A221000A6DB0C /* Logic.cpp */,
 			);
 			name = Interpreter;
+			sourceTree = "<group>";
+		};
+		7E4F5751149A1F4100A6DB0C /* Math */ = {
+			isa = PBXGroup;
+			children = (
+				7E4F5753149A1F4100A6DB0C /* Integer.h */,
+				7E4F5752149A1F4100A6DB0C /* Integer.cpp */,
+			);
+			path = Math;
 			sourceTree = "<group>";
 		};
 		7E5B6359148E4D8C00027AF5 /* Unicode */ = {
@@ -342,6 +360,8 @@
 				7E5B6335148D7E9100027AF5 /* Reference.cpp in Sources */,
 				7E5B6365148E4D8D00027AF5 /* Unicode.cpp in Sources */,
 				7E5B639F14962F0E00027AF5 /* ObjectAllocator.cpp in Sources */,
+				7E4F5754149A1F4100A6DB0C /* Integer.cpp in Sources */,
+				7E4F5758149A221000A6DB0C /* Logic.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
