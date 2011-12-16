@@ -21,15 +21,16 @@ namespace Kai {
 		
 		bool isLetter(CodePointT);
 		
-		bool isAlpha (CodePointT);
-		bool isNumeric (CodePointT);
-		bool isAlphaNumeric (CodePointT i);
+		bool isAlpha(CodePointT);
+		bool isNumeric(CodePointT);
+		bool isAlphaNumeric(CodePointT i);
+		bool isHexadecimal(CodePointT i);
 		
-		bool isTab (CodePointT i);
-		bool isSpace (CodePointT i);
-		bool isWhitespace (CodePointT i);
-		bool isNewline (CodePointT i);
-		bool isNotNewline (CodePointT i);
+		bool isTab(CodePointT i);
+		bool isSpace(CodePointT i);
+		bool isWhitespace(CodePointT i);
+		bool isNewline(CodePointT i);
+		bool isNotNewline(CodePointT i);
 	};
 }
 

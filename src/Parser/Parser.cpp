@@ -125,6 +125,18 @@ namespace Kai {
 			return t;
 		}
 		
+		Token parseHexadecimal(StringIteratorT begin, StringIteratorT end) {
+			static const StringT PREFIX = "0x";
+			
+			Token t(begin, NUMBER);
+			
+			if (t &= parseConstant(t.end(), end, PREFIX)) {
+				return parseCharacters(t.end(), end, Unicode::isHexadecimal);
+			}
+			
+			return t;
+		}
+		
 		Token parseString (StringIteratorT begin, StringIteratorT end) {
 			static const StringT QUOTE = "\"";
 			static const StringT ESCAPED_QUOTE = "\\\"";

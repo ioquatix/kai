@@ -14,6 +14,7 @@
 #include "Expressions.h"
 #include "Function.h"
 #include "Ensure.h"
+#include "Table.h"
 
 // getcwd, environ
 #include <unistd.h>

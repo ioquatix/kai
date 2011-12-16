@@ -31,6 +31,8 @@
 
 #include "Lambda.h"
 #include "Logic.h"
+#include "Table.h"
+#include "Number.h"
 #include "Array.h"
 #include "System.h"
 

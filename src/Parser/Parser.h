@@ -14,11 +14,12 @@ namespace Kai {
 	class Value;
 	
 	namespace Parser {
-		Token parseNumber (StringIteratorT begin, StringIteratorT end);
-		Token parseString (StringIteratorT begin, StringIteratorT end);
-		Token parseDecimal (StringIteratorT begin, StringIteratorT end);
-		Token parseWhitespace (StringIteratorT begin, StringIteratorT end);
-		Token parseIdentifier (StringIteratorT begin, StringIteratorT end);
+		Token parseNumber(StringIteratorT begin, StringIteratorT end);
+		Token parseString(StringIteratorT begin, StringIteratorT end);
+		Token parseDecimal(StringIteratorT begin, StringIteratorT end);
+		Token parseHexadecimal(StringIteratorT begin, StringIteratorT end);
+		Token parseWhitespace(StringIteratorT begin, StringIteratorT end);
+		Token parseIdentifier(StringIteratorT begin, StringIteratorT end);
 		
 		/*
 			[(this) set grammar [Grammar new]]

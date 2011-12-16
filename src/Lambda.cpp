@@ -8,6 +8,7 @@
 
 #include "Lambda.h"
 #include "Frame.h"
+#include "Table.h"
 #include "Function.h"
 
 namespace Kai {

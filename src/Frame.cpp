@@ -9,7 +9,8 @@
 
 #include "Frame.h"
 #include "Function.h"
-#include <iostream>
+#include "Table.h"
+#include "Number.h"
 
 namespace Kai {
 
@@ -337,7 +338,7 @@ namespace Kai {
 		
 		frame->extract()(times)(exec);
 		
-		int count = times->value();
+		int count = times->value().to_int64();
 		
 		Time start;
 		
@@ -352,7 +353,7 @@ namespace Kai {
 		Time duration = (end - start);
 		
 		std::cerr << "Total time for " << times->value() << " runs = " << duration << std::endl;
-		std::cerr << "Average time taken = " << (duration / times->value()) << std::endl;
+		std::cerr << "Average time taken = " << (duration / times->value().to_int64()) << std::endl;
 
 		return result;
 	}

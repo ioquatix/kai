@@ -11,6 +11,8 @@
 #include "Frame.h"
 #include "Function.h"
 #include "Lambda.h"
+#include "Table.h"
+#include "Number.h"
 
 namespace Kai {
 	
@@ -284,13 +286,25 @@ namespace Kai {
 	}
 	
 	ParseResult IntegerExpression::parse (IExpressions * top, StringIteratorT begin, StringIteratorT end) {
-		Parser::Token token = Parser::parseNumber(begin, end);
+		Parser::Token token;
+		
+		token = Parser::parseHexadecimal(begin, end);
 		
 		if (token) {
-			return ParseResult(token, new Integer(Parser::convert<int>(token.value())));
-		} else {
-			return ParseResult(token);
+			Math::Integer value(token.value(), 16);
+			
+			return ParseResult(token, new Integer(value));
 		}
+		
+		token = Parser::parseNumber(begin, end);
+		
+		if (token) {
+			Math::Integer value(token.value(), 10);
+			
+			return ParseResult(token, new Integer(value));
+		}
+					
+		return ParseResult(token);
 	}
 
 #pragma mark -
