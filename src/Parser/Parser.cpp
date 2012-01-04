@@ -9,9 +9,6 @@
 
 #include "Parser.h"
 #include "../SourceCode.h"
-#include "../Value.h"
-
-#define auto_type(name,value) typeof((value)) name = value
 
 /*
 	operator(:binary, ':', "High Precidence Member")
@@ -97,25 +94,24 @@ namespace Kai {
 			return t;
 		}
 		
-		Token parseNumber (StringIteratorT begin, StringIteratorT end) {
+		Token parseInteger (StringIteratorT begin, StringIteratorT end) {
 			Token t(begin, NUMBER);
 			
-			t += parseConstant(t.end(), end, "-");
 			t &= parseCharacters(t.end(), end, Unicode::isNumeric);
 			
 			return t;
 		}
 
 		Token parseDecimal (StringIteratorT begin, StringIteratorT end) {
-			static const StringT DECIMAL_POINT = ".";
+			static const StringT Number_POINT = ".";
 			
-			Token t(begin, DECIMAL);
+			Token t(begin, DECIMAL), u;
+			
+			t += parseConstant(t.end(), end, "-");
 			
 			if (t &= parseCharacters(t.end(), end, Unicode::isNumeric)) {
-				Token u;
-			
-				if ((u = parseConstant(t.end(), end, DECIMAL_POINT))) {
-					u &= parseCharacters(t.end(), end, Unicode::isNumeric);
+				if ((u = parseConstant(t.end(), end, Number_POINT))) {
+					u &= parseCharacters(u.end(), end, Unicode::isNumeric);
 					
 					if (u)
 						t += u;

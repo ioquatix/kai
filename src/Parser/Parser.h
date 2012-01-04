@@ -11,10 +11,8 @@
 
 namespace Kai {
 	
-	class Value;
-	
 	namespace Parser {
-		Token parseNumber(StringIteratorT begin, StringIteratorT end);
+		Token parseInteger(StringIteratorT begin, StringIteratorT end);
 		Token parseString(StringIteratorT begin, StringIteratorT end);
 		Token parseDecimal(StringIteratorT begin, StringIteratorT end);
 		Token parseHexadecimal(StringIteratorT begin, StringIteratorT end);
@@ -36,13 +34,13 @@ namespace Kai {
 		class Grammar
 		{
 			protected:
-				Table * m_rules;
+				Table * _rules;
 			
 			public:
 				/// [Grammar define name rule]
-				static Ref<Value> define(Frame * frame);
+				static Ref<Object> define(Frame * frame);
 				
-				static Ref<Value> parse(Frame * frame);
+				static Ref<Object> parse(Frame * frame);
 		};
 		*/
 	}

@@ -6,15 +6,17 @@
 //  Copyright (c) 2011 Orion Transfer Ltd. All rights reserved.
 //
 
-#ifndef _Kai_Memory_ObjectAllocator_h
-#define _Kai_Memory_ObjectAllocator_h
+#ifndef _KAI_MEMORY_OBJECTALLOCATOR_H
+#define _KAI_MEMORY_OBJECTALLOCATOR_H
 
 #include <iostream>
 
 namespace Kai {
-	class ManagedObject;
-	
 	namespace Memory {
+		class Collector;
+		class ManagedObject;
+		
+		std::size_t page_size();
 	
 		// Align to the size of pointers, naturally.
 		static const std::size_t ALIGNMENT = sizeof(void*);
@@ -27,6 +29,7 @@ namespace Kai {
 		}
 		
 		class PageAllocation;
+		class FreeAllocation;
 		
 		enum Flags {
 			// The memory has been freed.
@@ -47,27 +50,35 @@ namespace Kai {
 			BACK = 64
 		};
 		
+		class Traversal;
+		
 		class ObjectAllocation {
-		private:			
-			friend class PageAllocation;
+		protected:
 			friend class ManagedObject;
+			friend class PageAllocation;
+			friend class FreeAllocation;
+			friend class Collector;
 			
-			ObjectAllocation * split(std::size_t size);
-
 			ObjectAllocation * _previous, * _next;
-			unsigned _flags, _ref_count;
+			mutable unsigned _flags, _ref_count;
 			
 			std::size_t memory_size();
 			
 			// This function will essentially delete the object from the object graph.
 			ObjectAllocation * remove();
 		protected:
-			bool marked();
-			virtual void mark();
+			virtual void mark(Traversal *) const;
 			
 		public:
 			ObjectAllocation();
 			virtual ~ObjectAllocation();
+
+			void check_link();
+			void check_next();
+			void check_previous();
+			void check();
+			
+			void clear();
 			
 			PageAllocation * allocator();
 			
@@ -75,39 +86,51 @@ namespace Kai {
 			void release();
 		};
 		
-		class PageAllocation : public ObjectAllocation {
+		class FreeAllocation : public ObjectAllocation {			
 		protected:
-			//ObjectAllocation * _next_free;
+			friend class PageAllocation;
+			
+			FreeAllocation * _next_free;
+			
+		public:
+			FreeAllocation(FreeAllocation * next_free = NULL);
+			virtual ~FreeAllocation();
+			
+			FreeAllocation * split(std::size_t size);
+			
+			FreeAllocation * next() const {
+				return _next_free;
+			}
+		};
+		
+		class PageAllocation : public FreeAllocation {
+		protected:
+			ObjectAllocation * _back;
+			PageAllocation * _next_page_allocation;
 			
 		public:
 			static PageAllocation * create(std::size_t size);
 			
 			PageAllocation();
 			virtual ~PageAllocation();
-
+			
 			ObjectAllocation * allocate(std::size_t size);
+			void deallocate(ObjectAllocation * start, ObjectAllocation * end);
+			
+			bool includes(ObjectAllocation * allocation);
+			PageAllocation * base_of(ObjectAllocation * allocation);
 			
 			void debug();
+		};
+		
+		// Used for implementing various mark and sweep algorithms.
+		class Traversal {
+		public:
+			virtual ~Traversal();
 			
-			void collect();
+			virtual void traverse(ObjectAllocation *) = 0;
 		};
 	}
-	
-	typedef Memory::PageAllocation ObjectAllocator;
-	
-	class ManagedObject : public Memory::ObjectAllocation {
-	public:
-		virtual ~ManagedObject();
-		
-		// Global Memory Pool
-		void * operator new(std::size_t);
-		
-		// Per-context Memory Pool
-		void * operator new(std::size_t, ObjectAllocation *);
-		void * operator new(std::size_t, ObjectAllocator *);
-		
-		void operator delete(void *);
-	};
 }
 
 #endif

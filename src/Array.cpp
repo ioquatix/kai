@@ -8,50 +8,57 @@
  */
 
 #include "Array.h"
+#include "Cell.h"
 #include "Frame.h"
+#include "Number.h"
 #include "Table.h"
+#include "Symbol.h"
 #include "Function.h"
 
 namespace Kai {
 
-	Array::Array ()
-	{
-	
+	Array::Array() {
 	}
 	
-	Array::~Array ()
-	{
-	
+	Array::~Array() {
 	}
 	
-	int Array::compare (const Value * other) const
-	{
-		return derivedCompare(this, other);
+	Ref<Symbol> Array::identity(Frame * frame) const {
+		return frame->sym("Array");
 	}
 	
-	int Array::compare (const Array * other) const
-	{
-		ComparisonResult result = m_value.size() - other->m_value.size();
-		
-		if (result != 0) {
-			return clampComparison(result);
+	void Array::mark(Memory::Traversal * traversal) const {
+		for (ConstIteratorT a = _value.begin(); a != _value.end(); a++) {
+			traversal->traverse(*a);
 		}
+	}
+	
+	ComparisonResult Array::compare(const Object * other) const {
+		return derived_compare(this, other);
+	}
+	
+	ComparisonResult Array::compare(const Array * other) const {
+		std::size_t lhs = _value.size(), rhs = other->_value.size();
 		
-		ConstIteratorT a = m_value.begin();
-		ConstIteratorT b = other->m_value.begin();
+		if (lhs < rhs)
+			return ASCENDING;
+		else if (lhs > rhs)
+			return DESCENDING;
 		
-		for (; a != m_value.end(); a++, b++) {
-			
-			result = (*a)->compare(*b);
+		ConstIteratorT a = _value.begin();
+		ConstIteratorT b = other->_value.begin();
+		
+		for (; a != _value.end(); a++, b++) {
+			ComparisonResult result = (*a)->compare(*b);
 			
 			if (result != 0)
 				return result;
 		}
 		
-		return 0;
+		return EQUAL;
 	}
 	
-	void Array::toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const
+	void Array::to_code(Frame * frame, StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const
 	{
 		if (marks.find(this) != marks.end()) {
 			buffer << "(Array@" << this << " ...)";
@@ -60,10 +67,10 @@ namespace Kai {
 			
 			buffer << "(Array@" << this;
 			
-			for (ConstIteratorT a = m_value.begin(); a != m_value.end(); a++) {
+			for (ConstIteratorT a = _value.begin(); a != _value.end(); a++) {
 				if (*a) {
 					buffer << " ";
-					(*a)->toCode(buffer, marks, indentation);
+					(*a)->to_code(frame, buffer, marks, indentation);
 				} else {
 					buffer << " nil";
 				}
@@ -73,151 +80,172 @@ namespace Kai {
 		}
 	}
 	
-	Ref<Value> Array::_new (Frame * frame)
+	Ref<Object> Array::new_ (Frame * frame)
 	{
-		Array * array = new Array();
-		Cell * items = frame->unwrap()->tailAs<Cell>();
+		Array * array = new(frame) Array();
+		Cell * items = frame->unwrap()->tail().as<Cell>();
 		
 		while (items) {
-			array->m_value.push_back(items->head());
+			array->_value.push_back(items->head());
 			
-			items = items->tailAs<Cell>();
+			items = items->tail().as<Cell>();
 		}
 		
 		return array;
 	}
 	
-	Ref<Value> Array::minimum (Frame * frame)
-	{
+	Ref<Object> Array::minimum(Frame * frame) {
 		return NULL;
 	}
 	
-	Ref<Value> Array::maximum (Frame * frame)
-	{
+	Ref<Object> Array::maximum(Frame * frame) {
 		return NULL;
 	}
 	
-	Ref<Value> Array::at (Frame * frame)
-	{
-		return NULL;
-	}
-	
-	Ref<Value> Array::push_back(Frame * frame)
-	{
+	Ref<Object> Array::at(Frame * frame) {
 		Array * self = NULL;
-		Value * value = NULL;
-		frame->extract()(self)[value];
+		Integer * _offset = NULL;
 		
-		self->m_value.push_back(value);
+		frame->extract()(self, "self")(_offset, "offset");
+		
+		std::size_t offset = _offset->value().to_size();
+		
+		if (offset < self->_value.size()) {
+			return self->_value[offset];
+		} else {
+			throw RangeError("Index out of bounds", _offset, frame);
+		}
+	}
+	
+	Ref<Object> Array::push_back(Frame * frame) {
+		Array * self = NULL;
+		
+		ArgumentExtractor arguments = frame->extract()(self, "self");
+		
+		while (arguments) {
+			Object * item = NULL;
+			
+			arguments = arguments(item, false, "item");
+			
+			self->_value.push_back(item);
+		}
 		
 		return self;
 	}
 	
-	Ref<Value> Array::pop_back(Frame * frame)
-	{
-		return NULL;
+	Ref<Object> Array::pop_back(Frame * frame) {
+		Array * self = NULL;
+		
+		frame->extract()(self);
+
+		if (self->_value.size() == 0)
+			return NULL;
+		
+		Object * object = self->_value.back();
+		
+		self->_value.pop_back();
+		
+		return object;
 	}
 				
-	Ref<Value> Array::push_front(Frame * frame)
-	{
+	Ref<Object> Array::push_front(Frame * frame) {
 		Array * self = NULL;
-		Value * value = NULL;
-		frame->extract()(self)[value];
+		Object * value = NULL;
+		ArgumentExtractor arguments = frame->extract()(self);
 		
-		self->m_value.push_front(value);
+		self->_value.push_front(value);
 		
 		return self;
 	}
 	
-	Ref<Value> Array::pop_front(Frame * frame)
-	{
-		return NULL;
-	}
-	
-	
-	Ref<Value> Array::append(Frame * frame)
-	{
-		return NULL;
-	}
-	
-	Ref<Value> Array::prepend(Frame * frame)
-	{
-		return NULL;
-	}
-	
-	Ref<Value> Array::insert(Frame * frame)
-	{
-		return NULL;
-	}
-	
-	
-	Ref<Value> Array::includes(Frame * frame)
-	{
-		return NULL;
-	}
-	
-	
-	Ref<Value> Array::each(Frame * frame)
-	{
-		return NULL;
-	}
-	
-	Ref<Value> Array::collect(Frame * frame)
-	{
+	Ref<Object> Array::pop_front(Frame * frame) {
 		Array * self = NULL;
-		Value * function = NULL;
+		
+		frame->extract()(self);
+		
+		if (self->_value.size() == 0)
+			return NULL;
+		
+		Object * object = self->_value.front();
+		
+		self->_value.pop_front();
+		
+		return object;
+	}	
+	
+	Ref<Object> Array::append(Frame * frame) {
+		return NULL;
+	}
+	
+	Ref<Object> Array::prepend(Frame * frame) {
+		return NULL;
+	}
+	
+	Ref<Object> Array::insert(Frame * frame) {
+		return NULL;
+	}
+	
+	
+	Ref<Object> Array::includes(Frame * frame) {
+		return NULL;
+	}
+	
+	
+	Ref<Object> Array::each(Frame * frame) {
+		Array * self;
+		Object * callback;
+		
+		frame->extract()(self, "self")(callback, "callback");
+		
+		for (IteratorT a = self->_value.begin(); a != self->_value.end(); a++) {
+			Cell * message = Cell::create(frame)(callback)(*a);
+			frame->call(message);
+		}
+		
+		return self;
+	}
+	
+	Ref<Object> Array::collect(Frame * frame) {
+		Array * self = NULL;
+		Object * function = NULL;
 		
 		frame->extract()(self)(function);
 		
-		Array * result = new Array();
+		Array * result = new(frame) Array();
 		
-		for (IteratorT a = self->m_value.begin(); a != self->m_value.end(); a++) {
-			Cell * message = Cell::create(function)(*a);
-			Ref<Value> v = frame->call(message);
+		for (IteratorT a = self->_value.begin(); a != self->_value.end(); a++) {
+			Cell * message = Cell::create(frame)(function)(*a);
+			Ref<Object> v = frame->call(message);
 			
-			result->m_value.push_back(v);
+			result->_value.push_back(v);
 		}
 		
 		return result;
 	}
 	
-	Ref<Value> Array::select(Frame * frame)
-	{
+	Ref<Object> Array::select(Frame * frame) {
 		return NULL;
 	}
 	
-	Ref<Value> Array::find(Frame * frame)
-	{
+	Ref<Object> Array::find(Frame * frame) {
 		return NULL;
-	}
-	
-	Ref<Value> Array::prototype ()
-	{
-		return globalPrototype();
-	}
-	
-	Ref<Value> Array::globalPrototype ()
-	{
-		static Ref<Table> g_prototype;
-		
-		if (!g_prototype) {
-			g_prototype = new Table();
-			
-			g_prototype->update(sym("push-back!"), KAI_BUILTIN_FUNCTION(Array::push_back));
-			g_prototype->update(sym("pop-back!"), KAI_BUILTIN_FUNCTION(Array::pop_back));
-			g_prototype->update(sym("push-front!"), KAI_BUILTIN_FUNCTION(Array::push_front));
-			g_prototype->update(sym("pop-front!"), KAI_BUILTIN_FUNCTION(Array::pop_front));
-			g_prototype->update(sym("at"), KAI_BUILTIN_FUNCTION(Array::push_back));
-			
-			g_prototype->update(sym("new"), KAI_BUILTIN_FUNCTION(Array::_new));
-		}
-		
-		return g_prototype;
 	}
 
-	void Array::import (Table * context)
-	{
-		context->update(sym("Array"), globalPrototype());
+	void Array::import(Frame * frame) {
+		Table * prototype = new(frame) Table;
+		
+		prototype->update(frame->sym("push-back!"), KAI_BUILTIN_FUNCTION(Array::push_back));
+		prototype->update(frame->sym("pop-back!"), KAI_BUILTIN_FUNCTION(Array::pop_back));
+		prototype->update(frame->sym("push-front!"), KAI_BUILTIN_FUNCTION(Array::push_front));
+		prototype->update(frame->sym("pop-front!"), KAI_BUILTIN_FUNCTION(Array::pop_front));
+		
+		prototype->update(frame->sym("at"), KAI_BUILTIN_FUNCTION(Array::at));
+		
+		prototype->update(frame->sym("each"), KAI_BUILTIN_FUNCTION(Array::each));
+		
+		prototype->update(frame->sym("new"), KAI_BUILTIN_FUNCTION(Array::new_));
+		
+		frame->update(frame->sym("Array"), prototype);
 	}
 
 }

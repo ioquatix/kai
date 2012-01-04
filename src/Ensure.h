@@ -22,13 +22,13 @@
 namespace Kai {
 	
 	class InternalError : public std::exception {
-		const char * m_function;
-		const char * m_expression;
-		const char * m_file;
+		const char * _function;
+		const char * _expression;
+		const char * _file;
 
-		unsigned m_line;
+		unsigned _line;
 
-		std::string m_what;
+		std::string _what;
 	public:
 		InternalError (const char * expression, const char * func, const char * file, unsigned line) throw ();
 		virtual ~InternalError () throw ();

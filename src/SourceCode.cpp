@@ -8,11 +8,17 @@
  */
 
 #include "SourceCode.h"
+#include "Cell.h"
+#include "Frame.h"
+#include "Number.h"
+#include "Function.h"
+#include "Table.h"
+#include "String.h"
 #include <fstream>
 
 namespace Kai {
 	
-	SourceFileUnreadableError::SourceFileUnreadableError (const PathT & path) : m_path(path)
+	SourceFileUnreadableError::SourceFileUnreadableError (const PathT & path) : _path(path)
 	{
 		
 	}
@@ -24,21 +30,26 @@ namespace Kai {
 		if (!ifs)
 			throw SourceFileUnreadableError(sourceFilePath);
 		
-		m_inputName = sourceFilePath;
+		_inputName = sourceFilePath;
 		
-		m_buffer = StringT((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+		_buffer = StringT((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
 		
 		calculateLineOffsets();
 	}
 	
 	SourceCode::SourceCode (const StringT & inputName, const StringT & sourceCode)
-		: m_inputName(inputName), m_buffer(sourceCode)
+		: _inputName(inputName), _buffer(sourceCode)
 	{
 		calculateLineOffsets();
 	}
 	
+	SourceCode::~SourceCode()
+	{
+		
+	}
+	
 	StringT SourceCode::inputName () const {
-		return m_inputName;
+		return _inputName;
 	}
 	
 	bool isLineBreak (const StringT & buffer, unsigned offset) {
@@ -67,12 +78,12 @@ namespace Kai {
 		li.offset = 0;
 		li.length = 0;
 	
-		while (offset < m_buffer.size()) {
-			lineEnding = isLineBreak(m_buffer, offset);
+		while (offset < _buffer.size()) {
+			lineEnding = isLineBreak(_buffer, offset);
 			
 			if (lineEnding) {
 				li.length = offset - li.offset;
-				m_lineOffsets.push_back(li);
+				_lineOffsets.push_back(li);
 				
 				offset += lineEnding;
 				li.offset = offset;
@@ -84,28 +95,28 @@ namespace Kai {
 		if (offset > li.offset) {
 			// File does not finish with newline
 			li.length = offset - li.offset;
-			m_lineOffsets.push_back(li);
+			_lineOffsets.push_back(li);
 		}
 	}
 	
 	unsigned SourceCode::numberOfLines () const {
-		return m_lineOffsets.size();
+		return _lineOffsets.size();
 	}
 	
 	unsigned SourceCode::lineForOffset (unsigned offset) const {
-		if (offset > m_buffer.size()) {
-			std::cerr << "Offset: " << offset << " bigger than buffer size: " << m_buffer.size() << std::endl;
+		if (offset > _buffer.size()) {
+			std::cerr << "Offset: " << offset << " bigger than buffer size: " << _buffer.size() << std::endl;
 			throw InvalidOffset();
 		}
 		
 		unsigned min = 0;
-		unsigned max = m_lineOffsets.size();
+		unsigned max = _lineOffsets.size();
 		
 		// Is this a hack?
 		if (max == 0)
 			return 0;
 		
-		// We should converge on the correct line in log(m_lineOffsets.size()) iterations.
+		// We should converge on the correct line in log(_lineOffsets.size()) iterations.
 		while (true) {
 			unsigned length = (max - min);
 			unsigned line = min + (length >> 1);
@@ -114,9 +125,9 @@ namespace Kai {
 			//if (length == 1)
 			//	return line;
 			
-			if (offset < m_lineOffsets[line].offset) {
+			if (offset < _lineOffsets[line].offset) {
 				max = line;
-			} else if (line+1 < max && offset >= m_lineOffsets[line+1].offset) {
+			} else if (line+1 < max && offset >= _lineOffsets[line+1].offset) {
 				min = line;
 			} else {
 				return line;
@@ -128,16 +139,16 @@ namespace Kai {
 		if (line >= numberOfLines())
 			throw InvalidLine();
 	
-		return m_lineOffsets[line].offset;
+		return _lineOffsets[line].offset;
 	}
 	
 	StringT SourceCode::stringForLine (unsigned line) const {
 		if (line >= numberOfLines())
 			throw InvalidLine();
 		
-		LineIndex li = m_lineOffsets[line];
+		LineIndex li = _lineOffsets[line];
 		
-		return StringT(&m_buffer[li.offset], &m_buffer[li.offset + li.length]);
+		return StringT(&_buffer[li.offset], &_buffer[li.offset + li.length]);
 	}
 	
 	std::vector<StringT> SourceCode::stringsForLines (unsigned firstLine, unsigned lastLine) const {
@@ -151,19 +162,104 @@ namespace Kai {
 	}
 	
 	unsigned SourceCode::offsetForIterator (StringIteratorT it) const {
-		return it - m_buffer.begin();
+		return it - _buffer.begin();
 	}
 	
 	const StringT & SourceCode::buffer () {
-		return m_buffer;
+		return _buffer;
 	}
 		
 	StringIteratorT SourceCode::begin () const {
-		return m_buffer.begin();
+		return _buffer.begin();
 	}
 	
 	StringIteratorT SourceCode::end () const {
-		return m_buffer.end();
+		return _buffer.end();
+	}
+
+	void SourceCode::to_code(Frame * frame, StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const
+	{
+		buffer << "<SourceCode@" << this << "input_name=" << inputName() << " number_of_lines=" << numberOfLines() << ">";
+	}
+	
+	Ref<Object> SourceCode::evaluate (Frame * frame)
+	{
+		return NULL;
+	}
+	
+	Ref<Object> SourceCode::line_for_offset(Frame * frame)
+	{
+		SourceCode * source_code;
+		Integer * offset;
+		frame->extract()(source_code)(offset);
+		
+		//source_code->lineForOffset(offset->value().to<unsigned>)
+		
+		return NULL;
+	}
+	
+	Ref<Object> SourceCode::from_path(Frame * frame)
+	{
+		Table * prototype;
+		String * path;
+		
+		frame->extract()(prototype)(path);
+		
+		return new(frame) SourceCode(path->value());
+	}
+	
+	Ref<Object> SourceCode::from_string(Frame * frame)
+	{
+		Table * prototype;
+		String * input_name, * buffer;
+		
+		frame->extract()(prototype)(input_name)(buffer);
+		
+		return new(frame) SourceCode(input_name->value(), buffer->value());
+	}
+	
+	Ref<Object> SourceCode::to_string(Frame * frame)
+	{
+		SourceCode * source_code;
+		frame->extract()(source_code);
+		
+		return new(frame) String(source_code->buffer());
+	}
+	
+	Ref<Object> SourceCode::input_name(Frame * frame)
+	{
+		SourceCode * source_code;
+		frame->extract()(source_code);
+		
+		return new(frame) String(source_code->inputName());
+	}
+	
+	Ref<Object> SourceCode::count(Frame * frame)
+	{
+		SourceCode * source_code;
+		frame->extract()(source_code);
+		
+		return new(frame) Integer(source_code->numberOfLines());
+	}
+	
+	Ref<Object> SourceCode::prototype(Frame * frame) {
+		return frame->lookup(frame->sym("SourceCode"));
+	}
+		
+	/// Import the global prototype and associated functions into an execution context.
+	void SourceCode::import(Frame * frame)
+	{
+		Table * prototype = new(frame) Table;
+				
+		prototype->update(frame->sym("from-path"), KAI_BUILTIN_FUNCTION(SourceCode::from_path));
+		prototype->update(frame->sym("from-string"), KAI_BUILTIN_FUNCTION(SourceCode::from_string));
+		
+		prototype->update(frame->sym("to-string"), KAI_BUILTIN_FUNCTION(SourceCode::to_string));
+		prototype->update(frame->sym("input-name"), KAI_BUILTIN_FUNCTION(SourceCode::input_name));
+		
+		prototype->update(frame->sym("count"), KAI_BUILTIN_FUNCTION(SourceCode::count));
+
+		frame->update(frame->sym("SourceCode"), prototype);
 	}
 
 }

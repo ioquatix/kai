@@ -7,19 +7,21 @@
 //
 
 #include "Table.h"
+#include "Cell.h"
 #include "Frame.h"
+#include "Symbol.h"
 #include "Function.h"
 
 namespace Kai {
 	
-	Table::Table (int size) : m_prototype(NULL) {
+	Table::Table(int size) : _prototype(NULL) {
 		KAI_ENSURE(size >= 1);
 		
-		m_bins.resize(size);
+		_bins.resize(size);
 	}
 	
-	Table::~Table () {
-		for (Bin * bin : m_bins) {
+	Table::~Table() {
+		for (Bin * bin : _bins) {
 			while (bin) {
 				Bin * next = bin->next;
 				
@@ -30,25 +32,29 @@ namespace Kai {
 		}
 	}
 	
-	void Table::mark() {
-		if (marked()) return;
+	Ref<Symbol> Table::identity(Frame * frame) const {
+		return frame->sym("Table");
+	}
+	
+	void Table::mark(Memory::Traversal * traversal) const {
+		Object::mark(traversal);
 		
-		Value::mark();
+		traversal->traverse(_prototype);
 		
-		for (Bin * bin : m_bins) {
+		for (Bin * bin : _bins) {
 			while (bin) {
-				bin->key->mark();
-				bin->value->mark();
+				traversal->traverse(bin->key);
+				traversal->traverse(bin->value);
 				
 				bin = bin->next;
 			}
 		}
 	}
 	
-	Table::Bin * Table::find (Symbol * key) {
+	Table::Bin * Table::find(Symbol * key) {
 		KAI_ENSURE(key != NULL);
 		
-		Bin * bin = m_bins[key->hash() % m_bins.size()];
+		Bin * bin = _bins[key->hash() % _bins.size()];
 		
 		while (bin != NULL) {
 			if (key->compare(bin->key) == 0) {
@@ -61,12 +67,16 @@ namespace Kai {
 		return NULL;
 	}
 	
-	Ref<Value> Table::update (Symbol * key, Value * value) {		
+	Ref<Object> Table::update(Symbol * key, Object * value) {		
 		KAI_ENSURE(key != NULL);
 		
-		unsigned index = key->hash() % m_bins.size();
+		//Memory::PageAllocation * allocator = this->allocator();
+		//KAI_ENSURE(allocator->includes(key));
+		//KAI_ENSURE(allocator->includes(value));		
 		
-		Bin * bin = m_bins[index];
+		unsigned index = key->hash() % _bins.size();
+		
+		Bin * bin = _bins[index];
 		
 		if (bin) {
 			while (1) {
@@ -74,7 +84,7 @@ namespace Kai {
 				KAI_ENSURE(bin->key);
 				
 				if (key->compare(bin->key) == 0) {
-					Ref<Value> old = bin->value;
+					Ref<Object> old = bin->value;
 					
 					bin->value = value;
 					
@@ -97,17 +107,17 @@ namespace Kai {
 		if (bin) {
 			bin->next = next;
 		} else {
-			m_bins[index] = next;
+			_bins[index] = next;
 		}
 		
 		return NULL;
 	}
 	
-	Ref<Value> Table::remove (Symbol * key) {
+	Ref<Object> Table::remove(Symbol * key) {
 		KAI_ENSURE(key != NULL);
 		
 		// The place where we should write the pointer to the next value
-		Bin ** next = &m_bins[key->hash() % m_bins.size()];
+		Bin ** next = &_bins[key->hash() % _bins.size()];
 		Bin * bin = *next;
 		
 		while (bin != NULL) {
@@ -123,15 +133,15 @@ namespace Kai {
 		return NULL;
 	}
 	
-	int Table::compare (const Value * other) const {
-		return derivedCompare(this, other);
+	ComparisonResult Table::compare(const Object * other) const {
+		return derived_compare(this, other);
 	}
 	
-	int Table::compare (const Table * other) const {
+	ComparisonResult Table::compare(const Table * other) const {
 		throw InvalidComparison();
 	}
 	
-	void Table::toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const {
+	void Table::to_code(Frame * frame, StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const {
 		if (marks.find(this) != marks.end()) {
 			buffer << "(table@" << this << " ...)" << std::endl;
 		} else {
@@ -139,14 +149,14 @@ namespace Kai {
 			
 			buffer << "(table@" << this;
 			
-			for (unsigned i = 0; i < m_bins.size(); i += 1) {
-				Bin * bin = m_bins[i];
+			for (unsigned i = 0; i < _bins.size(); i += 1) {
+				Bin * bin = _bins[i];
 				
 				while (bin != NULL) {
 					buffer << std::endl << StringT(indentation, '\t') << "`";
-					bin->key->toCode(buffer, marks, indentation + 1);
+					bin->key->to_code(frame, buffer, marks, indentation + 1);
 					buffer << " ";
-					bin->value->toCode(buffer, marks, indentation + 1);
+					bin->value->to_code(frame, buffer, marks, indentation + 1);
 					
 					bin = bin->next;
 				}
@@ -156,39 +166,39 @@ namespace Kai {
 		}
 	}
 	
-	Ref<Value> Table::lookup (Symbol * key) {
+	Ref<Object> Table::lookup(Frame * frame, Symbol * key) {
 		Bin * bin = find(key);
 		
 		if (bin) {
 			return bin->value;
 		}
 		
-		if (m_prototype)
-			return m_prototype->lookup(key);
+		if (_prototype)
+			return _prototype->lookup(frame, key);
 		
 		return NULL;
 	}
 	
-	void Table::setPrototype (Value * prototype) {
-		m_prototype = prototype;
+	void Table::set_prototype(Object * prototype) {
+		_prototype = prototype;
 	}
 	
-	Ref<Value> Table::prototype () {
-		return m_prototype;
+	Ref<Object> Table::prototype(Frame * frame) const {
+		return _prototype;
 	}
 	
 #pragma mark Builtins
 	
-	Ref<Value> Table::table (Frame * frame) {
-		Table * table = new Table;
+	Ref<Object> Table::new_(Frame * frame) {
+		Table * table = new(frame) Table;
 		Cell * args = frame->unwrap();
 		
 		// Bump self
-		args = args->tailAs<Cell>();
+		args = args->tail().as<Cell>();
 		
 		while (args) {
 			Symbol * key = NULL;
-			Value * value = NULL;
+			Object * value = NULL;
 			
 			args = args->extract(frame)[key][value];
 			
@@ -202,10 +212,10 @@ namespace Kai {
 		return table;
 	}
 	
-	Ref<Value> Table::update (Frame * frame) {
+	Ref<Object> Table::update(Frame * frame) {
 		Table * table = NULL;
 		Symbol * key = NULL;
-		Value * value = NULL;
+		Object * value = NULL;
 		
 		frame->extract()(table)(key)(value);
 		
@@ -215,10 +225,10 @@ namespace Kai {
 			return table->remove(key);
 	}
 	
-	Ref<Value> Table::set (Frame * frame) {
+	Ref<Object> Table::set(Frame * frame) {
 		Table * table = NULL;
 		Symbol * key = NULL;
-		Value * value = NULL;
+		Object * value = NULL;
 		
 		frame->extract()(table)(key)[value];
 		
@@ -230,35 +240,30 @@ namespace Kai {
 		return value;
 	}
 	
-	Ref<Value> Table::lookup (Frame * frame) {
+	Ref<Object> Table::lookup(Frame * frame) {
 		Table * table = NULL;
 		Symbol * key = NULL;
 		
-		frame->extract()[table][key];
-		
-		if (table == NULL) {
-			throw Exception("Invalid Target", frame);
-		}
-		
-		if (key == NULL) {
-			throw Exception("Invalid Key", frame);
-		}
-		
-		return table->lookup(key);
+		frame->extract()(table, "self")(key, "key");
+				
+		return table->lookup(frame, key);
 	}
 	
-	Ref<Value> Table::each (Frame * frame) {
+	Ref<Object> Table::each(Frame * frame) {
 		Table * table;
-		Value * callback;
+		Object * callback;
 		
-		frame->extract()[table][callback];
+		frame->extract()(table, "self")(callback, "callback");
+		callback = callback->as_value(frame);
 		
-		for (unsigned i = 0; i < table->m_bins.size(); i += 1) {
-			Bin * cur = table->m_bins[i];
+		std::cerr << "Callback: " << Object::to_string(frame, callback) << std::endl;
+		
+		for (unsigned i = 0; i < table->_bins.size(); i += 1) {
+			Bin * cur = table->_bins[i];
 			
 			while (cur != NULL) {
-				Cell * message = Cell::create()(callback)(cur->key)(cur->value);
-				message->evaluate(frame);
+				Cell * message = Cell::create(frame)(callback)(cur->key)(cur->value);
+				frame->call(message);
 				
 				cur = cur->next;
 			}
@@ -267,36 +272,29 @@ namespace Kai {
 		return NULL;
 	}
 	
-	Ref<Value> Table::setPrototype (Frame * frame) {
+	Ref<Object> Table::set_prototype(Frame * frame) {
 		Table * table = NULL;
-		Value * prototype = NULL;
+		Object * prototype = NULL;
 		
-		frame->extract()(table)(prototype);
+		frame->extract()(table, "self")(prototype, "prototype");
 		
-		table->setPrototype(prototype);
+		table->set_prototype(prototype);
 		
 		return prototype;
 	}
 	
-	Ref<Value> Table::globalPrototype () {
-		static Ref<Table> g_prototype;
+	void Table::import (Frame * frame) {
+		Ref<Table> prototype = new(frame) Table;
 		
-		if (!g_prototype) {
-			g_prototype = new Table;
-			g_prototype->setPrototype(Value::globalPrototype());
-			
-			g_prototype->update(sym("new"), KAI_BUILTIN_FUNCTION(Table::table));
-			//g_prototype->update(sym("update"), KAI_BUILTIN_FUNCTION(Table::update));
-			g_prototype->update(sym("set"), KAI_BUILTIN_FUNCTION(Table::set));
-			g_prototype->update(sym("get"), KAI_BUILTIN_FUNCTION(Table::lookup));
-			g_prototype->update(sym("each"), KAI_BUILTIN_FUNCTION(Table::each));
-			g_prototype->update(sym("prototype="), KAI_BUILTIN_FUNCTION(Table::setPrototype));
-		}
+		// Ensure that the prototype chain is complete.
+		prototype->set_prototype(frame->lookup(frame->sym("Object")));
 		
-		return g_prototype;
-	}
-	
-	void Table::import (Table * context) {
-		context->update(sym("Table"), Table::globalPrototype());
+		prototype->update(frame->sym("new"), KAI_BUILTIN_FUNCTION(Table::new_));
+		prototype->update(frame->sym("set"), KAI_BUILTIN_FUNCTION(Table::set));
+		prototype->update(frame->sym("get"), KAI_BUILTIN_FUNCTION(Table::lookup));
+		prototype->update(frame->sym("each"), KAI_BUILTIN_FUNCTION(Table::each));
+		prototype->update(frame->sym("set-prototype"), KAI_BUILTIN_FUNCTION(Table::set_prototype));
+		
+		frame->update(frame->sym("Table"), prototype);
 	}
 }

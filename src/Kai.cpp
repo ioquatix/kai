@@ -31,30 +31,30 @@ namespace Kai {
 		struct timeval t;
 		gettimeofday (&t, (struct timezone*)0);
 		
-		m_seconds = t.tv_sec;
-		m_fraction = (FractionT)t.tv_usec / 1000000.0;
+		_seconds = t.tv_sec;
+		_fraction = (FractionT)t.tv_usec / 1000000.0;
 	}
 	
 	Time::Time(FractionT time)
 	{
-		m_seconds = 0;
-		m_fraction = time;
+		_seconds = 0;
+		_fraction = time;
 		
 		normalize();
 	}
 	
 	void Time::normalize()
 	{
-		if (m_fraction < 0) {
-			FractionT seconds = std::floor(m_fraction);
+		if (_fraction < 0) {
+			FractionT seconds = std::floor(_fraction);
 			
-			m_fraction -= seconds;
-			m_seconds += seconds;
-		} else if (m_fraction > 1) {
-			FractionT seconds = std::floor(m_fraction);
+			_fraction -= seconds;
+			_seconds += seconds;
+		} else if (_fraction > 1) {
+			FractionT seconds = std::floor(_fraction);
 			
-			m_fraction -= seconds;
-			m_seconds += seconds;
+			_fraction -= seconds;
+			_seconds += seconds;
 		}
 	}
 	
@@ -62,8 +62,8 @@ namespace Kai {
 	{
 		Time t(*this);
 		
-		t.m_seconds += other.m_seconds;
-		t.m_fraction += other.m_fraction;
+		t._seconds += other._seconds;
+		t._fraction += other._fraction;
 		
 		t.normalize();
 		
@@ -76,8 +76,8 @@ namespace Kai {
 	{
 		Time t(*this);
 		
-		t.m_seconds -= other.m_seconds;
-		t.m_fraction -= other.m_fraction;
+		t._seconds -= other._seconds;
+		t._fraction -= other._fraction;
 		
 		t.normalize();
 		
@@ -88,8 +88,8 @@ namespace Kai {
 	
 	Time & Time::operator+=(const Time & other)
 	{
-		m_seconds += other.m_seconds;
-		m_fraction += other.m_fraction;
+		_seconds += other._seconds;
+		_fraction += other._fraction;
 		
 		normalize();
 		
@@ -98,8 +98,8 @@ namespace Kai {
 	
 	Time & Time::operator-=(const Time & other)
 	{
-		m_seconds -= other.m_seconds;
-		m_fraction -= other.m_fraction;
+		_seconds -= other._seconds;
+		_fraction -= other._fraction;
 		
 		normalize();
 	
@@ -110,8 +110,8 @@ namespace Kai {
 	{
 		Time t(*this);
 		
-		t.m_seconds *= other;
-		t.m_fraction *= other;
+		t._seconds *= other;
+		t._fraction *= other;
 		
 		t.normalize();
 		
@@ -125,8 +125,8 @@ namespace Kai {
 		Time t(*this);
 		
 		FractionT current = this->total();
-		t.m_seconds = 0;
-		t.m_fraction = current / other;
+		t._seconds = 0;
+		t._fraction = current / other;
 		
 		t.normalize();
 		

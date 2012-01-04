@@ -9,42 +9,86 @@
 #ifndef Kai_Integer_h
 #define Kai_Integer_h
 
-#include "Value.h"
+#include "Object.h"
 #include "Math/Integer.h"
+#include "Math/Number.h"
 
 namespace Kai {
-	class Integer : public Value {
+	class Integral {
+	public:
+		virtual ~Integral();
+		
+		virtual Math::Integer to_integer() const abstract;
+	};
+	
+	class Integer : public Object, virtual public Integral {
 	public:
 		typedef Math::Integer ValueT;
 		
+		enum { DEFAULT_RADIX = 16 };
+		
 	protected:
-		ValueT m_value;
+		ValueT _value;
 		
 	public:
 		Integer (ValueT value);
 		virtual ~Integer ();
 		
-		ValueT & value () { return m_value; }
+		virtual Ref<Symbol> identity(Frame * frame) const;
 		
-		virtual Ref<Value> prototype ();
+		virtual Math::Integer to_integer() const;
 		
-		virtual int compare (const Value * other) const;
-		int compare (const Integer * other) const;
+		ValueT & value() { return _value; }
+				
+		virtual ComparisonResult compare(const Object * other) const;
+		ComparisonResult compare(const Integer * other) const;
 		
-		virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const;
+		virtual void to_code(Frame * frame, StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const;
 		
-		static Ref<Value> sum (Frame * frame);
-		static Ref<Value> product (Frame * frame);
-		static Ref<Value> subtract (Frame * frame);
-		static Ref<Value> modulus (Frame * frame);
+		static Ref<Object> sum(Frame * frame);
+		static Ref<Object> product(Frame * frame);
+		static Ref<Object> subtract(Frame * frame);
+		static Ref<Object> modulus(Frame * frame);
+		static Ref<Object> power(Frame * frame);
 		
-		static Ref<Value> greatest_common_divisor(Frame * frame);
-		static Ref<Value> generate_prime(Frame * frame);
+		static Ref<Object> fractional_part(Frame * frame);
 		
-		static Ref<Value> to_string(Frame * frame);
+		static Ref<Object> greatest_common_divisor(Frame * frame);
+		static Ref<Object> generate_prime(Frame * frame);
 		
-		static Ref<Value> globalPrototype ();
-		static void import (Table * context);
+		static Ref<Object> from_string(Frame * frame);
+		static Ref<Object> to_string(Frame * frame);
+		
+		static Ref<Object> to_number(Frame * frame);
+		
+		static void import(Frame * frame);
+	};
+	
+	class Number : public Object, virtual public Integral {
+	public:
+		typedef Math::Number ValueT;
+		
+	protected:
+		ValueT _value;
+	
+	public:
+		Number(ValueT value);
+		virtual ~Number();
+		
+		virtual Ref<Symbol> identity(Frame * frame) const;
+		
+		virtual Math::Integer to_integer() const;
+		
+		ValueT & value() { return _value; }
+				
+		virtual ComparisonResult compare(const Object * other) const;
+		ComparisonResult compare(const Number * other) const;
+		
+		virtual void to_code(Frame * frame, StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const;
+		
+		static Ref<Object> product(Frame * frame);
+
+		static void import(Frame * frame);
 	};
 }
 

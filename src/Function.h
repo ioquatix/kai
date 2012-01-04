@@ -10,44 +10,50 @@
 #ifndef _KFUNCTION_H
 #define _KFUNCTION_H
 
-#include "Value.h"
+#include "Object.h"
 
-#define KAI_BUILTIN_FUNCTION(function) (new ::Kai::BuiltinFunction<&function>(#function))
+#define KAI_BUILTIN_FUNCTION(function) (builtin_function<&function>(#function))
 
 namespace Kai {
 
-	typedef Value * (*EvaluateFunctionT)(Frame *);
+	typedef Object * (*EvaluateFunctionT)(Frame *);
+	
+	template <Ref<Object> (*FunctionT)(Frame *)>
+	class BuiltinFunction : public Object {
+	protected:
+		const char * _name;
 		
-	template <Ref<Value> (*FunctionT)(Frame *)>
-	class BuiltinFunction : public Value {
-		protected:
-			const char * m_name;
-
-		public:
-			BuiltinFunction (const char * name) : m_name(name) {
-			
-			}
-			
-			virtual Ref<Value> evaluate (Frame * frame) {
-				return FunctionT(frame);
-			}
-						
-			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const {
-				buffer << "(builtin-function " << m_name << ")";
-			}
+	public:
+		BuiltinFunction(const char * name) : _name(name) {
+		}
+		
+		virtual Ref<Object> evaluate (Frame * frame) {
+			return FunctionT(frame);
+		}
+					
+		virtual void to_code(Frame * frame, StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const {
+			buffer << "(builtin-function " << _name << ")";
+		}
 	};
+	
+	template <Ref<Object> (*FunctionT)(Frame *)>
+	BuiltinFunction<FunctionT> * builtin_function(const char * name) {
+		static BuiltinFunction<FunctionT> instance(name);
 		
-	class DynamicFunction : public Value {
+		return &instance;
+	}
+		
+	class DynamicFunction : public Object {
 		protected:
-			EvaluateFunctionT m_evaluateFunction;
+			EvaluateFunctionT _evaluateFunction;
 			
 		public:
-			DynamicFunction (EvaluateFunctionT evaluateFunction);
-			virtual ~DynamicFunction ();
+			DynamicFunction(EvaluateFunctionT evaluateFunction);
+			virtual ~DynamicFunction();
 			
-			virtual Ref<Value> evaluate (Frame * frame);
+			virtual Ref<Object> evaluate(Frame * frame);
 			
-			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation);
+			virtual void to_code(Frame * frame, StringStreamT & buffer, MarkedT & marks, std::size_t indentation);
 	};	
 }
 

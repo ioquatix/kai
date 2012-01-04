@@ -10,7 +10,6 @@
 #ifndef _KAI_H
 #define _KAI_H
 
-
 #include <cstddef>
 #include <string>
 #include <sstream>
@@ -22,6 +21,12 @@
 #define abstract = 0
 
 namespace Kai {
+	
+	// Immutability is an important trait of a programmable system, because it provides a defined set of axioms on which further abstractions can be built.
+	
+	// Fundamentally, some parts of a given system must be immutable. It is whether these are well defined, or unspecified, which dictates the reliability of a given system.
+	
+	// Kai has a set of fundamental data types which are immutable, but can be extended within a given execution context namespace.
 
 	typedef std::string StringT;
 	typedef std::size_t SizeT;
@@ -34,8 +39,8 @@ namespace Kai {
 			typedef double FractionT;
 			
 		protected:
-			SecondsT m_seconds;
-			FractionT m_fraction;
+			SecondsT _seconds;
+			FractionT _fraction;
 			
 			void normalize();
 			
@@ -52,9 +57,9 @@ namespace Kai {
 			Time operator*(FractionT other);
 			Time operator/(FractionT other);
 			
-			const SecondsT & seconds() const { return m_seconds; }
-			const FractionT & fraction() const { return m_fraction; }
-			const FractionT total() const { return (FractionT)m_seconds + m_fraction; }
+			const SecondsT & seconds() const { return _seconds; }
+			const FractionT & fraction() const { return _fraction; }
+			const FractionT total() const { return (FractionT)_seconds + _fraction; }
 	};
 	
 	std::ostream & operator<<(std::ostream & output, const Time & time);

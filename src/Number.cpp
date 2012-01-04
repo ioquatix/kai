@@ -7,18 +7,34 @@
 //
 
 #include "Number.h"
+#include "Cell.h"
+#include "Ensure.h"
 #include "Frame.h"
 #include "Table.h"
+#include "String.h"
+#include "Symbol.h"
 #include "Function.h"
 
 namespace Kai {
-	Integer::Integer (ValueT value) : m_value(value) {
+	Integral::~Integral() {
+		
+	}
+	
+	Integer::Integer (ValueT value) : _value(value) {
 	}
 	
 	Integer::~Integer () {
 	}
 	
-	Ref<Value> Integer::sum (Frame * frame) {
+	Ref<Symbol> Integer::identity(Frame * frame) const {
+		return frame->sym("Integer");
+	}
+		
+	Math::Integer Integer::to_integer() const {
+		return _value;
+	}
+	
+	Ref<Object> Integer::sum (Frame * frame) {
 		ValueT total = 0;
 		
 		// Evaluate the given arguments
@@ -26,7 +42,7 @@ namespace Kai {
 		
 		while (args != NULL) {
 			// For each argument, extract it as an Integer value
-			Integer * integer = args->headAs<Integer>();
+			Integer * integer = args->head().as<Integer>();
 			
 			if (integer) {
 				// If it was an integer, add its value to the total
@@ -37,14 +53,14 @@ namespace Kai {
 			}
 			
 			// Move to the next argument.
-			args = args->tailAs<Cell>();
+			args = args->tail().as<Cell>();
 		}
 		
 		// Return a new integer with the calculated sum.
-		return new Integer(total);
+		return new(frame) Integer(total);
 	}
 	
-	Ref<Value> Integer::subtract (Frame * frame) {
+	Ref<Object> Integer::subtract (Frame * frame) {
 		ValueT total = 0;
 		Integer * first;
 		
@@ -53,7 +69,7 @@ namespace Kai {
 		total = first->value();
 		
 		while (args != NULL) {
-			Integer * integer = args->headAs<Integer>();
+			Integer * integer = args->head().as<Integer>();
 			
 			if (integer) {
 				total -= integer->value();
@@ -61,19 +77,19 @@ namespace Kai {
 				throw Exception("Invalid Integer Value", frame);
 			}
 			
-			args = args->tailAs<Cell>();
+			args = args->tail().as<Cell>();
 		}
 		
-		return new Integer(total);
+		return new(frame) Integer(total);
 	}
 	
-	Ref<Value> Integer::product (Frame * frame) {
+	Ref<Object> Integer::product (Frame * frame) {
 		ValueT total = 1;
 		
 		Cell * args = frame->unwrap();
 		
 		while (args != NULL) {
-			Integer * integer = args->headAs<Integer>();
+			Integer * integer = args->head().as<Integer>();
 			
 			if (integer) {
 				total *= integer->value();
@@ -81,21 +97,49 @@ namespace Kai {
 				throw Exception("Invalid Integer Value", frame);
 			}
 			
-			args = args->tailAs<Cell>();
+			args = args->tail().as<Cell>();
 		}
 		
-		return new Integer(total);
+		return new(frame) Integer(total);
 	}
 	
-	Ref<Value> Integer::modulus (Frame * frame) {
+	Ref<Object> Integer::modulus (Frame * frame) {
 		Integer * number, * base;
 		
 		frame->extract()[number][base];
 		
-		return new Integer(number->value() % base->value());
+		return new(frame) Integer(number->value() % base->value());
 	}
 	
-	Ref<Value> Integer::greatest_common_divisor(Frame * frame) {
+	Ref<Object> Integer::power (Frame * frame) {
+		Integer * base, * exponent;
+		
+		frame->extract()(base)(exponent);
+		
+		Math::Integer result;
+		result.set_power(base->value(), exponent->value());
+		
+		return new(frame) Integer(result);
+	}
+	
+	Ref<Object> Integer::fractional_part(Frame * frame) {
+		Integer * self;
+		Integral * scale, * base;
+		
+		frame->extract()(self)(scale)[base];
+		
+		Math::Integer result;
+		
+		if (base) {
+			result = self->value().fractional_part(scale->to_integer().to_intermediate(), base->to_integer());
+		} else {
+			result = self->value().fractional_part(scale->to_integer().to_intermediate());
+		}
+		
+		return new(frame) Integer(result);
+	}
+	
+	Ref<Object> Integer::greatest_common_divisor(Frame * frame) {
 		Integer * a = NULL, * b = NULL;
 		
 		frame->extract()(a)(b);
@@ -103,75 +147,166 @@ namespace Kai {
 		Math::Integer result;
 		result.calculate_greatest_common_divisor(a->value(), b->value());
 		
-		return new Integer(result);
+		return new(frame) Integer(result);
 	}
 	
-	Ref<Value> Integer::generate_prime(Frame * frame) {
-		Value * self = NULL;
-		Integer * length = NULL;
+	Ref<Object> Integer::generate_prime(Frame * frame) {
+		Object * self = NULL;
+		Integral * length = NULL;
 		
 		frame->extract()(self)(length);
 		
 		Math::Integer prime;
-		prime.generate_prime(length->value().to_int64());
+		prime.generate_prime(length->to_integer().to_intermediate());
 		
-		return new Integer(prime);
+		return new(frame) Integer(prime);
 	}
 	
-	Ref<Value> Integer::to_string(Frame * frame) {
+	Ref<Object> Integer::from_string(Frame * frame) {
+		Object * self;
+		String * string;
+		Integral * radix;
+		
+		frame->extract()(self)(string)[radix];
+		
+		Math::BaseT base;
+		
+		if (radix) {
+			base = radix->to_integer().to_digit();
+		} else {
+			base = 10;
+		}
+		
+		Math::Integer value(string->value(), base);
+		
+		return new(frame) Integer(value);
+	}
+	
+	Ref<Object> Integer::to_string(Frame * frame) {
 		Integer * self;
-		Integer * radix;
+		Integral * radix;
 		
 		frame->extract()(self)[radix];
 		
 		Math::Integer base;
 		
 		if (radix) {
-			base = radix->value();
+			base = radix->to_integer();
 		} else {
 			base = 10;
 		}
 		
-		return new String(self->value().to_string(base));
+		return new(frame) String(self->value().to_string(base.to_digit()));
 	}
 	
-	Ref<Value> Integer::globalPrototype () {
-		static Ref<Table> g_prototype;
+	Ref<Object> Integer::to_number(Frame * frame) {
+		Integer * self;
 		
-		if (!g_prototype) {
-			g_prototype = new Table;
+		frame->extract()(self);
+		
+		Math::Number value(self->value(), 0);
+		
+		return new(frame) Number(value);
+	}
+	
+	ComparisonResult Integer::compare(const Object * other) const {
+		return derived_compare(this, other);
+	}
+	
+	ComparisonResult Integer::compare(const Integer * other) const {
+		return (ComparisonResult)(_value.compare_with(other->_value));
+	}
+	
+	void Integer::to_code(Frame * frame, StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const {
+		buffer << _value.to_hexadecimal();
+	}
+	
+	void Integer::import(Frame * frame) {
+		Table * prototype = new(frame) Table;
+		
+		prototype->update(frame->sym("+"), KAI_BUILTIN_FUNCTION(Integer::sum));
+		prototype->update(frame->sym("-"), KAI_BUILTIN_FUNCTION(Integer::subtract));
+		prototype->update(frame->sym("*"), KAI_BUILTIN_FUNCTION(Integer::product));
+		prototype->update(frame->sym("%"), KAI_BUILTIN_FUNCTION(Integer::modulus));
+		prototype->update(frame->sym("^"), KAI_BUILTIN_FUNCTION(Integer::power));
+		
+		prototype->update(frame->sym("fractional-part"), KAI_BUILTIN_FUNCTION(Integer::fractional_part));
+		
+		prototype->update(frame->sym("generate-prime"), KAI_BUILTIN_FUNCTION(Integer::generate_prime));
+		prototype->update(frame->sym("greatest-common-divisor"), KAI_BUILTIN_FUNCTION(Integer::greatest_common_divisor));
+		
+		prototype->update(frame->sym("from-string"), KAI_BUILTIN_FUNCTION(Integer::from_string));
+		prototype->update(frame->sym("to-string"), KAI_BUILTIN_FUNCTION(Integer::to_string));
+		prototype->update(frame->sym("to-number"), KAI_BUILTIN_FUNCTION(Integer::to_number));
+		
+		prototype->update(frame->sym("radix"), new(frame) Integer(DEFAULT_RADIX));
+		
+		frame->update(frame->sym("Integer"), prototype);
+	}
+	
+#pragma mark -
+	
+	Number::Number(ValueT value) : _value(value)
+	{
+		
+	}
+	
+	Number::~Number()
+	{
+		
+	}
+	
+	Ref<Symbol> Number::identity(Frame * frame) const {
+		return frame->sym("Number");
+	}
+	
+	Math::Integer Number::to_integer() const {
+		Math::Number copy = _value;
+		
+		return copy.whole_part();
+	}
+	
+	ComparisonResult Number::compare(const Object * other) const
+	{
+		return derived_compare(this, other);
+	}
+	
+	ComparisonResult Number::compare(const Number * other) const
+	{
+		return (ComparisonResult)(_value.compare_with(other->_value));
+	}
+	
+	void Number::to_code(Frame * frame, StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const
+	{
+		buffer << _value.to_string();
+	}
+	
+	Ref<Object> Number::product (Frame * frame)
+	{
+		ValueT total = 1;
+		
+		Cell * args = frame->unwrap();
+		
+		while (args != NULL) {
+			Number * number = args->head().as<Number>();
 			
-			g_prototype->update(sym("+"), KAI_BUILTIN_FUNCTION(Integer::sum));
-			g_prototype->update(sym("-"), KAI_BUILTIN_FUNCTION(Integer::subtract));
-			g_prototype->update(sym("*"), KAI_BUILTIN_FUNCTION(Integer::product));
-			g_prototype->update(sym("%"), KAI_BUILTIN_FUNCTION(Integer::modulus));
+			if (number) {
+				total *= number->value();
+			} else {
+				throw Exception("Invalid Number Value", frame);
+			}
 			
-			g_prototype->update(sym("generate-prime"), KAI_BUILTIN_FUNCTION(Integer::generate_prime));
-			g_prototype->update(sym("greatest-common-divisor"), KAI_BUILTIN_FUNCTION(Integer::greatest_common_divisor));
-			
-			g_prototype->update(sym("to-string"), KAI_BUILTIN_FUNCTION(Integer::to_string));
+			args = args->tail().as<Cell>();
 		}
 		
-		return g_prototype;
+		return new(frame) Number(total);
 	}
 	
-	Ref<Value> Integer::prototype () {		
-		return globalPrototype();
-	}
-	
-	int Integer::compare (const Value * other) const {
-		return derivedCompare(this, other);
-	}
-	
-	int Integer::compare (const Integer * other) const {
-		return m_value.compare_with(other->m_value);
-	}
-	
-	void Integer::toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const {
-		buffer << m_value;
-	}
-	
-	void Integer::import (Table * context) {
-		context->update(sym("Integer"), globalPrototype());
+	void Number::import (Frame * frame) {
+		Table * prototype = new(frame) Table;
+		
+		prototype->update(frame->sym("*"), KAI_BUILTIN_FUNCTION(Number::product));
+		
+		frame->update(frame->sym("Number"), prototype);
 	}
 }

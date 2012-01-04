@@ -15,6 +15,8 @@
 #include "Function.h"
 #include "Ensure.h"
 #include "Table.h"
+#include "Symbol.h"
+#include "String.h"
 
 // getcwd, environ
 #include <unistd.h>
@@ -22,33 +24,36 @@ extern char ** environ;
 
 namespace Kai {
 	
-	System::System() {
-		m_loadPaths = new Array();
-		m_loadPaths->value().push_back(new String("./lib/"));
+	System::System(Frame * frame) {
+		_load_paths = new(frame) Array();
+		_load_paths->value().push_back(new(frame) String("./lib/"));
 	}
 	
-	System::~System () {
-		
+	System::~System () {	
 	}
 	
-	Ref<Value> System::run (const PathT & path, Frame * frame) {
+	Ref<Symbol> System::identity(Frame * frame) const {
+		return frame->sym("System");
+	}
+	
+	Ref<Object> System::run(const PathT & path, Frame * frame) {
 		SourceCode code(path);
 			
 		Expressions * expressions = Expressions::fetch(frame);
-		Ref<Value> value = expressions->parse(code).value;
-		Ref<Value> result = value->evaluate(frame);
+		Ref<Object> value = expressions->parse(frame, code).value;
+		Ref<Object> result = value->evaluate(frame);
 		
 		return result;
 	}
 	
-	Ref<Value> System::compile (const PathT & path, Frame * frame) {
-		Ref<Value> config = run(path, frame);
+	Ref<Object> System::compile (const PathT & path, Frame * frame) {
+		Ref<Object> config = run(path, frame);
 		
 		if (!config) {
 			throw Exception("Could not read configuration table", frame);
 		}
 		
-		//config->call(sym('source-files'));
+		//config->call(frame->sym('source-files'));
 		
 		return NULL;
 	}
@@ -72,11 +77,11 @@ namespace Kai {
 			}
 		}
 		
-		Array::ConstIteratorT begin = m_loadPaths->value().begin();
-		Array::ConstIteratorT end = m_loadPaths->value().end();
+		Array::ConstIteratorT begin = _load_paths->value().begin();
+		Array::ConstIteratorT end = _load_paths->value().end();
 		
 		while (begin != end) {
-			const String * base = begin->as<String>();
+			const String * base = ptr(*begin).as<String>();
 			
 			path = base->value() + subPath;
 			
@@ -90,11 +95,11 @@ namespace Kai {
 		return false;
 	}
 	
-	void System::toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const {
+	void System::to_code(Frame * frame, StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const {
 		buffer << "(System@" << this << ")" << std::endl;
 	}
 	
-	Ref<Value> System::require (Frame * frame) {
+	Ref<Object> System::require (Frame * frame) {
 		System * system = NULL;
 		String * name = NULL;
 		
@@ -112,7 +117,7 @@ namespace Kai {
 		throw Exception("Could not find dependency", name, frame);
 	}
 	
-	Ref<Value> System::load (Frame * frame) {
+	Ref<Object> System::load (Frame * frame) {
 		System * system = NULL;
 		String * name = NULL;
 		
@@ -126,28 +131,28 @@ namespace Kai {
 		throw Exception("Could not find file", name, frame);
 	}
 	
-	Ref<Value> System::loadPaths (Frame * frame) {
+	Ref<Object> System::load_paths (Frame * frame) {
 		System * system = NULL;
 		
 		frame->extract()(system);
 		
-		return system->m_loadPaths;
+		return system->_load_paths;
 	}
 	
-	Ref<Value> System::workingDirectory (Frame * frame) {
+	Ref<Object> System::working_directory (Frame * frame) {
 		char * buf = getcwd(NULL, 0);
 		
 		KAI_ENSURE(buf != NULL);
 		
-		String * path = new String(buf);
+		String * path = new(frame) String(buf);
 		
 		free(buf);
 		
 		return path;
 	}
 	
-	Ref<Value> System::environment (Frame * frame) {
-		Table * env = new Table;
+	Ref<Object> System::environment (Frame * frame) {
+		Table * env = new(frame) Table;
 		
 		for (char **e = environ; *e; ++e) {
 			// Pointer to start of key
@@ -172,37 +177,25 @@ namespace Kai {
 			
 			StringT value(start, end);
 			
-			env->update(sym(key), new String(value));
+			env->update(frame->sym(key.c_str()), new(frame) String(value));
 		}
 		
 		return env;
 	}
 	
-	Ref<Value> System::prototype () {
-		return globalPrototype();
-	}
-	
-	Ref<Value> System::globalPrototype () {
-		static Ref<Table> g_prototype;
+	void System::import(Frame * frame) {
+		Table * prototype = new(frame) Table;
 		
-		if (!g_prototype) {
-			g_prototype = new Table();
-			
-			g_prototype->update(sym("require"), KAI_BUILTIN_FUNCTION(System::require));
-			g_prototype->update(sym("load"), KAI_BUILTIN_FUNCTION(System::load));
-			g_prototype->update(sym("loadPaths"), KAI_BUILTIN_FUNCTION(System::loadPaths));
-			g_prototype->update(sym("workingDirectory"), KAI_BUILTIN_FUNCTION(System::workingDirectory));
-			g_prototype->update(sym("environment"), KAI_BUILTIN_FUNCTION(System::environment));
-		}
+		prototype->update(frame->sym("require"), KAI_BUILTIN_FUNCTION(System::require));
+		prototype->update(frame->sym("load"), KAI_BUILTIN_FUNCTION(System::load));
+		prototype->update(frame->sym("load-paths"), KAI_BUILTIN_FUNCTION(System::load_paths));
+		prototype->update(frame->sym("working-directory"), KAI_BUILTIN_FUNCTION(System::working_directory));
+		prototype->update(frame->sym("environment"), KAI_BUILTIN_FUNCTION(System::environment));
 		
-		return g_prototype;
-	}
-	
-	void System::import (Table * context) {
-		System * system = new System();
+		frame->update(frame->sym("System"), prototype);
 		
-		context->update(sym("system"), system);
-		context->update(sym("System"), System::globalPrototype());
+		System * system = new(frame) System(frame);
+		frame->update(frame->sym("system"), system);
 	}
 	
 }

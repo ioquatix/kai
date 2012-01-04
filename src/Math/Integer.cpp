@@ -16,9 +16,13 @@
 // Memset
 #include <string.h>
 
+#include <math.h>
+#include <memory.h>
+
 namespace Kai {
 	namespace Math {
-		char Integer::convert_to_character(Integer::DigitT d) {
+		
+		char convert_to_character(DigitT d) {
 			if (d < 10) {
 				return '0' + d;
 			} else if (d < 36) {
@@ -27,9 +31,9 @@ namespace Kai {
 			
 			throw std::range_error("Could not convert digit to character - out of range!"); 
 		}
-
-		Integer::DigitT Integer::convert_to_digit(char c) {
-			Integer::DigitT d = c - '0';
+		
+		DigitT convert_to_digit(char c) {
+			DigitT d = c - '0';
 			if (d < 10) {
 				return d;
 			} else {
@@ -43,14 +47,14 @@ namespace Kai {
 			throw std::range_error("Could not convert character to digit - out of range!");
 		}
 		
-		const char * Integer::prefix_for_base(std::size_t base) {
+		const char * prefix_for_base(BaseT base) {
 			switch (base) {
 				case 2:
 					return "b";
-				
+					
 				case 8:
 					return "0";
-				
+					
 				case 16:
 					return "0x";
 					
@@ -58,8 +62,52 @@ namespace Kai {
 					return "";
 			}
 		}
+		
+#pragma mark -
+		
+		DigitT Integer::maximu_length_of_conversion(BaseT in_base, DigitT in_length, BaseT out_base)
+		{
+			// For in_base = 2, this is the number of digits required for a column in out_base, e.g. in base 10, ~3.3 bits are required.
+			return ceil(in_length / (log(out_base) / log(in_base)));
+		}
+		
+		IntermediateT Integer::single_precision_base(BaseT base, DigitT & k)
+		{
+			IntermediateT n = base;
+			IntermediateT m;
+			
+			k = 1;
+			
+			while (1) {
+				m = n * base;
+				
+				// Overflow
+				if (m < n) {
+					break;
+				}
+				
+				k += 1;
+				n = m;
+			}
+			
+			return n;
+		}
+		
+		std::size_t Integer::single_precision_to_buffer(IntermediateT value, BaseT base, DigitT width, char * buffer)
+		{
+			for (std::size_t i = 0; i < width; ++i) {
+				if (value == 0) return i;
+				
+				IntermediateT remainder = value % base;
+				value = value / base;
+				
+				buffer[width - (i + 1)] = convert_to_character(remainder);
+			}
+			
+			return width;
+		}
 
-		Integer::Integer (IntermediateT value) {
+		Integer::Integer(IntermediateT value) {
 			for (std::size_t i = 0; i < sizeof(value); i += sizeof(DigitT)) {
 				DigitT d = (DigitT)value;
 				
@@ -72,18 +120,47 @@ namespace Kai {
 			}
 		}
 		
-		void Integer::convert_arbitrary_base(std::string value, const Integer & base, Integer & result) {
+		void Integer::convert_string(std::string value, BaseT base)
+		{
+			IntermediateT intermediate;
+			DigitT k;
+			IntermediateT factor = single_precision_base(base, k);
+			
+			// The counter:
+			std::size_t i = 0;
+			
+			// Do the first i < k numbers, such that there are kn numbers left, e.g. an integer multiple of k.
+			{
+				std::size_t top = value.length() % k;
+				intermediate = 0;
+				
+				for (; i < top; i += 1) {
+					DigitT digit = convert_to_digit(value[i]);
+					
+					intermediate *= base;
+					intermediate += digit;
+				}
+				
+				(*this) += intermediate;
+			}
+			
 			// We are assuming single bytes per integral value
-			for (std::size_t i = 0; i < value.length(); i += 1) {
-				DigitT digit = convert_to_digit(value[i]);
+			for (; i < value.length(); i += k) {
+				intermediate = 0;
 				
-				result *= base;
+				for (std::size_t j = i; j < (i+k); j += 1) {
+					DigitT digit = convert_to_digit(value[j]);
+					
+					intermediate *= base;
+					intermediate += digit;
+				}
 				
-				result += digit;
+				(*this) *= factor;
+				(*this) += intermediate;
 			}
 		}
-		/*
-		Integer Integer::convert_power_of_2_base(std::string value, std::size_t base) {
+		
+		void Integer::convert_base_16_string(std::string value) {
 			_value.resize((value.size() * 4 + (DIGIT_BITS - 1)) / DIGIT_BITS);
 			
 			for (std::size_t i = 0; i < _value.size(); i += 1) {
@@ -97,12 +174,15 @@ namespace Kai {
 				_value.at(_value.size() - (i+1)) = d;
 			}			
 		}
-		 */
 		
-		Integer::Integer(std::string value, std::size_t base) {
+		Integer::Integer(std::string value, BaseT base) {
 			_value.push_back(0);
 			
-			convert_arbitrary_base(value, base, *this);
+			if (base == 16) {
+				convert_base_16_string(value);
+			} else {
+				convert_string(value, base);
+			}
 		}
 
 		Integer::Integer (ValueT v) : _value(v) {
@@ -111,25 +191,6 @@ namespace Kai {
 
 		Integer::~Integer () {
 			//debug();
-		}
-
-		Integer::Integer(const DigitT * data, std::size_t size) {
-			_value.reserve(size);
-			for (std::size_t i = 0; i < size; i++) {
-				_value.push_back(data[i]);
-			}
-		}
-
-		void Integer::unpack(DigitT * data, std::size_t size) const {	
-			std::size_t i = 0;
-			
-			for (; i < size && i < _value.size(); i++) {
-				data[i] = _value[i];
-			}
-			
-			for (; i < size; i++) {
-				data[i] = 0;
-			}
 		}
 
 		Integer & Integer::operator= (const Integer & other) {
@@ -210,6 +271,12 @@ namespace Kai {
 			Integer z = 0;
 			
 			return (*this) == z;
+		}
+		
+		std::size_t Integer::bit_size() const
+		{
+			// The value needs to be normalized for this to work correctly.
+			return (_value.size() - 1) * DIGIT_BITS + fls(_value.back());
 		}
 
 		bool Integer::operator!= (const Integer & other) const {
@@ -300,40 +367,6 @@ namespace Kai {
 			result.set_fraction(numerator, m, *this);
 		}
 
-		// My initial attempt, but this version is a bit slow due to the reliance on addition
-		// The better implementation includes this addtion in the inner loop, so it's faster.
-		/*
-		void Integer::set_product(const Integer & a, const Integer & b) {
-			// Multiplication by repeated doubling.
-			if (a < b)
-				set_product(b, a);
-			
-			(*this) = 0;
-
-			for (std::size_t i = 0; i < b._value.size(); i += 1) {
-				IntermediateT carry = 0;
-				IntermediateT m = b._value[i];
-				Integer row = 0;
-				row._value.resize(a._value.size() + 1 + i);
-				
-				for (std::size_t j = 0; j < a._value.size(); j += 1) {
-					IntermediateT result = (m * (IntermediateT)a._value[j]) + carry;
-					
-					row._value[j+i] = result;
-					carry = result >> DIGIT_BITS;
-				}
-				
-				if (carry) {
-					row._value[a._value.size() + i] = carry;
-				}
-				
-				this->add(row);
-			}
-			
-			this->normalize();
-		}
-		*/
-
 		void Integer::set_product(const Integer & x, const Integer & y) {
 			assert(x.size() != 0);
 			assert(y.size() != 0);
@@ -345,7 +378,12 @@ namespace Kai {
 			
 			memset(&_value[0], 0, _value.size() * sizeof(DigitT));
 			
-			_value.resize(x.size() + y.size() + 2);
+			std::size_t max_size = x.size() + y.size() + 2;
+			
+			//if (max_size > 50)
+			//	std::cerr << "Size: " << max_size << std::endl;
+			
+			_value.resize(max_size);
 			
 			for (std::size_t i = 0; i <= t; i += 1) {
 				IntermediateT carry = 0;
@@ -484,9 +522,10 @@ namespace Kai {
 			assert(numerator == c);
 			*/
 			remainder = x;
+			remainder.normalize();
 		}
 		
-		void Integer::trim() {
+		/*void Integer::trim() {
 			std::size_t non_zero = _value.size() - 1;
 			
 			while (non_zero > 0 && _value[non_zero] == 0) {
@@ -494,8 +533,8 @@ namespace Kai {
 			}
 			
 			_value.resize(non_zero + 1);
-		}
-
+		}*/
+		
 		void Integer::set_fraction(Integer & x, Integer y) {
 			// The number of digits in the result
 			const std::size_t n = x.size() - 1;
@@ -541,7 +580,7 @@ namespace Kai {
 				}
 				
 				// If we had 128 bit arithmetic, we could do this on the CPU.
-				Integer u; 
+				Integer u;
 				u.set_product(y[t], B);
 				if (t > 0) u.add(y[t-1]);
 				
@@ -558,8 +597,12 @@ namespace Kai {
 						break;
 					}
 				}
+								
+				// Because B is 0x1_0000_0000, we can use a simple shift rather than power calculation.
+				//tmp1.set_power(B, i-t-1);
+				tmp1 = 1;
+				tmp1.shift_left_digits(i-t-1);
 				
-				tmp1.set_power(B, i-t-1);
 				tmp2.set_product(y, tmp1);
 				tmp1.set_product(q[i-t-1], tmp2);
 				
@@ -573,10 +616,33 @@ namespace Kai {
 			}
 			
 			// Removing any preceeding zeros:
-			q.trim();
+			q.normalize();
+		}
+		
+		// For a given number in a given base, return the fractional part of the given size.
+		// e.g. for 1052341, given base 10 and scale = 4, return 2341.
+		Integer Integer::fractional_part(ScaleT scale, const Integer & base) {
+			Integer copy = *this, fraction = 0, place = 1;
+			
+			while (!copy.is_zero() && scale > 0) {
+				Integer result, remainder;
+				
+				result.set_fraction(copy, base, remainder);
+				
+				remainder.multiply(place);
+				place.multiply(base);
+				
+				fraction.add(remainder);
+				
+				result.swap(copy);
+				
+				scale -= 1;
+			}
+			
+			return fraction;
 		}
 
-		#pragma mark Modular Exponentiation
+#pragma mark Modular Exponentiation
 			
 		BarrettReduction::BarrettReduction (const Integer & _mod) {
 			mod = _mod;
@@ -586,13 +652,13 @@ namespace Kai {
 			Integer r;
 			
 			// Radix - the number of possible values per digit
-			b = (Integer::IntermediateT)1 << Integer::DIGIT_BITS;
+			b = (IntermediateT)1 << DIGIT_BITS;
 			bk.set_power(b, mod.size() * 2);
 			mu.set_fraction(bk, mod, r);
 			
 			// Division by 0x100 is the same as shift_right(2)
-			bn = Integer::DIGIT_BITS * (mod.size() - 1);
-			bp = Integer::DIGIT_BITS * (mod.size() + 1);
+			bn = DIGIT_BITS * (mod.size() - 1);
+			bp = DIGIT_BITS * (mod.size() + 1);
 
 			// Mask for base-2 modulus
 			bkp.set_power(b, mod.size() + 1);
@@ -632,23 +698,12 @@ namespace Kai {
 			//x = r1;
 			x.normalize();
 		}
-
-		void Integer::set_power (Integer base, Integer exponent) {
-			(*this) = 1;
-			
-			while (exponent != 0) {
-				//std::cout << "ex = " << exponent.to_string(16) << std::endl;
-				if (exponent._value[0] & 1) {
-					this->multiply(base);
-					//this->modulus(mod);
-				}
-				
-				exponent.shift_right(1);
-				base.multiply(base);
-				//base.modulus(mod);
-			}
+		
+		void Integer::set_square(const Integer & base)
+		{
+			this->set_product(base, base);
 		}
-
+		
 		void Integer::set_power (Integer base, Integer exponent, const Integer & mod) {
 			BarrettReduction r (mod);
 			set_power(base, exponent, r);
@@ -660,64 +715,51 @@ namespace Kai {
 			
 			while (exponent != 0) {
 				if (exponent._value[0] & 1) {
-					//this->multiply(base);
 					tmp.set_product(*this, base);
 					tmp._value.swap(this->_value);
 					
 					r.modulus(*this);
-					//this->modulus(r.mod);
 				}
 				
 				exponent.shift_right(1);
 				
-				//base.multiply(base);
 				tmp.set_product(base, base);
 				tmp._value.swap(base._value);
 				
 				r.modulus(base);
-				//base.modulus(r.mod);
 			}
 		}
 
-		/*
-		// Not quite finished, sliding window method
-		void Integer::set_power (Integer base, Integer exponent, const BarrettReduction & r) {
-			const std::size_t k = 3;
-			const std::size_t l = 1 << (k - 1);
+		void Integer::set_power (Integer base, const Integer & exponent) {
+			DigitT mask = 1 << (DIGIT_BITS - 1);
+			std::size_t offset = exponent.size() - 1;
 			
-			(*this) = 1;
+			Integer a, b = 1;
 			
-			Integer tmp;
-			tmp.set_product(base, base);
-			
-			std::vector<Integer> g;
-			g.resize(2*l + 1);
-			
-			g[1] = base;
-			g[2] = tmp;
-			
-			for (std::size_t i = 1; i < l; i++) {
-				tmp.set_product(g[2*i - 1], g[2])
-				g[2*i + 1] = tmp;
-			}
-			
-			(*this) = 1;
-			std::ptrdiff_t i = exponent.size();
-			
-			while (exponent != 0) {
-				if ((exponent._value[0] & 1) == 0) {
-					this->multiply(*this);
-					r.modulus(*this);
+			while (1) {
+				DigitT current = exponent[offset];
+				
+				for (std::size_t i = 0; i < DIGIT_BITS; ++i) {
+					a.set_square(b);
 					
-					i = i - 1;
+					if (current & mask) {
+						b.set_product(a, base);
+					} else {
+						b.swap(a);
+					}
 					
-					exponent.shift_right(1);
-				} else {
-					
+					current <<= 1;
 				}
+				
+				if (offset == 0)
+					break;
+				
+				offset -= 1;
 			}
+			
+			this->swap(b);
 		}
-		*/
+		
 		void Integer::shift_left(DigitT amount) {
 			DigitT steps = (amount / DIGIT_BITS);
 			DigitT bits = (amount % DIGIT_BITS);
@@ -769,6 +811,21 @@ namespace Kai {
 			_value.resize(_value.size() - steps);
 			normalize();
 		}
+		
+		// Shift right by a fixed number of digits.
+		void Integer::shift_left_digits(DigitT amount) {
+			if (amount == 0)
+				return;
+			
+			std::size_t digits = _value.size();
+			
+			_value.resize(amount + _value.size());
+			
+			for (std::size_t i = 0; i < digits; ++i) {
+				_value[amount + i] = _value[i];
+				_value[i] = 0;
+			}
+		}
 
 		void Integer::binary_and(const Integer & other) {
 			std::size_t width = std::min(size(), other.size());
@@ -800,7 +857,7 @@ namespace Kai {
 		}
 
 		// Returns a large random number. Digits is in multiple of 32 bits.
-		void Integer::generate_random_number (Integer::DigitT length) {
+		void Integer::generate_rando_number (DigitT length) {
 			static std::ifstream * randomDevice = NULL;
 			
 			if (!randomDevice) {
@@ -812,8 +869,8 @@ namespace Kai {
 		}
 
 		// Returns a large random number between min and max.
-		void Integer::generate_random_number (Integer min, Integer max) {
-			generate_random_number(max.value().size());
+		void Integer::generate_rando_number (Integer min, Integer max) {
+			generate_rando_number(max.value().size());
 
 			Integer diff = max;
 			diff.subtract(min);
@@ -876,7 +933,6 @@ namespace Kai {
 		}
 
 		// This function implements simple jacobi test.
-		// We can expect compiler to perform tail-call optimisation.
 		int jacobi (Integer m, Integer n) {
 			int i = 1;
 			Integer t;
@@ -922,13 +978,12 @@ namespace Kai {
 			
 			while (tests-- > 0) {
 				Integer a = 0;
-				a.generate_random_number(2, p);
+				a.generate_rando_number(2, p);
 
 				Integer gcd = 0;
 				gcd.calculate_greatest_common_divisor(a, p);
 
 				if (gcd == 1) {
-					//BigIntT l = calculatePower(a, (p-1)/2, p);
 					Integer l = 0, e = 0, p1 = p;
 					p1.subtract(1);
 					e = p1;
@@ -936,7 +991,6 @@ namespace Kai {
 					
 					l.set_power(a, e, br);
 					
-					//SBigIntT j = jacobi(a, p);
 					int j = jacobi(a, p);
 					
 					if (((j == -1) && (l == p1)) || ((j == 1) && (l == 1))) {
@@ -957,7 +1011,7 @@ namespace Kai {
 		void Integer::generate_prime (DigitT length) {
 			while (true) {
 				//std::cout << "." << std::flush;
-				this->generate_random_number(length);
+				this->generate_rando_number(length);
 				this->_value[0] |= 1; // Ensure odd number
 				
 				if (is_probably_prime()) {
@@ -970,7 +1024,7 @@ namespace Kai {
 		void Integer::generate_prime (Integer min, Integer max) {
 			while (true) {
 				//std::cout << "." << std::flush;
-				this->generate_random_number(min, max);
+				this->generate_rando_number(min, max);
 				this->_value[0] |= 1; // Ensure odd number
 				
 				if (is_probably_prime()) {
@@ -1009,27 +1063,82 @@ namespace Kai {
 
 			return buffer.str();
 		}
-
-		std::string Integer::to_string(const Integer & base, bool prefix) const {
-			std::stringstream buffer;
+		
+		std::string Integer::to_string(BaseT base, bool prefix) const
+		{
+			std::size_t length = maximu_length_of_conversion(2, size() * DIGIT_BITS, base);
+			
+			// This will leak if there is an exception... =)1
+			char * buffer = (char *)alloca(length + 1);
+			char * end = buffer + length;
+			
+			memset(buffer, '****', length);
+			buffer[length] = '\0';
+			
+			// Calculate how many digits we can extract to a single precision with one division..
+			DigitT width;
+			Integer divisor = single_precision_base(base, width);
 			Integer copy = *this;
 			
-			if (prefix)
-				buffer << prefix_for_base(base.to_int64());
-			
-			while (!copy.is_zero()) {
+			std::size_t i = 1, filled = 0;
+			while (1) {
 				Integer result, remainder;
 				
-				result.set_fraction(copy, base, remainder);
+				result.set_fraction(copy, divisor, remainder);
 				
-				buffer << convert_to_character(remainder.to_int64());
+				char * next = end - width;
+				filled = single_precision_to_buffer(remainder.to_intermediate(), base, width, next);
+								
+				if (!result.is_zero()) {
+					// There is still more of the number to come, make sure that any remaining space in the buffer is zero-filled.
+					while (filled < width) {
+						filled += 1;
+						next[width - filled] = '0';
+					}
+				} else {
+					// Finished, create a string from the buffer:
+					return std::string(end - filled, buffer + length);
+				}
 				
 				result.swap(copy);
-			}
-			
-			return buffer.str();
+				end = next;
+				i += 1;
+			}	
 		}
 
+		DigitT Integer::to_digit() const {
+			if (_value.size() == 0) {
+				return 0;
+			} else if (_value.size() == 1) {
+				return _value[0];
+			} else {
+				throw std::domain_error("overflow converting integer to digit");
+			}
+		}
+		
+		// This contains at least two digits.
+		IntermediateT Integer::to_intermediate() const {
+			if (_value.size() == 0) {
+				return 0;
+			} else if (_value.size() == 1) {
+				return _value[0];
+			} else if (_value.size() == 2) {
+				return ((IntermediateT)_value[1] << DIGIT_BITS) | _value[0];
+			} else {
+				throw std::domain_error("overflow converting integer to intermediate");
+			}
+		}
+		
+		std::size_t Integer::to_size() const {
+			if (sizeof(std::size_t) == sizeof(DigitT)) {
+				return to_digit();
+			} else if (sizeof(std::size_t) == sizeof(IntermediateT)) {
+				return to_intermediate();
+			} else {
+				throw std::domain_error("unknown conversion from integer to std::size_t");
+			}
+		}
+		
 		void Integer::debug() {
 			std::cerr << "Value = " << to_hexadecimal() << std::endl;
 		}

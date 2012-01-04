@@ -15,33 +15,33 @@
 
 namespace Kai {
 	
-	class System : public Value {
+	class System : public Object {
 	protected:
-		Ref<Array> m_loadPaths;
+		Ref<Array> _load_paths;
 		
 		// Run a script at the given path
-		Ref<Value> run (const PathT & path, Frame * frame);
+		Ref<Object> run(const PathT & path, Frame * frame);
 		
 		// Load an obeject file at the given path
-		Ref<Value> compile (const PathT & path, Frame * frame);
+		Ref<Object> compile(const PathT & path, Frame * frame);
 		
 	public:
-		System();
+		System(Frame * frame);
 		virtual ~System();
 		
-		bool find (const StringT & subPath, StringT & fullPath);
+		virtual Ref<Symbol> identity(Frame * frame) const;
 		
-		virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const;
+		bool find(const StringT & subPath, StringT & fullPath);
 		
-		static Ref<Value> load (Frame * frame);
-		static Ref<Value> require (Frame * frame);
-		static Ref<Value> loadPaths (Frame * frame);
-		static Ref<Value> workingDirectory (Frame * frame);
-		static Ref<Value> environment (Frame * frame);
+		virtual void to_code(Frame * frame, StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const;
 		
-		virtual Ref<Value> prototype ();
-		static Ref<Value> globalPrototype ();
-		static void import (Table * context);
+		static Ref<Object> load(Frame * frame);
+		static Ref<Object> require(Frame * frame);
+		static Ref<Object> load_paths(Frame * frame);
+		static Ref<Object> working_directory(Frame * frame);
+		static Ref<Object> environment(Frame * frame);
+		
+		static void import(Frame * frame);
 	};
 	
 }

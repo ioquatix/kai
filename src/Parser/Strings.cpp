@@ -48,8 +48,8 @@ namespace Kai {
 							continue;
 						case 'x':
 							if ((end - i) >= 2) {
-								StringT::value_type value = Math::Integer::convert_to_digit(*(++i)) << 4;
-								value |= Math::Integer::convert_to_digit(*(++i));
+								StringT::value_type value = Math::convert_to_digit(*(++i)) << 4;
+								value |= Math::convert_to_digit(*(++i));
 								buffer << (StringT::value_type)value;
 								continue;
 							} else {

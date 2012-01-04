@@ -13,36 +13,25 @@
 
 namespace Kai {
 
-	InternalError::InternalError (const char * expression, const char * func, const char * file, unsigned line) throw ()
-		: m_function(func), m_expression (expression), m_file (file), m_line (line)
-	{
-		using namespace std;
-
-		try
-		{
+	InternalError::InternalError(const char * expression, const char * func, const char * file, unsigned line) throw () : _function(func), _expression (expression), _file (file), _line (line) {
+		try {
 			StringStreamT buffer;
-			buffer << "Internal Error [" << m_file << ":" << m_line << "] [" << m_function << "]: " << m_expression;
-			m_what = buffer.str();
-		}
-		catch (...)
-		{
-			m_what = "Undefined Internal Error";
+			buffer << "Internal Error [" << _file << ":" << _line << "] [" << _function << "]: " << _expression;
+			_what = buffer.str();
+		} catch (...) {
+			_what = "Undefined Internal Error";
 		}
 	}
 
-	InternalError::~InternalError () throw ()
-	{
+	InternalError::~InternalError() throw () {
 	}
 
-	const char * InternalError::what () const throw ()
-	{
-		return m_what.c_str();
+	const char * InternalError::what() const throw () {
+		return _what.c_str();
 	}
 
-	void InternalError::ensureHandler (bool condition, const char * expression, const char * func, const char * file, unsigned line)
-	{
-		if (!condition)
-		{
+	void InternalError::ensureHandler(bool condition, const char * expression, const char * func, const char * file, unsigned line) {
+		if (!condition) {
 			throw InternalError(expression, func, file, line);
 		}
 	}

@@ -42,12 +42,12 @@ namespace Kai {
 				typedef ChildrenT::iterator IteratorT;
 				
 			protected:
-				bool m_invalid;
+				bool _invalid;
 				
-				StringIteratorT m_begin, m_end;
+				StringIteratorT _begin, _end;
 
-				Identity m_identity;
-				ChildrenT m_children;
+				Identity _identity;
+				ChildrenT _children;
 				
 				void add (const Token&, bool merge);
 				
@@ -64,14 +64,14 @@ namespace Kai {
 				typedef StringIteratorT Token::* safe_bool;
 			
 				operator safe_bool() const {
-					return isValid() ? &Token::m_begin : 0;
+					return isValid() ? &Token::_begin : 0;
 				}
 				
 				unsigned length () const;
 				StringT value () const;
 				
-				inline StringIteratorT begin () const { return m_begin; }
-				inline StringIteratorT end () const { return m_end; }
+				inline StringIteratorT begin () const { return _begin; }
+				inline StringIteratorT end () const { return _end; }
 				
 				/// Adds the given child token as a new child of this token.
 				const Token& operator<< (const Token& child);
@@ -118,8 +118,8 @@ namespace Kai {
 		
 		struct FatalParseFailure {
 			protected:
-				Token m_token;
-				const char* m_failureMessage;
+				Token _token;
+				const char* _failureMessage;
 				
 			public:
 				FatalParseFailure (const Token & token, const char * failureMessage);
@@ -135,7 +135,7 @@ namespace Kai {
 #pragma mark Basic Parsing Primatives
 		
 		struct Counter {
-			unsigned m_min, m_max, m_count;
+			unsigned _min, _max, _count;
 			
 			Counter (unsigned min = 0, unsigned max = -1);
 			

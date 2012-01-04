@@ -11,46 +11,46 @@
 #define _KAI_PARSER_H
 
 #include "Kai.h"
+#include "Object.h"
 #include <vector>
 
 namespace Kai {
 	typedef StringT PathT;
 	
-	class InvalidLine {
-	};
+	class InvalidLine {};
 	
-	class InvalidOffset {
-	};
+	class InvalidOffset {};
 	
 	class SourceFileUnreadableError {
-		PathT m_path;
+		PathT _path;
 	public:
 		SourceFileUnreadableError(const PathT &);
 		
 		const PathT & path () const;
 	};
 	
-	class SourceCode {
+	class SourceCode : public Object {
 		protected:
-			StringT m_inputName;
-			StringT m_buffer;
+			StringT _inputName;
+			StringT _buffer;
 			
 			struct LineIndex {
 				unsigned offset;
 				unsigned length;
 			};
 			
-			std::vector<LineIndex> m_lineOffsets;
+			std::vector<LineIndex> _lineOffsets;
 			
 			void calculateLineOffsets ();
 		
 		public:
 			SourceCode (const PathT & sourceFilePath);
 			SourceCode (const StringT & inputName, const StringT & sourceCode);
+			virtual ~SourceCode();
 			
 			StringT inputName () const;
 			
-			std::size_t size () const { return m_buffer.size(); }
+			std::size_t size () const { return _buffer.size(); }
 			
 			unsigned numberOfLines () const;
 						
@@ -66,6 +66,27 @@ namespace Kai {
 			
 			StringIteratorT begin () const;
 			StringIteratorT end () const;
+
+			// Kai Constructors
+			static Ref<Object> from_path(Frame * frame);
+			static Ref<Object> from_string(Frame * frame);
+		
+			// Kai Methods
+			static Ref<Object> line_for_offset(Frame * frame);
+			static Ref<Object> to_string(Frame * frame);
+			static Ref<Object> input_name(Frame * frame);
+			static Ref<Object> lines(Frame * frame);
+			static Ref<Object> count(Frame * frame);
+		
+			virtual void to_code(Frame * frame, StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const;
+			
+			/// A prototype specifies the behaviour of the current value.
+			virtual Ref<Object> prototype(Frame * frame);
+			
+			/// Evaluate the current value in the given context.
+			virtual Ref<Object> evaluate(Frame * frame);
+			
+			static void import (Frame * frame);
 	};
 }
 

@@ -7,33 +7,50 @@
  *
  */
 
-#ifndef _KEXCEPTION_H
-#define _KEXCEPTION_H
+#ifndef _KAI_EXCEPTION_H
+#define _KAI_EXCEPTION_H
 
-#include <exception>
 #include "Kai.h"
 #include "Reference.h"
 
 namespace Kai {
 
+	class Object;
 	class Cell;
 	class Frame;
-	class Value;
-
+	
 	class Exception {
-		protected:
-			StringT m_what;
-			Ref<Value> m_value;			
-			Ref<Frame> m_frame;
-			
-		public:
-			Exception(StringT what, Frame * frame);
-			Exception(StringT what, Value * value, Frame * frame);
-			
-			Frame * top ();
-			StringT what ();
+	protected:
+		StringT _what;
+		Ref<Object> _object;
+		Ref<Frame> _frame;
+		
+	public:
+		Exception(StringT what, Frame * frame);
+		Exception(StringT what, Object * object, Frame * frame);
+
+		virtual ~Exception();
+		
+		Frame * top();
+		StringT what();
+	
+		virtual StringT name();
 	};
 
+	class ArgumentError : public Exception {
+	public:
+		ArgumentError(StringT what, Object * value, Frame * frame);
+		
+		virtual StringT name();
+	};
+	
+	class RangeError : public Exception {
+	public:
+		RangeError(StringT what, Object * value, Frame * frame);
+		
+		virtual StringT name();
+	};
+	
 }
 
 #endif

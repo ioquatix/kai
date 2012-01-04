@@ -10,187 +10,197 @@
 #include "Frame.h"
 #include "Function.h"
 #include "Table.h"
+#include "Cell.h"
 #include "Number.h"
+#include "String.h"
+#include "Symbol.h"
+
+//#define KAI_DEBUG
 
 namespace Kai {
 
-	Tracer::Statistics::Statistics() : totalTime(0), count(0)
-	{
+	Tracer::Statistics::Statistics() : total_time(0), count(0) {
 	
 	}
+	
+	Tracer::~Tracer() {
+		
+	}
+	
+	Ref<Symbol> Tracer::identity(Frame * frame) const {
+		return frame->sym("Tracer");
+	}
+	
+	void Tracer::mark(Memory::Traversal * traversal) const {
+		for (StatisticsMapT::const_iterator i = _statistics.begin(); i != _statistics.end(); ++i) {
+			traversal->traverse(i->first);
+		}
+	}
 
-	void Tracer::enter(Value* value)
+	void Tracer::enter(Object * value)
 	{
-		Statistics & stats = m_statistics[value];
+		Statistics & stats = _statistics[value];
 		
 		stats.count++;
 		stats.frames.push_back(Time());
 	}
 	
-	void Tracer::exit(Value* value)
+	void Tracer::exit(Object * value)
 	{
-		Statistics & stats = m_statistics[value];
+		Statistics & stats = _statistics[value];
 		
-		stats.totalTime += (Time() - stats.frames.back());
+		stats.total_time += (Time() - stats.frames.back());
 		stats.frames.pop_back();
 	}
 	
-	void Tracer::dump(std::ostream & buffer)
+	void Tracer::dump(Frame * frame, std::ostream & buffer)
 	{
 		buffer << "Tracer Statistics" << std::endl;
 		
-		for (StatisticsMapT::iterator iter = m_statistics.begin(); iter != m_statistics.end(); iter++) {
-			const Ref<Value> function = iter->first;
-			Statistics & stats = iter->second;
+		for (StatisticsMapT::const_iterator i = _statistics.begin(); i != _statistics.end(); ++i) {
+			const Object * function = i->first;
+			const Statistics & stats = i->second;
 			
 			buffer << "\t";
 			StringStreamT code;
-			function->toCode(code);
+			function->to_code(frame, code);
 			buffer << code.str();
 			
-			buffer << "\t\t" << stats.totalTime;
+			buffer << "\t\t" << stats.total_time;
 			buffer << "\t" << stats.count;
 			buffer << std::endl;
 		}
 	}
 	
-	Ref<Value> Tracer::dump(Frame * frame)
+	Ref<Object> Tracer::dump(Frame * frame)
 	{
 		Tracer * tracer = NULL;
 		
 		frame->extract()(tracer);
 		
 		StringStreamT buffer;
-		tracer->dump(buffer);
+		tracer->dump(frame, buffer);
 		
-		return new String(buffer.str());
+		return new(frame) String(buffer.str());
 	}
 	
-	Ref<Value> Tracer::prototype ()
+	void Tracer::import(Frame * frame)
 	{
-		return globalPrototype();
-	}
-	
-	Ref<Value> Tracer::globalPrototype ()
-	{
-		static Ref<Table> g_prototype;
+		Table * prototype = new(frame) Table;
 		
-		if (!g_prototype) {
-			g_prototype = new Table;
-			g_prototype->setPrototype(Value::globalPrototype());
-			
-			g_prototype->update(sym("dump"), KAI_BUILTIN_FUNCTION(Tracer::dump));
-		}
+		prototype->update(frame->sym("dump"), KAI_BUILTIN_FUNCTION(Tracer::dump));
 		
-		return g_prototype;
-	}
-	
-	void Tracer::import (Table * context)
-	{
-		context->update(sym("tracer"), globalTracer());
-		context->update(sym("Tracer"), globalPrototype());
-	}
-	
-	Tracer * Tracer::globalTracer ()
-	{
-		static Tracer * tracer = NULL;
+		Tracer * tracer = new(frame) Tracer;
 		
-		if (tracer == NULL) {
-			tracer = new Tracer;
-		}
-		
-		return tracer;
+		frame->update(frame->sym("tracer"), tracer);
+		frame->update(frame->sym("Tracer"), prototype);
 	}
 	
 	struct Trace {
-		Frame * m_frame;
+		Frame * _frame;
+		Ref<Tracer> _tracer;
 		
-		Trace(Frame * frame) : m_frame(frame) {
-			Tracer::globalTracer()->enter(m_frame->function());
+		Trace(Frame * frame) : _frame(frame) {
+			_tracer = _frame->lookup(_frame->sym("tracer"));
+			
+			_tracer->enter(_frame->function());
 		}
 		
 		~Trace() {
-			Tracer::globalTracer()->exit(m_frame->function());
+			_tracer->exit(_frame->function());
 		}
 	};
 
 #pragma mark -
 
-	Frame::Frame (Value * scope)
-		: m_previous(this), m_scope(scope), m_message(NULL), m_function(NULL), m_arguments(NULL), m_depth(0)
-	{
+	Frame::Frame(Object * scope) : _previous(NULL), _scope(scope), _message(NULL), _function(NULL), _arguments(NULL), _depth(0) {
 
 	}
 	
-	Frame::Frame (Value * scope, Frame * previous)
-		: m_previous(previous), m_scope(scope), m_message(previous->m_message), m_function(m_previous->m_function),
-		m_arguments(previous->m_arguments)
+	Frame::Frame(Object * scope, Frame * previous) : _previous(previous), _scope(scope), _message(previous->_message), _function(previous->_function), _arguments(previous->_arguments)
 	{
-		m_depth = m_previous->m_depth + 1;
+		_depth = _previous->_depth + 1;
 #ifdef KAI_DEBUG
 		std::cerr << "Frame: " << this << " Arguments: " << arguments() << std::endl;
 #endif
 	}
 
-	Frame::Frame (Value * scope, Cell * message, Frame * previous)
-		: m_previous(previous), m_scope(scope), m_message(message), m_function(NULL), m_arguments(NULL)
-	{
-		m_depth = m_previous->m_depth + 1;
+	Frame::Frame(Object * scope, Cell * message, Frame * previous) : _previous(previous), _scope(scope), _message(message), _function(NULL), _arguments(NULL) {
+		_depth = _previous->_depth + 1;
 	}
 	
-	Frame::~Frame () {
+	Frame::~Frame() {
 	}
 	
-	void Frame::mark() {
-		if (marked()) return;
-		
-		ManagedObject::mark();
-		
-		if (m_previous) m_previous->mark();
-		if (m_scope) m_scope->mark();
-		if (m_message) m_message->mark();
-		if (m_function) m_function->mark();
-		if (m_arguments) m_arguments->mark();
+	Ref<Symbol> Frame::identity(Frame * frame) const {
+		return frame->sym("Frame");
 	}
 	
-	Ref<Value> Frame::lookup (Symbol * identifier, Frame *& frame)
-	{
-		Ref<Value> result = NULL;
+	Ref<Object> Frame::update(Symbol * identifier, Object * value, bool local) {
+		Frame * frame = NULL;
 		
-		if (m_scope) {
-			result = m_scope->lookup(identifier);
+		if (local) {
+			frame = this;
+			
+			while (!frame->_scope) {
+				frame = frame->previous();
+			}
+		} else {
+			lookup(identifier, frame);
+		}
+		
+		Table * scope = ptr(frame->_scope).as<Table>();
+		
+		// Potentially use an interface for this operation, rather than hard coding Table.
+		scope->update(identifier, value);
+		
+		return scope;
+	}
+	
+	void Frame::mark(Memory::Traversal * traversal) const {
+		traversal->traverse(_previous);
+		traversal->traverse(_scope);
+		traversal->traverse(_message);
+		traversal->traverse(_function);
+		traversal->traverse(_arguments);
+	}
+	
+	Ref<Object> Frame::lookup(Symbol * identifier, Frame *& frame) {
+		Ref<Object> result = NULL;
+		
+		if (_scope) {
+			result = _scope->lookup(this, identifier);
 			frame = this;
 		}
 		
 		if (!result && !top()) {
-			result = m_previous->lookup(identifier, frame);
+			result = _previous->lookup(identifier, frame);
 		}
 		
 		return result;
 	}
 	
-	Ref<Value> Frame::lookup (Symbol * identifier)
-	{
+	Ref<Object> Frame::lookup(Symbol * identifier) {
 		Frame * frame = NULL;
 		
 		return lookup(identifier, frame);
 	}
 	
-	Ref<Value> Frame::apply () {
+	Ref<Object> Frame::apply() {
 #ifdef KAI_DEBUG
-		std::cerr << "-- " << Value::toString(m_message) << " <= " << Value::toString(m_scope) << std::endl;
-		std::cerr << StringT(m_depth, '\t') << "Fetching Function " << Value::toString(m_message->head()) << std::endl;
+		std::cerr << "-- " << Object::to_string(this, _message) << " <= " << Object::to_string(this, _scope) << std::endl;
+		std::cerr << StringT(_depth, '\t') << "Fetching Function " << Object::to_string(this, _message->head()) << std::endl;
 #endif
 
-		m_function = m_message->head()->evaluate(this);
+		_function = _message->head()->evaluate(this);
 
 #ifdef KAI_DEBUG
-		std::cerr << StringT(m_depth, '\t') << "Executing Function " << Value::toString(m_function) << std::endl;		
+		std::cerr << StringT(_depth, '\t') << "Executing Function " << Object::to_string(this, _function) << std::endl;		
 		this->debug(true);
 #endif
 
-		if (!m_function) {
-			throw Exception("Invalid Function", m_message->head(), this);
+		if (!_function) {
+			throw Exception("Invalid Function", _message->head(), this);
 		}
 
 #ifdef KAI_TRACE
@@ -198,16 +208,15 @@ namespace Kai {
 		Trace trace(this);
 #endif
 		
-		return m_function->evaluate(this);
+		return _function->evaluate(this);
 	}
 
-	Ref<Value> Frame::call (Value * scope, Cell * message)
-	{
+	Ref<Object> Frame::call(Object * scope, Cell * message) {
 		if (message == NULL) {
 			throw Exception("Invalid Message", this);
 		}
-	
-		Ref<Frame> frame = new Frame(scope, message, this);
+		
+		Ref<Frame> frame = new(this) Frame(scope, message, this);
 		
 #ifdef KAI_DEBUG
 		std::cerr << "Stack pointer: " << (void*)&frame << std::endl;
@@ -218,75 +227,75 @@ namespace Kai {
 		return frame->apply();
 	}
 
-	Cell * Frame::message () {
-		return m_message;
+	Cell * Frame::message() {
+		return _message;
 	}
 
-	Frame * Frame::previous () {
-		return m_previous;
+	Frame * Frame::previous() {
+		return _previous;
 	}
 
-	Ref<Value> Frame::scope () {
-		Ref<Value> scope = m_scope;
+	Object * Frame::scope() {
+		Ref<Object> scope = _scope;
 		
 		if (!scope) {
-			Frame * cur = m_previous;
+			Frame * cur = _previous;
 			
 			while (!scope && cur) {
-				scope = cur->m_scope;
+				scope = cur->_scope;
 				
-				cur = cur->m_previous;
+				cur = cur->_previous;
 			}
 		}
 		
 		return scope;
 	}
 
-	Ref<Value> Frame::function () {
-		return m_function;
+	Ref<Object> Frame::function() {
+		return _function;
 	}
 
-	Cell * Frame::operands () {
-		if (m_message)
-			return m_message->tailAs<Cell>();
+	Cell * Frame::operands() {
+		if (_message)
+			return _message->tail().as<Cell>();
 		else
 			return NULL;
 	}
 
 	// With optimisations turned on, this function seems to cause stack frames to be reused and cause problems..!?
-	Cell * Frame::unwrap () {
+	Cell * Frame::unwrap() {
 #ifdef KAI_DEBUG
 		std::cerr << "Unwrapping with frame: " << this << std::endl;
 #endif
-		if (m_arguments) return m_arguments;
+		if (_arguments) return _arguments;
 		
 		Cell * last = NULL;
 		Cell * cur = operands();
 		
 		while (cur) {
-			Ref<Value> value = NULL;
+			Ref<Object> value = NULL;
 			
 			// If cur->head() == NULL, the result is also NULL.
 			if (cur->head())
 				value = cur->head()->evaluate(this);
 			
-			last = Cell::append(last, value, m_arguments);
+			last = Cell::append(this, last, value, _arguments);
 			
 			cur = cur->tail().as<Cell>();
 		}
 		
-		return m_arguments;
+		return _arguments;
 	}
 
-	Cell * Frame::arguments () {
-		return m_arguments;
+	Cell * Frame::arguments() {
+		return _arguments;
 	}
 
-	bool Frame::top () {
-		return this == m_previous;
+	bool Frame::top() {
+		return _previous == NULL;
 	}
 	
-	Cell::ArgumentExtractor Frame::extract (bool evaluate) {
+	ArgumentExtractor Frame::extract(bool evaluate) {
 		Cell * args = NULL;
 		
 		if (evaluate) {
@@ -295,16 +304,17 @@ namespace Kai {
 			args = operands();
 		}
 		
-		if (args == NULL) {
+		// We don't need this as long as all arguments are optional.. otherwise, as expected, required arguments will cause an error.
+		//if (args == NULL) {
 		//	throw Exception("No arguments provided!", this);
 			// Dummy for extraction of null arguments.
-			args = new Cell(NULL, NULL);
-		}
+		//	args = new Cell(NULL, NULL);
+		//}
 		
 		return args->extract(this);
 	}
 
-	void Frame::debug (bool ascend) {
+	void Frame::debug(bool ascend) {
 		Frame * cur = this;
 		
 		do {
@@ -314,16 +324,16 @@ namespace Kai {
 			
 #ifdef KAI_DEBUG
 			if (cur->scope())
-				std::cerr << "\t Scope: " << Value::toString(cur->scope()) << std::endl;
+				std::cerr << "\t Scope: " << Object::to_string(this, cur->scope()) << std::endl;
 #endif
 			
 
-			std::cerr << "\t Function: " << Value::toString(cell.head()) << std::endl;
-			std::cerr << "\t Message: " << Value::toString(m_message) << std::endl;
+			std::cerr << "\t Function: " << Object::to_string(this, cell.head()) << std::endl;
+			std::cerr << "\t Message: " << Object::to_string(this, _message) << std::endl;
 			
 #ifdef KAI_DEBUG
 			if (cur->arguments()) {
-				std::cerr << "\t Arguments: " << Value::toString(cur->arguments()) << std::endl;
+				std::cerr << "\t Arguments: " << Object::to_string(this, cur->arguments()) << std::endl;
 			}
 #endif
 			
@@ -331,14 +341,14 @@ namespace Kai {
 		} while (!cur->top() && ascend);
 	}
 	
-	Ref<Value> Frame::benchmark (Frame * frame)
+	Ref<Object> Frame::benchmark(Frame * frame)
 	{		
 		Integer * times;
-		Value * exec, * result;
+		Object * exec, * result;
 		
 		frame->extract()(times)(exec);
 		
-		int count = times->value().to_int64();
+		Math::IntermediateT count = times->value().to_intermediate();
 		
 		Time start;
 		
@@ -353,26 +363,12 @@ namespace Kai {
 		Time duration = (end - start);
 		
 		std::cerr << "Total time for " << times->value() << " runs = " << duration << std::endl;
-		std::cerr << "Average time taken = " << (duration / times->value().to_int64()) << std::endl;
+		std::cerr << "Average time taken = " << (duration / times->value().to_intermediate()) << std::endl;
 
 		return result;
 	}
-	
-	void Frame::import (Table * context) {
-		context->update(sym("this"), KAI_BUILTIN_FUNCTION(Frame::scope));
-		context->update(sym("trace"), KAI_BUILTIN_FUNCTION(Frame::trace));
-		context->update(sym("unwrap"), KAI_BUILTIN_FUNCTION(Frame::unwrap));
-		context->update(sym("wrap"), KAI_BUILTIN_FUNCTION(Frame::wrap));
-		context->update(sym("with"), KAI_BUILTIN_FUNCTION(Frame::with));
-		context->update(sym("update"), KAI_BUILTIN_FUNCTION(Frame::update));
-		context->update(sym("benchmark"), KAI_BUILTIN_FUNCTION(Frame::benchmark));
-		context->update(sym("tracer"), Tracer::globalTracer());
-
-
-		//context->update(sym("defines"), KAI_BUILTIN_FUNCTION(Frame::where));
-	}
-/*	
-	Ref<Value> Frame::where (Frame * frame)
+		
+	Ref<Object> Frame::where(Frame * frame)
 	{
 		Symbol * identifier = NULL;
 		
@@ -383,12 +379,12 @@ namespace Kai {
 		
 		return location;
 	}
-*/	
+	
 	// Attempt to update inplace a value in a frame
-	Ref<Value> Frame::update (Frame * frame)
+	Ref<Object> Frame::update(Frame * frame)
 	{
 		Symbol * identifier = NULL;
-		Value * newValue = NULL;
+		Object * newValue = NULL;
 		
 		frame->extract()(identifier)[newValue];
 		
@@ -396,7 +392,7 @@ namespace Kai {
 		frame->lookup(identifier, location);
 		
 		if (location) {
-			Table * scope = location->scope().as<Table>();
+			Table * scope = ptr(location->scope()).as<Table>();
 			
 			if (scope) {
 				scope->update(identifier, newValue);
@@ -410,99 +406,108 @@ namespace Kai {
 		return newValue;		
 	}
 	
-	Ref<Value> Frame::scope (Frame * frame) {
+	Ref<Object> Frame::scope(Frame * frame) {
 		return frame->scope();
 	}
 	
-	Ref<Value> Frame::trace (Frame * frame) {
+	Ref<Object> Frame::trace(Frame * frame) {
 		Cell * arguments = frame->unwrap();
 		
-		std::cerr << Value::toString(frame->message()) << " -> " << Value::toString(arguments) << std::endl;
+		std::cerr << Object::to_string(frame, frame->message()) << " -> " << Object::to_string(frame, arguments) << std::endl;
 		
 		return NULL;
 	}
 	
-	class Wrapper : public Value {
-		protected:
-			Ref<Value> m_value;
+	class Wrapper : public Object {
+	protected:
+		Object * _value;
+	
+	public:
+		Wrapper(Object * value) : _value(value) {
 		
-		public:
-			Wrapper (Value * value) : m_value(value)
-			{
+		}
+	
+		virtual void mark(Memory::Traversal * traversal) const {
+			traversal->traverse(_value);
+		}
 			
-			}
+		virtual Ref<Object> evaluate(Frame * frame) {
+			Cell * arguments = frame->unwrap();
 			
-			virtual Ref<Value> evaluate (Frame * frame) {
-				Cell * arguments = frame->unwrap();
-				Cell * message = new Cell(m_value, arguments);
-				return frame->call(NULL, message);
-			}
+			Cell * message = new(frame) Cell(_value, arguments);
 			
-			Ref<Value> value ()
-			{
-				return m_value;
-			}
+			std::cerr << "Message: " << Object::to_string(frame, message) << std::endl;
 			
-			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) {
-				buffer << "(wrapper ";
+			return frame->call(NULL, message);
+		}
+		
+		Ref<Object> value() {
+			return _value;
+		}
+		
+		virtual void to_code(Frame * frame, StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const {
+			buffer << "(wrapper ";
 
-				if (m_value)
-					m_value->toCode(buffer);
-					
-				buffer << ')';
-			}
+			if (_value)
+				_value->to_code(frame, buffer);
+				
+			buffer << ')';
+		}
 	};
 	
-	Ref<Value> Frame::wrap (Frame * frame) {	
-		Value * function;
+	Ref<Object> Frame::wrap(Frame * frame) {	
+		Object * function;
+		
 		frame->extract()(function);
-		return new Wrapper(Cell::create(sym("value"))(function));
+		
+		return new(frame) Wrapper(Cell::create(frame)(frame->sym("value"))(function));
 	}
 	
-	class Unwrapper : public Value {
+	class Unwrapper : public Object {
 		protected:
-			Ref<Value> m_value;
+			Object * _value;
 			
 		public:
-			Unwrapper (Value * value) : m_value(value)
-			{
-			
+			Unwrapper(Object * value) : _value(value) {
 			}
 			
-			virtual Ref<Value> evaluate (Frame * frame) {
+			virtual void mark(Memory::Traversal * traversal) const {
+				traversal->traverse(_value);
+			}
+			
+			virtual Ref<Object> evaluate(Frame * frame) {
 				Cell * operands = frame->operands();
-				Cell * message = new Cell(m_value);
+				Cell * message = new(frame) Cell(_value);
 				Cell * next = message;
-				Symbol * value = sym("value");
+				Symbol * value = frame->sym("value");
 				
 				while (operands != NULL) {
 					next = next->append(
-						Cell::create(value)(operands->head())
+						Cell::create(frame)(value)(operands->head())
 					);
 					
-					operands = operands->tailAs<Cell>();
+					operands = operands->tail().as<Cell>();
 				}
 				
 				return frame->call(NULL, message);
 			}
 			
-			Ref<Value> value ()
-			{
-				return m_value;
+			Ref<Object> value() {
+				return _value;
 			}
 			
-			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) {
+			virtual void to_code(Frame * frame, StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const {
 				buffer << "(unwrapper ";
 
-				if (m_value)
-					m_value->toCode(buffer);
+				if (_value)
+					_value->to_code(frame, buffer);
 					
 				buffer << ')';
 			}
 	};
 	
-	Ref<Value> Frame::unwrap (Frame * frame) {
-		Value * function;
+	Ref<Object> Frame::unwrap(Frame * frame) {
+		Object * function;
 		
 		frame->extract()(function);
 		
@@ -511,23 +516,55 @@ namespace Kai {
 		if (wrapper) {
 			return wrapper->value();
 		} else {
-			return new Unwrapper(Cell::create(sym("value"))(function));
+			return new(frame) Unwrapper(Cell::create(frame)(frame->sym("value"))(function));
 		}
 	}
 	
-	Ref<Value> Frame::with (Frame * frame) {
+	Ref<Object> Frame::with(Frame * frame) {
 		Cell * cur = frame->operands();
-		Ref<Value> scope = frame->scope();
+		Ref<Object> scope = frame->scope();
 		Frame * next = frame;
 				
 		while (cur != NULL) {
 			scope = cur->head()->evaluate(next);
-			next = new Frame(scope, next);
+			next = new(frame) Frame(scope, next);
 			
-			cur = cur->tailAs<Cell>();
+			cur = cur->tail().as<Cell>();
 		}
 		
 		return scope;
 	}
-
+	
+	Ref<Object> Frame::operands(Frame * frame) {
+		return frame->operands();
+	}
+	
+	Ref<Object> Frame::arguments(Frame * frame) {
+		return frame->unwrap();
+	}
+		
+	void Frame::import(Frame * frame) {
+		Table * prototype = new(frame) Table;
+		
+		frame->update(frame->sym("Frame"), prototype);
+		
+		frame->update(frame->sym("this"), KAI_BUILTIN_FUNCTION(Frame::scope));
+		frame->update(frame->sym("trace"), KAI_BUILTIN_FUNCTION(Frame::trace));
+		frame->update(frame->sym("unwrap"), KAI_BUILTIN_FUNCTION(Frame::unwrap));
+		frame->update(frame->sym("wrap"), KAI_BUILTIN_FUNCTION(Frame::wrap));
+		frame->update(frame->sym("with"), KAI_BUILTIN_FUNCTION(Frame::with));
+		frame->update(frame->sym("update"), KAI_BUILTIN_FUNCTION(Frame::update));
+		frame->update(frame->sym("benchmark"), KAI_BUILTIN_FUNCTION(Frame::benchmark));
+		
+		frame->update(frame->sym("arguments"), KAI_BUILTIN_FUNCTION(Frame::arguments));
+		frame->update(frame->sym("operands"), KAI_BUILTIN_FUNCTION(Frame::operands));
+		
+		frame->update(frame->sym("defines"), KAI_BUILTIN_FUNCTION(Frame::where));
+	}
+	
+#pragma mark -
+	
+	Symbol * Frame::sym(const char * name) {
+		return new(this) Symbol(name);
+	}
 }

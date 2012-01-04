@@ -9,29 +9,27 @@
 #ifndef _KAI_LOGIC_H
 #define _KAI_LOGIC_H
 
-#include "Value.h"
+#include "Object.h"
 
 namespace Kai {
 	
 	// Because some of these names are C++ keywords, they have an underscore appended.
 	class Logic {			
 	public:
-		static Ref<Value> or_ (Frame * frame);
-		static Ref<Value> and_ (Frame * frame);
-		static Ref<Value> not_ (Frame * frame);
+		static Ref<Object> or_(Frame * frame);
+		static Ref<Object> and_(Frame * frame);
+		static Ref<Object> not_(Frame * frame);
 		
-		static Ref<Value> when (Frame * frame);
-		static Ref<Value> if_ (Frame * frame);
+		static Ref<Object> when(Frame * frame);
+		static Ref<Object> if_(Frame * frame);
 		
-		static Ref<Value> block (Frame * frame);
-		static Ref<Value> return_ (Frame * frame);
+		static Ref<Object> block(Frame * frame);
+		static Ref<Object> return_(Frame * frame);
 		
-		static Ref<Value> trueValue ();
-		static Ref<Value> falseValue ();
-		static Ref<Value> anythingValue ();
-		static Ref<Value> nothingValue ();
+		//static Ref<Object> anythingValue();
+		//static Ref<Object> nothingValue();
 		
-		static void import (Table *);
+		static void import(Frame * frame);
 	};
 	
 }

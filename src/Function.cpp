@@ -18,20 +18,17 @@ namespace Kai {
 
 #pragma mark -
 
-	DynamicFunction::DynamicFunction (EvaluateFunctionT evaluateFunction)
-		: m_evaluateFunction(evaluateFunction) {
-		
+	DynamicFunction::DynamicFunction (EvaluateFunctionT evaluateFunction) : _evaluateFunction(evaluateFunction) {
 	}
 	
 	DynamicFunction::~DynamicFunction () {
-		
 	}
 
-	Ref<Value> DynamicFunction::evaluate (Frame * frame) {
-		return m_evaluateFunction(frame);
+	Ref<Object> DynamicFunction::evaluate (Frame * frame) {
+		return _evaluateFunction(frame);
 	}
 
-	void DynamicFunction::toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) {
-		buffer << "(dynamic-function " << m_evaluateFunction << ")";
+	void DynamicFunction::to_code(Frame * frame, StringStreamT & buffer, MarkedT & marks, std::size_t indentation) {
+		buffer << "(dynamic-function " << _evaluateFunction << ")";
 	}
 }

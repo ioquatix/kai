@@ -44,46 +44,46 @@ namespace Kai {
 		}
 	
 		void Token::add (const Token& other, bool merge) {
-			if (other.begin() < m_begin || !isValid())
-				m_begin = other.begin();
+			if (other.begin() < _begin || !isValid())
+				_begin = other.begin();
 			
-			if (other.end() > m_end || !isValid())
-				m_end = other.end();
+			if (other.end() > _end || !isValid())
+				_end = other.end();
 			
 			// Insert the children of the token in at some point:
 			if (merge) {
-				m_children.insert(m_children.end(), other.m_children.begin(), other.m_children.end());
+				_children.insert(_children.end(), other._children.begin(), other._children.end());
 			} else {
-				m_children.push_back(other);
+				_children.push_back(other);
 			}
 		}
 	
-		Token::Token () : m_invalid(true), m_identity(UNIMPORTANT) {
+		Token::Token () : _invalid(true), _identity(UNIMPORTANT) {
 		}
 
-		Token::Token (StringIteratorT begin, Identity identity) : m_invalid(false), m_begin(begin), m_end(begin), m_identity(identity) {
+		Token::Token (StringIteratorT begin, Identity identity) : _invalid(false), _begin(begin), _end(begin), _identity(identity) {
 		}
 		
-		Token::Token (StringIteratorT begin, StringIteratorT end, Identity identity) : m_invalid(false), m_begin(begin), m_end(end), m_identity(identity) {
+		Token::Token (StringIteratorT begin, StringIteratorT end, Identity identity) : _invalid(false), _begin(begin), _end(end), _identity(identity) {
 		}
 		
-		Token::Token (const Token& current, StringIteratorT end) : m_invalid(false), m_begin(current.begin()), m_end(end), m_identity(UNIMPORTANT) {
+		Token::Token (const Token& current, StringIteratorT end) : _invalid(false), _begin(current.begin()), _end(end), _identity(UNIMPORTANT) {
 		}
 		
 		bool Token::isValid () const {
-			return !m_invalid;
+			return !_invalid;
 		}
 		
 		unsigned Token::length () const {
 			if (isValid())
-				return m_end - m_begin;
+				return _end - _begin;
 			else
 				return 0;
 		}
 		
 		StringT Token::value () const {
 			if (isValid())
-				return StringT(m_begin, m_end);
+				return StringT(_begin, _end);
 			else
 				return "";
 		}
@@ -93,7 +93,7 @@ namespace Kai {
 				add(other, false);
 			} else {
 				// Become invalid
-				m_begin = m_end = StringIteratorT();
+				_begin = _end = StringIteratorT();
 			}
 			
 			return *this;
@@ -121,56 +121,56 @@ namespace Kai {
 			if (other.isValid()) {
 				add(other, true);
 			} else {
-				m_invalid = true;
+				_invalid = true;
 			}
 			
 			return *this;
 		}
 		
 		Token& Token::operator+= (const unsigned& count) {
-			m_end += count;
+			_end += count;
 			
 			return *this;
 		}
 		
 		Identity Token::identity () const {
-			return m_identity;
+			return _identity;
 		}
 		
 		void Token::setIdentity (Identity identity) {
-			m_identity = identity;
+			_identity = identity;
 		}
 		
 		Token::ChildrenT & Token::children () {
-			return m_children;
+			return _children;
 		}
 		
 		const Token::ChildrenT & Token::children () const {
-			return m_children;
+			return _children;
 		}
 		
 		bool Token::terminal () const {
-			return m_children.size() == 0;
+			return _children.size() == 0;
 		}
 		
 		Token Token::simplify () {
-			if (m_children.size() == 1 && m_identity == m_children[0].identity()) {
-				return m_children[0];
+			if (_children.size() == 1 && _identity == _children[0].identity()) {
+				return _children[0];
 			} else {
 				return *this;
 			}
 		}
 		
 		void Token::printTree (std::ostream& outp, unsigned indent) const {
-			//if (m_identity != 0) {
+			//if (_identity != 0) {
 				//if (terminal()) {
-					outp << StringT(indent, '\t') << nameForIdentity(m_identity) << " : '" << value() << "'" << std::endl;
+					outp << StringT(indent, '\t') << nameForIdentity(_identity) << " : '" << value() << "'" << std::endl;
 				//} else {
-				//	outp << StringT(indent, '\t') << nameForIdentity(m_identity) << " : " << std::endl;
+				//	outp << StringT(indent, '\t') << nameForIdentity(_identity) << " : " << std::endl;
 				//}
 			//}
 			
-			for (ChildrenT::const_iterator i = m_children.begin(); i != m_children.end(); i += 1) {
+			for (ChildrenT::const_iterator i = _children.begin(); i != _children.end(); i += 1) {
 				i->printTree(outp, indent+1);
 			}
 		}
@@ -186,7 +186,7 @@ namespace Kai {
 		}
 		
 		FatalParseFailure::FatalParseFailure (const Token& token, const char * failureMessage) 
-			: m_token(token), m_failureMessage(failureMessage)
+			: _token(token), _failureMessage(failureMessage)
 		{
 
 		}
@@ -225,8 +225,8 @@ namespace Kai {
 		}
 		
 		void FatalParseFailure::printError (std::ostream& outp, const SourceCode & sourceCode) {			
-			unsigned firstOffset = sourceCode.offsetForIterator(m_token.begin());
-			unsigned lastOffset = sourceCode.offsetForIterator(m_token.end());
+			unsigned firstOffset = sourceCode.offsetForIterator(_token.begin());
+			unsigned lastOffset = sourceCode.offsetForIterator(_token.end());
 			
 			// Empty source code?
 			if (firstOffset >= sourceCode.size() || lastOffset > sourceCode.size()) {
@@ -241,14 +241,14 @@ namespace Kai {
 			
 			std::vector<StringT> strings = sourceCode.stringsForLines(firstLine, lastLine);
 
-			outp << sourceCode.inputName() << ":" << firstLine << " " << m_failureMessage << std::endl;
+			outp << sourceCode.inputName() << ":" << firstLine << " " << _failureMessage << std::endl;
 			
 			if (strings.size() == 0) {
 				// Ignore this case - no lines to print
 			} else if (strings.size() == 1) {
 				outp << strings[0] << std::endl;
 				
-				unsigned length = m_token.length();
+				unsigned length = _token.length();
 				if (length == 0)
 					length = 1;
 				
@@ -269,7 +269,7 @@ namespace Kai {
 		}
 		
 		const Token& FatalParseFailure::token () const {
-			return m_token;
+			return _token;
 		}
 		
 		std::ostream & operator<< (std::ostream & outp, const Token & token) {
@@ -283,22 +283,22 @@ namespace Kai {
 #pragma mark -
 #pragma mark Basic Parsing Primatives
 		
-		Counter::Counter (unsigned min, unsigned max) : m_min(min), m_max(max), m_count(0) {
+		Counter::Counter (unsigned min, unsigned max) : _min(min), _max(max), _count(0) {
 		
 		}
 		
 		bool Counter::update () {
-			m_count += 1;
+			_count += 1;
 			
-			return m_count < m_max;
+			return _count < _max;
 		}
 		
 		bool Counter::failed () {
-			return m_count < m_min || m_count > m_max;
+			return _count < _min || _count > _max;
 		}
 		
 		unsigned Counter::count () const {
-			return m_count;
+			return _count;
 		}
 		
 		Token parseConstant (StringIteratorT begin, StringIteratorT end, const StringT & constant) {

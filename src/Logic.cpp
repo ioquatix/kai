@@ -7,73 +7,75 @@
 //
 
 #include "Logic.h"
+#include "Cell.h"
 #include "Frame.h"
 #include "Table.h"
+#include "Symbol.h"
 #include "Function.h"
 
 namespace Kai {
 	// Builtin Logical Operations
-	Ref<Value> Logic::or_ (Frame * frame) {
+	Ref<Object> Logic::or_ (Frame * frame) {
 		Cell * cur = frame->operands();
 		
 		while (cur != NULL) {
-			Ref<Value> value = cur->head()->evaluate(frame);
+			Ref<Object> value = cur->head()->evaluate(frame);
 			
-			if (Value::toBoolean(value)) {
+			if (Object::to_boolean(frame, value)) {
 				return value;
 			}
 			
-			cur = cur->tailAs<Cell>();
+			cur = cur->tail().as<Cell>();
 		}
 		
-		return Symbol::falseSymbol();
+		return Symbol::false_symbol(frame);
 	}
 	
-	Ref<Value> Logic::and_ (Frame * frame) {
+	Ref<Object> Logic::and_ (Frame * frame) {
 		Cell * cur = frame->operands();
 		
 		while (cur != NULL) {
-			Ref<Value> value = cur->head()->evaluate(frame);
+			Ref<Object> value = cur->head()->evaluate(frame);
 			
-			if (!Value::toBoolean(value)) {
-				return Symbol::falseSymbol();					
+			if (!Object::to_boolean(frame, value)) {
+				return Symbol::false_symbol(frame);					
 			}
 			
-			cur = cur->tailAs<Cell>();
+			cur = cur->tail().as<Cell>();
 		}
 		
-		return Symbol::trueSymbol();		
+		return Symbol::true_symbol(frame);		
 	}
 	
-	Ref<Value> Logic::not_ (Frame * frame) {
+	Ref<Object> Logic::not_ (Frame * frame) {
 		Cell * cur = frame->unwrap();
 		
 		if (cur == NULL)
 			throw Exception("Invalid Argument", frame);
 		
-		if (Value::toBoolean(cur->head())) {
-			return Symbol::falseSymbol();
+		if (Object::to_boolean(frame, cur->head())) {
+			return Symbol::false_symbol(frame);
 		}
 		
-		return Symbol::trueSymbol();
+		return Symbol::true_symbol(frame);
 	}
 	
-	Ref<Value> Logic::when (Frame * frame) {
-		Cell::ArgumentExtractor args(frame, frame->operands());
+	Ref<Object> Logic::when (Frame * frame) {
+		ArgumentExtractor args(frame, frame->operands());
 		
-		Value * value;
+		Object * value;
 		args = args[value];
 		
 		value = value->evaluate(frame);
 		
 		while (args) {
-			Value * condition, * code;
+			Object * condition, * code;
 			
 			args[condition][code];
 			
 			condition = condition->evaluate(frame);
 			
-			if (Value::compare(value, condition) == COMPARISON_EQUAL) {
+			if (Object::compare(value, condition) == EQUAL) {
 				return code->evaluate(frame);
 			}
 		}
@@ -81,12 +83,12 @@ namespace Kai {
 		return NULL;
 	}
 	
-	Ref<Value> Logic::if_ (Frame * frame) {
-		Value * condition, * trueClause, * falseClause;
+	Ref<Object> Logic::if_ (Frame * frame) {
+		Object * condition, * trueClause, * falseClause;
 		
 		frame->extract(false)[condition][trueClause][falseClause];
 		
-		if (Value::toBoolean(condition->evaluate(frame))) {
+		if (Object::to_boolean(frame, condition->evaluate(frame))) {
 			return trueClause->evaluate(frame);
 		} else {
 			if (falseClause)
@@ -96,28 +98,23 @@ namespace Kai {
 		}
 	}
 	
-	Ref<Value> Logic::trueValue () {
-		return NULL;
+	/*
+	Ref<Object> Logic::anythingValue () {
+		return frame->sym("anything");
 	}
 	
-	Ref<Value> Logic::falseValue () {
-		return NULL;
+	Ref<Object> Logic::nothingValue () {
+		return frame->sym("nothing");
 	}
-	
-	Ref<Value> Logic::anythingValue () {
-		return NULL;
-	}
-	
-	Ref<Value> Logic::nothingValue () {
-		return NULL;
-	}
+	 
+	 */
 	
 	struct ReturnValue {
-		Ref<Value> value;
+		Ref<Object> value;
 	};
 	
-	Ref<Value> Logic::return_ (Frame * frame) {
-		Value * result = NULL;
+	Ref<Object> Logic::return_ (Frame * frame) {
+		Object * result = NULL;
 		
 		frame->extract()[result];
 		
@@ -126,8 +123,8 @@ namespace Kai {
 		throw r;
 	}
 	
-	Ref<Value> Logic::block (Frame * frame) {
-		Ref<Value> result = NULL;
+	Ref<Object> Logic::block (Frame * frame) {
+		Ref<Object> result = NULL;
 		
 		try {
 			Cell * statements = frame->operands();
@@ -135,7 +132,7 @@ namespace Kai {
 			while (statements != NULL) {
 				result = statements->head()->evaluate(frame);
 				
-				statements = statements->tailAs<Cell>();
+				statements = statements->tail().as<Cell>();
 			}
 		} catch (ReturnValue r) {
 			return r.value;
@@ -144,15 +141,21 @@ namespace Kai {
 		return result;
 	}
 	
-	void Logic::import (Table * context) {
-		context->update(sym("or"), KAI_BUILTIN_FUNCTION(Logic::or_));
-		context->update(sym("and"), KAI_BUILTIN_FUNCTION(Logic::and_));
-		context->update(sym("not"), KAI_BUILTIN_FUNCTION(Logic::not_));
+	void Logic::import (Frame * frame) {
+		frame->update(frame->sym("or"), KAI_BUILTIN_FUNCTION(Logic::or_));
+		frame->update(frame->sym("and"), KAI_BUILTIN_FUNCTION(Logic::and_));
+		frame->update(frame->sym("not"), KAI_BUILTIN_FUNCTION(Logic::not_));
 		
-		context->update(sym("block"), KAI_BUILTIN_FUNCTION(Logic::block));
-		context->update(sym("return"), KAI_BUILTIN_FUNCTION(Logic::return_));
+		frame->update(frame->sym("block"), KAI_BUILTIN_FUNCTION(Logic::block));
+		frame->update(frame->sym("return"), KAI_BUILTIN_FUNCTION(Logic::return_));
 		
-		context->update(sym("when"), KAI_BUILTIN_FUNCTION(Logic::when));
-		context->update(sym("if"), KAI_BUILTIN_FUNCTION(Logic::if_));
+		frame->update(frame->sym("when"), KAI_BUILTIN_FUNCTION(Logic::when));
+		frame->update(frame->sym("if"), KAI_BUILTIN_FUNCTION(Logic::if_));
+		
+		//frame->update(frame->sym("true"), Logic::trueValue());
+		//frame->update(frame->sym("false"), Logic::falseValue());
+		
+		//frame->update(frame->sym("anything"), Logic::anythingValue());
+		//frame->update(frame->sym("nothing"), Logic::nothingValue());
 	}
 }

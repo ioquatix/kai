@@ -15,34 +15,51 @@
  *
  */
  
-#ifndef _KLAMBDA_H
-#define _KLAMBDA_H
+#ifndef _KAI_LAMBDA_H
+#define _KAI_LAMBDA_H
 
-#include "Value.h"
+#include "Object.h"
+#include "Cell.h"
 
 namespace Kai {
 
 #pragma mark -
 #pragma mark Lambda
 
-	class Lambda : public Value {
-		protected:
-			Ptr<Frame> m_scope;
-			Ptr<Cell> m_arguments;
-			Ptr<Cell> m_code;
-			
-		public:
-			Lambda (Frame * scope, Cell * arguments, Cell * code);
-			virtual ~Lambda ();
+	class Lambda : public Object {
+	protected:
+		Frame * _scope;
+		Cell * _arguments;
+		Cell * _code;
 		
-			virtual void mark();
-			
-			virtual Ref<Value> evaluate (Frame * frame);
-			
-			virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const;
-			
-			static Ref<Value> lambda (Frame * frame);
-			static void import (Table *);
+		bool _macro;
+	
+	public:
+		Lambda(Frame * scope, Cell * arguments, Cell * code);
+		virtual ~Lambda();
+	
+		virtual Ref<Symbol> identity(Frame * frame) const;
+	
+		bool is_macro() const { return _macro; }
+		void set_macro(bool macro) { _macro = macro; }
+	
+		virtual void mark(Memory::Traversal * traversal) const;
+		
+		virtual Ref<Object> evaluate(Frame * frame);
+		
+		virtual void to_code(Frame * frame, StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const;
+		
+		static Ref<Object> to_macro(Frame * frame);
+		
+		static Ref<Object> is_macro(Frame * frame);
+		static Ref<Object> is_function(Frame * frame);
+		
+		static Ref<Object> lambda(Frame * frame);
+		static Ref<Object> macro(Frame * frame);
+	
+		virtual Ref<Object> prototype(Frame * frame);
+		
+		static void import(Frame *);
 	};
 
 }

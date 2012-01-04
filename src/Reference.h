@@ -22,96 +22,91 @@ namespace Kai {
 	template <typename ObjectT>
 	class Pointer {
 		protected:
-			ObjectT* m_object;
+			ObjectT* _object;
 			
 		public:
-			Pointer () : m_object(NULL) {
+			Pointer () : _object(NULL) {
 			}
 			
-			Pointer (ObjectT * object) : m_object(object) {
-			}
-			
-			template <typename OtherObjectT>
-			Pointer (OtherObjectT* object) : m_object(dynamic_cast<ObjectT*>(object)) {
+			Pointer (ObjectT * object) : _object(object) {
 			}
 			
 			template <typename OtherObjectT>
-			Pointer (Pointer<OtherObjectT> other) : m_object(dynamic_cast<ObjectT*>(other.get())) {
+			Pointer (OtherObjectT* object) : _object(dynamic_cast<ObjectT*>(object)) {
+			}
+			
+			template <typename OtherObjectT>
+			Pointer (Pointer<OtherObjectT> other) : _object(dynamic_cast<ObjectT*>(other.get())) {
 			}
 			
 			ObjectT* operator-> () const {
-				KAI_ENSURE(m_object != NULL);
-				return m_object;
+				KAI_ENSURE(_object != NULL);
+				return _object;
 			}
 						
 			ObjectT& operator* () const {
-				KAI_ENSURE(m_object != NULL);
-				return *m_object;
+				KAI_ENSURE(_object != NULL);
+				return *_object;
 			}
 			
 			operator ObjectT * () {
-				return this->m_object;
+				return this->_object;
 			}
 			
 			operator const ObjectT * () const {
-				return this->m_object;
+				return this->_object;
 			}
 			
 			template <typename AnyT>
 			AnyT * as () {
-				return dynamic_cast<AnyT *>(this->m_object);
+				return dynamic_cast<AnyT *>(this->_object);
 			}
 			
 			template <typename AnyT>
 			const AnyT * as () const {
-				return dynamic_cast<const AnyT *>(this->m_object);
+				return dynamic_cast<const AnyT *>(this->_object);
 			}
 			
 			bool operator== (const Pointer & other) const
 			{
-				return m_object == other.m_object;
+				return _object == other._object;
 			}
 			
 			bool operator!= (const Pointer & other) const
 			{
-				return m_object != other.m_object;
+				return _object != other._object;
 			}
 			
 			bool operator< (const Pointer & other) const
 			{
-				return m_object < other.m_object;
+				return _object < other._object;
 			}
 			
 			bool operator> (const Pointer & other) const
 			{
-				return m_object > other.m_object;
+				return _object > other._object;
 			}
 			
 			bool operator<= (const Pointer & other) const
 			{
-				return m_object <= other.m_object;
+				return _object <= other._object;
 			}
 			
 			bool operator>= (const Pointer & other) const
 			{
-				return m_object >= other.m_object;
+				return _object >= other._object;
 			}
 			
 			ObjectT* get () const
 			{
-				return m_object;
+				return _object;
 			}
 			
 			typedef ObjectT* Pointer::* safe_bool;
 			
 			operator safe_bool() const
 			{
-				return m_object ? &Pointer::m_object : 0;
-			}
-		
-			void mark() {
-				if (m_object)
-					m_object->mark();
+				return _object ? &Pointer::_object : 0;
 			}
 	};
 	
@@ -127,8 +122,8 @@ namespace Kai {
 	class Reference : public Pointer<ObjectT> {
 		private:
 			void construct () {
-				if (this->m_object) {
-					this->m_object->retain();
+				if (this->_object) {
+					this->_object->retain();
 				}
 			}
 			
@@ -144,16 +139,16 @@ namespace Kai {
 			
 		public:
 			void clear () {
-				if (this->m_object) {
-					this->m_object->release();
-					this->m_object = NULL;
+				if (this->_object) {
+					this->_object->release();
+					this->_object = NULL;
 				}
 			}
 		
 			Reference& set (ObjectT* object) {
 				clear();
 				
-				this->m_object = object;
+				this->_object = object;
 				construct();
 				
 				return *this;

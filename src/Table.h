@@ -6,17 +6,17 @@
 //  Copyright (c) 2011 Orion Transfer Ltd. All rights reserved.
 //
 
-#ifndef Kai_Table_h
-#define Kai_Table_h
+#ifndef _KAI_TABLE_H
+#define _KAI_TABLE_H
 
-#include "Value.h"
+#include "Object.h"
 
 namespace Kai {
-	class Table : public Value {
+	class Table : public Object {
 	public:
 		struct Bin {
 			Symbol * key;
-			Value * value;
+			Object * value;
 			Bin * next;
 		};
 		
@@ -24,46 +24,47 @@ namespace Kai {
 		Table(int size = 16);
 		virtual ~Table();
 		
-		virtual void mark();
+		virtual Ref<Symbol> identity(Frame * frame) const;
 		
-		Bin * find (Symbol * key);
-		Ref<Value> update (Symbol * key, Value * value);
-		Ref<Value> remove (Symbol * key);
+		virtual void mark(Memory::Traversal * traversal) const;
 		
-		virtual int compare (const Value * other) const;
-		int compare (const Table * other) const;
+		Bin * find(Symbol * key);
+		Ref<Object> update(Symbol * key, Object * value);
+		Ref<Object> remove(Symbol * key);
 		
-		virtual void toCode(StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const;
+		virtual ComparisonResult compare(const Object * other) const;
+		ComparisonResult compare(const Table * other) const;
 		
-		virtual Ref<Value> lookup (Symbol * key);
+		virtual void to_code(Frame * frame, StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const;
 		
-		void setPrototype (Value * prototype);
-		virtual Ref<Value> prototype ();
+		virtual Ref<Object> lookup(Frame * frame, Symbol * key);
+		
+		void set_prototype(Object * prototype);
+		virtual Ref<Object> prototype(Frame * frame) const;
 		
 		//% (table [key, value])
-		static Ref<Value> table (Frame * frame);
+		static Ref<Object> new_(Frame * frame);
 		
 		//% (update table key value) -> old_value
-		static Ref<Value> update (Frame * frame);
+		static Ref<Object> update(Frame * frame);
 		
-		static Ref<Value> set (Frame * frame);
+		static Ref<Object> set(Frame * frame);
 		
 		//% (lookup table key) -> value || nil
-		static Ref<Value> lookup (Frame * frame);
+		static Ref<Object> lookup(Frame * frame);
 		
 		// Iteration over key/value pairs
-		static Ref<Value> each (Frame * frame);
+		static Ref<Object> each(Frame * frame);
 		
-		// % (setPrototype table value)
-		static Ref<Value> setPrototype (Frame * frame);
+		// % (set_prototype table value)
+		static Ref<Object> set_prototype(Frame * frame);
 		
-		static Ref<Value> globalPrototype ();
-		static void import (Table *);
+		static void import(Frame *);
 		
 	protected:
-		Ref<Value> m_prototype;
+		Object * _prototype;
 		
-		std::vector<Bin*> m_bins;
+		std::vector<Bin*> _bins;
 	};
 }
 
