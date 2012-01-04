@@ -28,7 +28,6 @@
 //#define KAI_MEMORY_DEBUG_GC
 //#define KAI_MEMORY_DEBUG_ALLOC
 //#define KAI_MEMORY_DEBUG_FREE
-//#define KAI_MEMORY_USE_MALLOC
 
 namespace Kai {
 	namespace Memory {
@@ -63,53 +62,16 @@ namespace Kai {
 		ObjectAllocation::~ObjectAllocation() {
 		}
 		
-		void ObjectAllocation::check_link() {
-			if (this->_next)
-				KAI_ENSURE(this->_next->_previous == this);
+		PageAllocation * ObjectAllocation::allocator() const {
+			const ObjectAllocation * current = this;
 			
-			if (this->_previous)
-				KAI_ENSURE(this->_previous->_next == this);
-		}
-		
-		void ObjectAllocation::check_next() {
-			check_link();
-			
-			if (this->_next)
-				this->_next->check_next();
-		}
-		
-		void ObjectAllocation::check_previous() {
-			check_link();
-			
-			if (this->_previous)
-				this->_previous->check_previous();
-		}
-		
-		void ObjectAllocation::check() {
-			this->check_next();
-			this->check_previous();
-		}
-		
-		void ObjectAllocation::clear() {
-			ObjectAllocation copy = *this;
-			
-			bzero(this, this->memory_size());
-			new(this) ObjectAllocation(copy);
-		}
-		
-		PageAllocation * ObjectAllocation::allocator() {
-#ifdef KAI_MEMORY_USE_MALLOC
-			return NULL;
-#endif
-			ObjectAllocation * current = this;
-			
-			while (!(current->_flags & Memory::FRONT)) {
-				KAI_ENSURE(current->_previous);
-				
-				current = current->_previous;
+			while (!(current->_flags & Memory::BACK)) {				
+				current = current->_next;
 			}
 			
-			return (PageAllocation *)current;
+			PageBoundary * boundary = (PageBoundary *)current;
+			
+			return boundary->_front;
 		}
 		
 		void ObjectAllocation::mark(Memory::Traversal * traversal) const {
@@ -120,43 +82,6 @@ namespace Kai {
 				return (ByteT *)_next - (ByteT *)this;
 			else
 				return 0;
-		}
-		
-		ObjectAllocation * ObjectAllocation::remove() {
-			g_statistics.freed += this->memory_size();
-			g_statistics.used -= this->memory_size();
-			
-			this->_flags &= ~USED;
-			
-#ifdef KAI_MEMORY_DEBUG_FREE
-			std::cerr << "Freeing " << this->memory_size() << " bytes at offset " << this << std::endl;
-#endif
-			
-			// We need to find the next used block, which in this case may be one further step if the next block is free.
-			ObjectAllocation * next_used = this->_next;
-			if (next_used->_flags == FREE) {
-				next_used = next_used->_next;
-			}
-			
-			ObjectAllocation * first_free = this;
-			if (first_free->_previous && first_free->_previous->_flags == FREE) {
-				first_free = _previous;
-			}
-			
-			first_free->_next = next_used;
-			first_free->_next->_previous = first_free;
-			
-#ifdef KAI_MEMORY_DEBUG_ALLOC
-			KAI_ENSURE(first_free->_next > first_free);
-			KAI_ENSURE(first_free->_previous < first_free);
-			
-			next_used->check();
-			first_free->check();
-			
-			first_free->clear();
-#endif
-			
-			return next_used;
 		}
 		
 		void ObjectAllocation::retain() {
@@ -189,11 +114,9 @@ namespace Kai {
 				FreeAllocation * middle = new((ByteT *)this + size) FreeAllocation;
 				
 				middle->_next_free = next_free;
-				middle->_previous = this;
 				middle->_next = this->_next;
 				middle->_flags = FREE;
 				
-				this->_next->_previous = middle;
 				this->_next = middle;
 				
 #ifdef KAI_MEMORY_DEBUG_ALLOC
@@ -233,25 +156,23 @@ namespace Kai {
 			std::cerr << "Allocating " << size << " bytes, mapped memory at offset " << base << std::endl;
 //#endif
 			
-			PageAllocation * front = new(base) PageAllocation();
+			PageAllocation * front = new(base) PageAllocation;
 			front->_next_page_allocation = NULL;			
-			front->_previous = NULL;
 			front->_flags = FRONT | USED;
 			front->_ref_count = 1;
 			
-			void * top = (ByteT *)base + size - sizeof(ObjectAllocation);
-			ObjectAllocation * back = new(top) ObjectAllocation();
+			void * top = (ByteT *)base + size - sizeof(PageBoundary);
+			PageBoundary * back = new(top) PageBoundary;
 			back->_next = NULL;
 			back->_flags = BACK | USED;
 			back->_ref_count = 1;
+			back->_front = front;
 			front->_back = back;
 			
-			FreeAllocation * free = new((ByteT *)base + sizeof(PageAllocation)) FreeAllocation();
-			free->_previous = front;
+			FreeAllocation * free = new((ByteT *)base + sizeof(PageAllocation)) FreeAllocation;
 			free->_next = back;
 			front->_next = free;
 			front->_next_free = free;
-			back->_previous = free;
 			
 #ifdef KAI_MEMORY_DEBUG_ALLOC
 			front->check();
@@ -321,9 +242,6 @@ namespace Kai {
 		}
 		
 		void PageAllocation::deallocate(ObjectAllocation * start, ObjectAllocation * end) {			
-			// The object past the end needs to point to this entire contiguous segment.
-			end->_next->_previous = start;
-			
 			// Initialize a new free block in this segment:
 			FreeAllocation * free_allocation = new(start) FreeAllocation;
 			free_allocation->_flags ^= USED;
@@ -336,6 +254,9 @@ namespace Kai {
 			// Insert the free block into the free list:
 			free_allocation->_next_free = this->_next_free;
 			this->_next_free = free_allocation;
+			
+			g_statistics.freed += free_allocation->memory_size();
+			g_statistics.used -= free_allocation->memory_size();
 		}
 		
 		bool PageAllocation::includes(ObjectAllocation * allocation) {
@@ -366,22 +287,19 @@ namespace Kai {
 			ObjectAllocation * current = this;
 			while (current) {
 				std::cerr << "[" << current << "(" << current->_flags << ")" << " + " << current->memory_size() << "] -> " << current->_next << std::endl;
-				
-				current->check_link();
-				
+								
 				current = current->_next;
 			}
 		}
 				
-		PageAllocation * object_allocator() {
-			static PageAllocation * _object_allocator = NULL;
+#pragma mark -
+		
+		PageBoundary::PageBoundary() {
 			
-			if (_object_allocator == NULL) {
-				std::size_t page_size = sysconf(_SC_PAGESIZE);
-				_object_allocator = PageAllocation::create(64 * page_size);
-			}
+		}
+		
+		PageBoundary::~PageBoundary() {
 			
-			return _object_allocator;
 		}
 		
 	}	

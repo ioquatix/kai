@@ -59,28 +59,20 @@ namespace Kai {
 			friend class FreeAllocation;
 			friend class Collector;
 			
-			ObjectAllocation * _previous, * _next;
+			ObjectAllocation * _next;
 			mutable unsigned _flags, _ref_count;
 			
+			/// Return the distance in bytes from the strt of this allocation to the start of the next.
 			std::size_t memory_size();
 			
-			// This function will essentially delete the object from the object graph.
-			ObjectAllocation * remove();
 		protected:
 			virtual void mark(Traversal *) const;
 			
 		public:
 			ObjectAllocation();
 			virtual ~ObjectAllocation();
-
-			void check_link();
-			void check_next();
-			void check_previous();
-			void check();
 			
-			void clear();
-			
-			PageAllocation * allocator();
+			virtual PageAllocation * allocator() const;
 			
 			void retain();
 			void release();
@@ -121,6 +113,18 @@ namespace Kai {
 			PageAllocation * base_of(ObjectAllocation * allocation);
 			
 			void debug();
+		};
+		
+		class PageBoundary : public FreeAllocation {
+		protected:
+			friend class ObjectAllocation;
+			friend class PageAllocation;
+			
+			PageAllocation * _front;
+		
+		public:
+			PageBoundary();
+			virtual ~PageBoundary();
 		};
 		
 		// Used for implementing various mark and sweep algorithms.
