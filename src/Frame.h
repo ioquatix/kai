@@ -59,6 +59,9 @@ namespace Kai {
 	 */
 	class Frame : public Object {
 	protected:
+		/// Cache the memory allocator for faster allocation.
+		Memory::PageAllocation * _allocator;
+		
 		/// Previous stack frame
 		Frame * _previous;
 		
@@ -87,6 +90,8 @@ namespace Kai {
 		Frame(Object * scope, Frame * previous);
 		/// Create an intermediate stack frame as above, but with a given message.
 		Frame(Object * scope, Cell * message, Frame * previous);
+		
+		virtual Memory::PageAllocation * allocator() const;
 		
 		virtual ~Frame();
 		

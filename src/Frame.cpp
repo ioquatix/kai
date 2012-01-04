@@ -114,11 +114,13 @@ namespace Kai {
 #pragma mark -
 
 	Frame::Frame(Object * scope) : _previous(NULL), _scope(scope), _message(NULL), _function(NULL), _arguments(NULL), _depth(0) {
-
+		_allocator = this->ObjectAllocation::allocator();
 	}
 	
 	Frame::Frame(Object * scope, Frame * previous) : _previous(previous), _scope(scope), _message(previous->_message), _function(previous->_function), _arguments(previous->_arguments)
 	{
+		_allocator = previous->allocator();
+		
 		_depth = _previous->_depth + 1;
 #ifdef KAI_DEBUG
 		std::cerr << "Frame: " << this << " Arguments: " << arguments() << std::endl;
@@ -126,7 +128,13 @@ namespace Kai {
 	}
 
 	Frame::Frame(Object * scope, Cell * message, Frame * previous) : _previous(previous), _scope(scope), _message(message), _function(NULL), _arguments(NULL) {
+		_allocator = previous->_allocator;
+		
 		_depth = _previous->_depth + 1;
+	}
+	
+	Memory::PageAllocation * Frame::allocator() const {
+		return _allocator;
 	}
 	
 	Frame::~Frame() {
