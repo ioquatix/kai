@@ -37,16 +37,32 @@ namespace Kai {
 	}
 	
 	Ref<Object> System::run(const PathT & path, Frame * frame) {
+		std::cerr << "Running code at path: " << path << std::endl;
+		
 		SourceCode code(path);
-			
+		
 		Expressions * expressions = Expressions::fetch(frame);
-		Ref<Object> value = expressions->parse(frame, code).value;
+		std::cerr << "Expression : " << Object::to_string(frame, expressions) << std::endl;
+		
+		Ref<Object> value;
+		
+		try {
+			value = expressions->parse(frame, code).value;
+			std::cerr << "Value : " << Object::to_string(frame, value) << std::endl;
+		} catch (Parser::FatalParseFailure & fatal_parse_failure) {
+			// TODO: Need to implement better handling for this kind of failure - maybe convert to Kai::Exception and rethrow.
+			fatal_parse_failure.print_error(std::cerr, code);
+			
+			return NULL;
+		}
+		
 		Ref<Object> result = value->evaluate(frame);
+		std::cerr << "Result : " << Object::to_string(frame, result) << std::endl;
 		
 		return result;
 	}
 	
-	Ref<Object> System::compile (const PathT & path, Frame * frame) {
+	Ref<Object> System::compile(const PathT & path, Frame * frame) {
 		Ref<Object> config = run(path, frame);
 		
 		if (!config) {
@@ -58,7 +74,7 @@ namespace Kai {
 		return NULL;
 	}
 	
-	bool pathExists (PathT path) {
+	bool path_exists(PathT path) {
 		struct stat s;
 				
 		if (stat(path.c_str(), &s) == 0) {
@@ -68,11 +84,11 @@ namespace Kai {
 		return false;
 	}
 	
-	bool System::find (const PathT & subPath, PathT & path) {
+	bool System::find(const PathT & file_path, PathT & result) {
 		// Absolute path?
-		if (subPath[0] == '/') {
-			if (pathExists(subPath)) {
-				path = subPath;
+		if (file_path[0] == '/') {
+			if (path_exists(file_path)) {
+				result = file_path;
 				return true;
 			}
 		}
@@ -83,9 +99,9 @@ namespace Kai {
 		while (begin != end) {
 			const String * base = ptr(*begin).as<String>();
 			
-			path = base->value() + subPath;
+			result = base->value() + file_path;
 			
-			if (pathExists(path)) {
+			if (path_exists(result)) {
 				return true;
 			}
 			
@@ -99,7 +115,7 @@ namespace Kai {
 		buffer << "(System@" << this << ")" << std::endl;
 	}
 	
-	Ref<Object> System::require (Frame * frame) {
+	Ref<Object> System::require(Frame * frame) {
 		System * system = NULL;
 		String * name = NULL;
 		
@@ -117,7 +133,7 @@ namespace Kai {
 		throw Exception("Could not find dependency", name, frame);
 	}
 	
-	Ref<Object> System::load (Frame * frame) {
+	Ref<Object> System::load(Frame * frame) {
 		System * system = NULL;
 		String * name = NULL;
 		
@@ -131,7 +147,7 @@ namespace Kai {
 		throw Exception("Could not find file", name, frame);
 	}
 	
-	Ref<Object> System::load_paths (Frame * frame) {
+	Ref<Object> System::load_paths(Frame * frame) {
 		System * system = NULL;
 		
 		frame->extract()(system);
@@ -139,7 +155,7 @@ namespace Kai {
 		return system->_load_paths;
 	}
 	
-	Ref<Object> System::working_directory (Frame * frame) {
+	Ref<Object> System::working_directory(Frame * frame) {
 		char * buf = getcwd(NULL, 0);
 		
 		KAI_ENSURE(buf != NULL);
@@ -151,7 +167,7 @@ namespace Kai {
 		return path;
 	}
 	
-	Ref<Object> System::environment (Frame * frame) {
+	Ref<Object> System::environment(Frame * frame) {
 		Table * env = new(frame) Table;
 		
 		for (char **e = environ; *e; ++e) {

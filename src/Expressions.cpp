@@ -82,7 +82,7 @@ namespace Kai {
 			}
 			
 			// Chomp any remaining whitespace
-			begin = Parser::parseWhitespace(result.token.end(), end).end();
+			begin = Parser::parse_whitespace(result.token.end(), end).end();
 			
 			if (begin != end) {
 				throw Parser::FatalParseFailure(Parser::Token(begin, end), "Could not parse entire source code!");
@@ -100,7 +100,7 @@ namespace Kai {
 		Parser::Token failedToken;
 		
 		// Eat whitespace
-		begin = Parser::parseWhitespace(begin, end).end();
+		begin = Parser::parse_whitespace(begin, end).end();
 		
 		if (begin < end) {
 			for (ExpressionsT::iterator iter = _expressions.begin(); iter != _expressions.end(); iter++) {				
@@ -180,7 +180,7 @@ namespace Kai {
 	}
 			
 	ParseResult StringExpression::parse(Frame * frame, Expression * top, StringIteratorT begin, StringIteratorT end) {
-		Parser::Token token = Parser::parseString(begin, end);
+		Parser::Token token = Parser::parse_string(begin, end);
 		
 		if (token) {
 			return ParseResult(token, new(frame) String(token.value(), true));
@@ -196,7 +196,7 @@ namespace Kai {
 	}
 	
 	ParseResult SymbolExpression::parse(Frame * frame, Expression * top, StringIteratorT begin, StringIteratorT end) {
-		Parser::Token token = Parser::parseIdentifier(begin, end);
+		Parser::Token token = Parser::parse_identifier(begin, end);
 		
 		if (token) {
 			return ParseResult(token, frame->sym(token.value().c_str()));
@@ -218,10 +218,10 @@ namespace Kai {
 	}
 	
 	ParseResult ScopeExpression::parse(Frame * frame, Expression * top, StringIteratorT begin, StringIteratorT end) {
-		Parser::Token token = Parser::parseConstant(begin, end, _prefix);
+		Parser::Token token = Parser::parse_constant(begin, end, _prefix);
 		
 		if (token) {
-			Parser::Token identifier = Parser::parseIdentifier(token.end(), end);
+			Parser::Token identifier = Parser::parse_identifier(token.end(), end);
 			
 			if (identifier) {
 				token &= identifier;
@@ -270,7 +270,7 @@ namespace Kai {
 	ParseResult NumberExpression::parse(Frame * frame, Expression * top, StringIteratorT begin, StringIteratorT end) {
 		Parser::Token token;
 		
-		token = Parser::parseHexadecimal(begin, end);
+		token = Parser::parse_hexadecimal(begin, end);
 		
 		if (token) {
 			Math::Integer value(token.value(), 16);
@@ -278,7 +278,7 @@ namespace Kai {
 			return ParseResult(token, new(frame) Integer(value));
 		}
 		
-		token = Parser::parseDecimal(begin, end);
+		token = Parser::parse_decimal(begin, end);
 		
 		if (token) {
 			Math::Number value(token.value());
@@ -287,7 +287,7 @@ namespace Kai {
 		}
 		
 		/*
-		token = Parser::parseInteger(begin, end);
+		token = Parser::parse_integer(begin, end);
 		
 		if (token) {
 			Math::Integer value(token.value(), 10);
@@ -329,7 +329,7 @@ namespace Kai {
 		
 		Parser::Token failedToken;
 		
-		if (t &= Parser::parseConstant(t.end(), end, _open)) {
+		if (t &= Parser::parse_constant(t.end(), end, _open)) {
 			bool header = _header;
 			
 			while (true) {
@@ -341,7 +341,7 @@ namespace Kai {
 				} else {
 					// Eat any whitespace before the expression because otherwise if the expression fails to parse we might
 					// be left with erroneous whitespace..
-					t += Parser::parseWhitespace(t.end(), end);
+					t += Parser::parse_whitespace(t.end(), end);
 					
 					result = top->parse(frame, top, t.end(), end);
 				}
@@ -364,10 +364,10 @@ namespace Kai {
 					break;
 				}
 				
-				t += Parser::parseWhitespace(t.end(), end);
+				t += Parser::parse_whitespace(t.end(), end);
 			}
 			
-			t &= Parser::parseConstant(t.end(), end, _close);
+			t &= Parser::parse_constant(t.end(), end, _close);
 			
 			// If the list is parsed correctly, token will be valid.
 			// Otherwise, it is either failed or incomplete.
@@ -388,7 +388,7 @@ namespace Kai {
 	}
 	
 	ParseResult ValueExpression::parse(Frame * frame, Expression * top, StringIteratorT begin, StringIteratorT end) {
-		Parser::Token token = Parser::parseConstant(begin, end, "`");
+		Parser::Token token = Parser::parse_constant(begin, end, "`");
 		if (!token) return ParseResult(token);
 		
 		ParseResult body = top->parse(frame, top, token.end(), end);
@@ -456,9 +456,9 @@ namespace Kai {
 		Parser::Token t(begin, Parser::CELL);
 		Ref<Cell> first, list;
 		
-		if (t &= Parser::parseConstant(t.end(), end, "|")) {
+		if (t &= Parser::parse_constant(t.end(), end, "|")) {
 			while (1) {
-				Parser::Token q = Parser::parseConstant(t.end(), end, "|");
+				Parser::Token q = Parser::parse_constant(t.end(), end, "|");
 				
 				if (q) {
 					t &= q;
@@ -478,7 +478,7 @@ namespace Kai {
 					}
 				}
 				
-				t += Parser::parseWhitespace(t.end(), end);
+				t += Parser::parse_whitespace(t.end(), end);
 			}
 		} else {
 			return ParseResult();

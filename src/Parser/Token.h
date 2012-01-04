@@ -16,6 +16,7 @@
 namespace Kai {
 	class SourceCode;
 	
+	/// This needs some serious tidying up...
 	namespace Parser {
 		enum Identity {
 			UNIMPORTANT = 0,
@@ -49,17 +50,17 @@ namespace Kai {
 				Identity _identity;
 				ChildrenT _children;
 				
-				void add (const Token&, bool merge);
+				void add(const Token&, bool merge);
 				
 			public:
 				/// Invalid token constructor
-				Token ();
+				Token();
 				
-				Token (StringIteratorT begin, Identity identity = UNIMPORTANT);
-				Token (StringIteratorT begin, StringIteratorT end, Identity identity = UNIMPORTANT);
-				Token (const Token& current, StringIteratorT end);
+				Token(StringIteratorT begin, Identity identity = UNIMPORTANT);
+				Token(StringIteratorT begin, StringIteratorT end, Identity identity = UNIMPORTANT);
+				Token(const Token& current, StringIteratorT end);
 				
-				bool isValid () const;
+				bool isValid() const;
 				
 				typedef StringIteratorT Token::* safe_bool;
 			
@@ -67,29 +68,29 @@ namespace Kai {
 					return isValid() ? &Token::_begin : 0;
 				}
 				
-				unsigned length () const;
-				StringT value () const;
+				unsigned length() const;
+				StringT value() const;
 				
-				inline StringIteratorT begin () const { return _begin; }
-				inline StringIteratorT end () const { return _end; }
+				inline StringIteratorT begin() const { return _begin; }
+				inline StringIteratorT end() const { return _end; }
 				
 				/// Adds the given child token as a new child of this token.
-				const Token& operator<< (const Token& child);
+				const Token& operator<<(const Token& child);
 				
 				/// Merges the given child token as part of this token.
-				const Token& operator+= (const Token& child);
+				const Token& operator+=(const Token& child);
 				
 				/// Merges the given token into the current token only if it isn't invalid.
-				const Token& operator|= (const Token& other);
+				const Token& operator|=(const Token& other);
 				
 				/// Merges the given token into the current token.
 				/// The current token becomes invalid if the given token is invalid.
-				const Token& operator&= (const Token& other);
+				const Token& operator&=(const Token& other);
 				
-				Token& operator+= (const unsigned& count);
-				Token& operator++ () { return *this += 1; }
+				Token& operator+=(const unsigned& count);
+				Token& operator++() { return *this += 1; }
 				
-				const Token& operator|| (const Token & other) {
+				const Token& operator||(const Token & other) {
 					if (this->isValid()) {
 						return *this;
 					} else {
@@ -97,23 +98,23 @@ namespace Kai {
 					}
 				}
 				
-				Identity identity () const;
-				void setIdentity (Identity identity);
+				Identity identity() const;
+				void setIdentity(Identity identity);
 				
-				Token& operator[] (Identity i) {
+				Token& operator[](Identity i) {
 					setIdentity(i);
 					return *this;
 				}
 				
-				ChildrenT & children ();
-				const ChildrenT & children () const;
+				ChildrenT & children();
+				const ChildrenT & children() const;
 				
-				bool terminal () const;
+				bool terminal() const;
 				
-				void printTree (std::ostream& outp, unsigned indent = 0) const;
-				void debug () const;
+				void print_tree(std::ostream& outp, unsigned indent = 0) const;
+				void debug() const;
 				
-				Token simplify ();
+				Token simplify();
 		};
 		
 		struct FatalParseFailure {
@@ -124,7 +125,7 @@ namespace Kai {
 			public:
 				FatalParseFailure (const Token & token, const char * failureMessage);
 				
-				void printError (std::ostream & outp, const SourceCode & sourceCode);
+				void print_error (std::ostream & outp, const SourceCode & sourceCode);
 				
 				const Token & token () const;
 		};
@@ -137,16 +138,16 @@ namespace Kai {
 		struct Counter {
 			unsigned _min, _max, _count;
 			
-			Counter (unsigned min = 0, unsigned max = -1);
+			Counter(unsigned min = 0, unsigned max = -1);
 			
-			bool update ();
-			bool failed ();
+			bool update();
+			bool failed();
 			
-			unsigned count () const;
+			unsigned count() const;
 		};
 				
 		template <typename PredicateT>
-		Token parseCharacters (StringIteratorT begin, StringIteratorT end, PredicateT predicate) {
+		Token parse_characters(StringIteratorT begin, StringIteratorT end, PredicateT predicate) {
 			StringIteratorT s = begin;
 			
 			while (s != end) {
@@ -168,15 +169,15 @@ namespace Kai {
 		}
 		
 		template <typename PredicateT>
-		Token parseCharacters (StringIteratorT begin, StringIteratorT end, PredicateT predicate, Counter counter) {
+		Token parse_characters(StringIteratorT begin, StringIteratorT end, PredicateT predicate, Counter counter) {
 			StringIteratorT s = begin;
 			
 			while (s != end) {
 				StringIteratorT t = s;
 				
-				Unicode::CodePointT codePoint = Unicode::next(t, end);
+				Unicode::CodePointT code_point = Unicode::next(t, end);
 				
-				if (predicate(codePoint)) {
+				if (predicate(code_point)) {
 					s = t;
 				} else {
 					break;
@@ -192,7 +193,7 @@ namespace Kai {
 		}
 		
 		template <typename PrimitiveT>
-		PrimitiveT convert (const StringT& stringValue) {
+		PrimitiveT convert(const StringT& stringValue) {
 			StringStreamT stream(stringValue);
 			
 			PrimitiveT primitiveValue;
@@ -201,7 +202,7 @@ namespace Kai {
 			return primitiveValue;
 		}
 		
-		Token parseConstant (StringIteratorT begin, StringIteratorT end, const StringT & constant);
+		Token parse_constant(StringIteratorT begin, StringIteratorT end, const StringT & constant);
 		
 #pragma mark -
 #pragma mark Operator Parsing
@@ -210,9 +211,9 @@ namespace Kai {
 			typedef std::vector<StringT> OperatorsT;
 			OperatorsT operators;
 			
-			Token operator() (StringIteratorT begin, StringIteratorT end) {
+			Token operator()(StringIteratorT begin, StringIteratorT end) {
 				for (OperatorsT::const_iterator i = operators.begin(); i != operators.end(); ++i) {
-					Token t = parseConstant(begin, end, *i);
+					Token t = parse_constant(begin, end, *i);
 					
 					if (t) return t[SYMBOL];
 				}
@@ -220,7 +221,7 @@ namespace Kai {
 				return Token();
 			}
 			
-			OperatorParser& operator<< (const StringT & op) {
+			OperatorParser& operator<<(const StringT & op) {
 				operators.push_back(op);
 				return *this;
 			}

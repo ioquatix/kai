@@ -11,7 +11,7 @@
 
 namespace Kai {
 	namespace Parser {
-		StringT unescapeString (const StringT &);
-		StringT escapeString (const StringT &);
+		StringT unescape_string (const StringT &);
+		StringT escape_string (const StringT &);
 	}
 }

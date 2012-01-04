@@ -83,7 +83,7 @@ namespace {
 			// Print syntax error message
 			
 			//std::cerr << "\x1b[31;1m";
-			ex.printError(std::cerr, code);
+			ex.print_error(std::cerr, code);
 			//std::cerr << "\x1b[0m";
 			
 			status = 2;

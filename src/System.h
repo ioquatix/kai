@@ -31,7 +31,8 @@ namespace Kai {
 		
 		virtual Ref<Symbol> identity(Frame * frame) const;
 		
-		bool find(const StringT & subPath, StringT & fullPath);
+		// Returns true if the file_path can be found (either an absolute path or as a sub-path of one of _load_paths), and puts the full path in result.
+		bool find(const PathT & file_path, PathT & result);
 		
 		virtual void to_code(Frame * frame, StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const;
 		

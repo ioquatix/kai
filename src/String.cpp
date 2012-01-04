@@ -23,7 +23,7 @@ namespace Kai {
 	
 	String::String (const StringT & value, bool unescape) : _value(value) {
 		if (unescape) {
-			_value = Parser::unescapeString(_value);
+			_value = Parser::unescape_string(_value);
 		}
 	}
 	
@@ -44,7 +44,7 @@ namespace Kai {
 	}
 	
 	void String::to_code(Frame * frame, StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const {
-		buffer << Parser::escapeString(_value);
+		buffer << Parser::escape_string(_value);
 	}
 	
 	Ref<Object> String::join(Frame * frame)

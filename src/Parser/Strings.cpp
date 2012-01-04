@@ -14,7 +14,7 @@
 namespace Kai {
 	namespace Parser {
 	
-		StringT unescapeString (const StringT & value) {
+		StringT unescape_string (const StringT & value) {
 			StringStreamT buffer;
 			
 			StringT::const_iterator i = value.begin(), end = value.end();
@@ -68,7 +68,7 @@ namespace Kai {
 			return buffer.str();
 		}
 		
-		StringT escapeString (const StringT & value) {
+		StringT escape_string (const StringT & value) {
 			StringStreamT buffer;
 			
 			StringT::const_iterator i = value.begin(), end = value.end();

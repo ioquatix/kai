@@ -12,12 +12,12 @@
 namespace Kai {
 	
 	namespace Parser {
-		Token parseInteger(StringIteratorT begin, StringIteratorT end);
-		Token parseString(StringIteratorT begin, StringIteratorT end);
-		Token parseDecimal(StringIteratorT begin, StringIteratorT end);
-		Token parseHexadecimal(StringIteratorT begin, StringIteratorT end);
-		Token parseWhitespace(StringIteratorT begin, StringIteratorT end);
-		Token parseIdentifier(StringIteratorT begin, StringIteratorT end);
+		Token parse_integer(StringIteratorT begin, StringIteratorT end);
+		Token parse_string(StringIteratorT begin, StringIteratorT end);
+		Token parse_decimal(StringIteratorT begin, StringIteratorT end);
+		Token parse_hexadecimal(StringIteratorT begin, StringIteratorT end);
+		Token parse_whitespace(StringIteratorT begin, StringIteratorT end);
+		Token parse_identifier(StringIteratorT begin, StringIteratorT end);
 		
 		/*
 			[(this) set grammar [Grammar new]]
