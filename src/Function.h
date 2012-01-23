@@ -24,6 +24,8 @@ namespace Kai {
 		const char * _name;
 		
 	public:
+		static const char * const NAME = "BuiltinFunction";
+		
 		BuiltinFunction(const char * name) : _name(name) {
 		}
 		
@@ -48,6 +50,8 @@ namespace Kai {
 			EvaluateFunctionT _evaluateFunction;
 			
 		public:
+			static const char * const NAME;
+		
 			DynamicFunction(EvaluateFunctionT evaluateFunction);
 			virtual ~DynamicFunction();
 			

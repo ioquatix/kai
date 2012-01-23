@@ -35,6 +35,8 @@ namespace Kai {
 		bool _macro;
 	
 	public:
+		static const char * const NAME;
+		
 		Lambda(Frame * scope, Cell * arguments, Cell * code);
 		virtual ~Lambda();
 	
@@ -56,6 +58,8 @@ namespace Kai {
 		
 		static Ref<Object> lambda(Frame * frame);
 		static Ref<Object> macro(Frame * frame);
+		
+		static Ref<Object> dynamic_scope(Frame * frame);
 	
 		virtual Ref<Object> prototype(Frame * frame);
 		

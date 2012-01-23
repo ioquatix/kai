@@ -16,6 +16,7 @@
 
 namespace Kai
 {
+	const char * const Object::NAME = "Object";
 	
 	Object::~Object() {
 		
@@ -145,9 +146,12 @@ namespace Kai
 	Ref<Object> Object::identity_(Frame * frame) {
 		Object * value = NULL;
 		
-		frame->extract()(value, "object");
+		frame->extract()(value, "object", false);
 		
-		return value->identity(frame);
+		if (value)
+			return value->identity(frame);
+		else
+			return Symbol::nil_symbol(frame);
 	}
 	
 	Ref<Object> Object::value(Frame * frame) {
@@ -156,10 +160,6 @@ namespace Kai
 		}
 		
 		return NULL;
-	}
-	
-	void Object::debug() {
-		std::cerr << "Object: " << typeid(this).name() << std::endl;
 	}
 	
 	Ref<Object> Object::lookup(Frame * frame) {		
@@ -191,7 +191,7 @@ namespace Kai
 		Object * self;
 		Cell * body;
 		
-		frame->extract()(self)(body);
+		frame->extract()(self, "self")(body, "body");
 		
 		// Wrap self so we can pass it to other functions
 		self = self->as_value(frame);
@@ -223,6 +223,5 @@ namespace Kai
 		prototype->update(frame->sym("call"), KAI_BUILTIN_FUNCTION(Object::call));
 		
 		frame->update(frame->sym("Object"), prototype);
-	}
-		
+	}	
 }

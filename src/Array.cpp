@@ -16,6 +16,8 @@
 #include "Function.h"
 
 namespace Kai {
+	
+	const char * const Array::NAME = "Array";
 
 	Array::Array() {
 	}

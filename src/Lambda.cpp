@@ -11,12 +11,14 @@
 #include "Table.h"
 #include "Symbol.h"
 #include "Function.h"
+#include "Array.h"
 #include "Logic.h"
 
 namespace Kai {
 
 #pragma mark -
-#pragma mark Lambda
+
+	const char * const Lambda::NAME = "Lambda";
 
 	Lambda::Lambda(Frame * scope, Cell * arguments, Cell * code) : _scope(scope), _arguments(arguments), _code(code), _macro(false) {
 	}

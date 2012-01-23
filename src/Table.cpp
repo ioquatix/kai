@@ -14,6 +14,8 @@
 
 namespace Kai {
 	
+	const char * const Table::NAME = "Table";
+	
 	Table::Table(int size) : _prototype(NULL) {
 		KAI_ENSURE(size >= 1);
 		
@@ -230,7 +232,7 @@ namespace Kai {
 		Symbol * key = NULL;
 		Object * value = NULL;
 		
-		frame->extract()(table)(key)[value];
+		frame->extract()(table, "self")(key, "key")[value];
 		
 		if (value)
 			table->update(key, value);

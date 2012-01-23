@@ -9,6 +9,7 @@
 
 #include "Exception.h"
 #include "Object.h"
+#include "Symbol.h"
 #include "Frame.h"
 
 namespace Kai {
@@ -42,14 +43,21 @@ namespace Kai {
 	
 #pragma mark -
 	
-	ArgumentError::ArgumentError(StringT what, Object * value, Frame * frame) : Exception(what, value, frame) {
+	ArgumentError::ArgumentError(StringT name, StringT type, Object * value, Frame * frame) : _name(name), _type(type), Exception("Error converting argument", value, frame) {
 		
 	}
 
+	StringT ArgumentError::what() {
+		if (_object)
+			return name() + " : Expecting " + _name + " of type " + _type + ", got " + _object->identity(_frame)->value() + "!";
+		else
+			return name() + " : Expecting " + _name + " of type " + _type + ", got nil!";
+	}
+	
 	StringT ArgumentError::name() {
 		return "Argument Error";
 	}
-	
+		
 #pragma mark -
 	
 	RangeError::RangeError(StringT what, Object * value, Frame * frame) : Exception(what, value, frame) {

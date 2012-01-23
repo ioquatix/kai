@@ -25,6 +25,8 @@ namespace Kai {
 		ArrayT _value;
 		
 	public:
+		static const char * const NAME;
+		
 		Array();
 		virtual ~Array();
 		

@@ -13,6 +13,8 @@
 
 namespace Kai {
 	
+	const char * const Cell::NAME = "Cell";
+	
 	Cell::Cell(Object * head, Object * tail) : _head(head), _tail(tail) {
 		
 	}
@@ -142,7 +144,7 @@ namespace Kai {
 	Ref<Object> Cell::new_(Frame * frame) {
 		Object * self, * head = NULL, * tail = NULL;
 		
-		frame->extract()[self][head][tail];
+		frame->extract()(self, "class")[head][tail];
 		
 		return new(frame) Cell(head, tail);
 	}
@@ -150,11 +152,7 @@ namespace Kai {
 	Ref<Object> Cell::head(Frame * frame) {
 		Cell * cell;
 		
-		frame->extract()[cell];
-		
-		if (!cell) {
-			throw Exception("Invalid Argument", frame);
-		}
+		frame->extract()(cell, "self");
 		
 		return cell->head();
 	}
@@ -162,11 +160,7 @@ namespace Kai {
 	Ref<Object> Cell::tail(Frame * frame) {
 		Cell * cell;
 		
-		frame->extract()[cell];
-		
-		if (!cell) {
-			throw Exception("Invalid Argument", frame);
-		}
+		frame->extract()(cell, "self");
 		
 		return cell->tail();
 	}
@@ -175,7 +169,7 @@ namespace Kai {
 		Cell * cell;
 		Object * callback;
 		
-		frame->extract()[cell][callback];
+		frame->extract()[cell](callback, "callback");
 		
 		while (cell != NULL) {
 			Cell * message = Cell::create(frame)(callback)(cell);

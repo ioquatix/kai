@@ -16,6 +16,8 @@
 namespace Kai {
 	class Integral {
 	public:
+		static const char * const NAME;
+		
 		virtual ~Integral();
 		
 		virtual Math::Integer to_integer() const abstract;
@@ -31,6 +33,8 @@ namespace Kai {
 		ValueT _value;
 		
 	public:
+		static const char * const NAME;
+		
 		Integer (ValueT value);
 		virtual ~Integer ();
 		
@@ -72,6 +76,8 @@ namespace Kai {
 		ValueT _value;
 	
 	public:
+		static const char * const NAME;
+		
 		Number(ValueT value);
 		virtual ~Number();
 		

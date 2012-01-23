@@ -21,6 +21,8 @@ namespace Kai {
 		const HashT _hash;
 		
 	public:
+		static const char * const NAME;
+		
 		static HashT calculate_hash (const char * value);
 		
 		Symbol(const StringT & string);

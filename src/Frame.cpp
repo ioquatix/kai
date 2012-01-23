@@ -76,7 +76,7 @@ namespace Kai {
 	{
 		Tracer * tracer = NULL;
 		
-		frame->extract()(tracer);
+		frame->extract()(tracer, "self");
 		
 		StringStreamT buffer;
 		tracer->dump(frame, buffer);
@@ -113,6 +113,8 @@ namespace Kai {
 
 #pragma mark -
 
+	const char * const Frame::NAME = "Frame";
+	
 	Frame::Frame(Object * scope) : _previous(NULL), _scope(scope), _message(NULL), _function(NULL), _arguments(NULL), _depth(0) {
 		_allocator = this->ObjectAllocation::allocator();
 	}
@@ -192,6 +194,10 @@ namespace Kai {
 		Frame * frame = NULL;
 		
 		return lookup(identifier, frame);
+	}
+	
+	Ref<Object> Frame::lookup(Frame * frame, Symbol * identifier) {
+		return this->lookup(identifier);
 	}
 	
 	Ref<Object> Frame::apply() {
@@ -352,16 +358,16 @@ namespace Kai {
 	Ref<Object> Frame::benchmark(Frame * frame)
 	{		
 		Integer * times;
-		Object * exec, * result;
+		Object * callback, * result;
 		
-		frame->extract()(times)(exec);
+		frame->extract()(times, "times")(callback, "callback");
 		
 		Math::IntermediateT count = times->value().to_intermediate();
 		
 		Time start;
 		
 		while (count > 0) {
-			result = exec->evaluate(frame);
+			result = callback->evaluate(frame);
 			
 			count--;			
 		}
@@ -380,7 +386,7 @@ namespace Kai {
 	{
 		Symbol * identifier = NULL;
 		
-		frame->extract()(identifier);
+		frame->extract()(identifier, "identifier");
 		
 		Frame * location = NULL;
 		frame->lookup(identifier, location);
@@ -392,18 +398,19 @@ namespace Kai {
 	Ref<Object> Frame::update(Frame * frame)
 	{
 		Symbol * identifier = NULL;
-		Object * newValue = NULL;
+		Object * new_value = NULL;
 		
-		frame->extract()(identifier)[newValue];
+		frame->extract()(identifier, "identifier")[new_value];
 		
 		Frame * location = NULL;
 		frame->lookup(identifier, location);
 		
 		if (location) {
+			// TODO: Maybe improve the level of abstraction so we are not completely depenedent on Tables for scope.
 			Table * scope = ptr(location->scope()).as<Table>();
 			
 			if (scope) {
-				scope->update(identifier, newValue);
+				scope->update(identifier, new_value);
 			} else {
 				throw Exception("Non-table Scope", location->scope(), frame);
 			}
@@ -411,7 +418,7 @@ namespace Kai {
 			throw Exception("Invalid Variable Name", identifier, frame);
 		}
 		
-		return newValue;		
+		return new_value;		
 	}
 	
 	Ref<Object> Frame::scope(Frame * frame) {
@@ -466,7 +473,7 @@ namespace Kai {
 	Ref<Object> Frame::wrap(Frame * frame) {	
 		Object * function;
 		
-		frame->extract()(function);
+		frame->extract()(function, "function");
 		
 		return new(frame) Wrapper(Cell::create(frame)(frame->sym("value"))(function));
 	}
@@ -517,7 +524,7 @@ namespace Kai {
 	Ref<Object> Frame::unwrap(Frame * frame) {
 		Object * function;
 		
-		frame->extract()(function);
+		frame->extract()(function, "function");
 		
 		Wrapper * wrapper = ptr(function).as<Wrapper>();
 		

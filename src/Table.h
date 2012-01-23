@@ -12,6 +12,7 @@
 #include "Object.h"
 
 namespace Kai {
+	
 	class Table : public Object {
 	public:
 		struct Bin {
@@ -21,6 +22,8 @@ namespace Kai {
 		};
 		
 	public:
+		static const char * const NAME;
+		
 		Table(int size = 16);
 		virtual ~Table();
 		

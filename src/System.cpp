@@ -24,6 +24,8 @@ extern char ** environ;
 
 namespace Kai {
 	
+	const char * const System::NAME = "System";
+	
 	System::System(Frame * frame) {
 		_load_paths = new(frame) Array();
 		_load_paths->value().push_back(new(frame) String("./lib/"));

@@ -32,15 +32,19 @@ namespace Kai {
 		virtual ~Exception();
 		
 		Frame * top();
-		StringT what();
+		virtual StringT what();
 	
 		virtual StringT name();
 	};
 
 	class ArgumentError : public Exception {
-	public:
-		ArgumentError(StringT what, Object * value, Frame * frame);
+	protected:
+		StringT _name, _type;
 		
+	public:
+		ArgumentError(StringT name, StringT type, Object * value, Frame * frame);
+		
+		virtual StringT what();
 		virtual StringT name();
 	};
 	

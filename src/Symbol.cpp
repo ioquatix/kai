@@ -14,6 +14,8 @@
 
 namespace Kai {
 	
+	const char * const Symbol::NAME = "Symbol";
+	
 	HashT Symbol::calculate_hash(const char * value) {
 		HashT sum = 0;
 		
@@ -79,7 +81,7 @@ namespace Kai {
 	Ref<Object> Symbol::hash(Frame * frame) {
 		Symbol * self;
 		
-		frame->extract()(self);
+		frame->extract()(self, "self");
 		
 		return new(frame) Integer(self->_hash);
 	}
@@ -88,7 +90,7 @@ namespace Kai {
 		Symbol * self;
 		Object * value;
 		
-		frame->extract()(self)[value];
+		frame->extract()(self, "self")[value];
 		
 		Table * scope = ptr(frame->scope()).as<Table>();
 		

@@ -26,6 +26,8 @@ namespace Kai {
 		Ref<Object> compile(const PathT & path, Frame * frame);
 		
 	public:
+		static const char * const NAME;
+		
 		System(Frame * frame);
 		virtual ~System();
 		

@@ -18,6 +18,8 @@ namespace Kai {
 		StringT _value;
 		
 	public:
+		static const char * const NAME;
+		
 		String(const StringT & value, bool unescape = false);
 		virtual ~String();
 		

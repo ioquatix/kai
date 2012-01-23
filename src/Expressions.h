@@ -42,6 +42,8 @@ namespace Kai {
 	
 	class Expression : public Object {
 	public:
+		static const char * const NAME;
+		
 		virtual ~Expression();
 		
 		virtual ParseResult parse(Frame * frame, Expression * top, StringIteratorT begin, StringIteratorT end) abstract;

@@ -24,6 +24,8 @@ namespace Kai {
 	ParseResult::ParseResult (Parser::Token _token, Object * _value, Status _status) : token(_token), value(_value), status(_status) {
 	}
 	
+	const char * const Expression::NAME = "Expression";
+	
 	Expression::~Expression () {
 	}
 	

@@ -21,6 +21,8 @@
 
 namespace Kai {
 	
+	const char * const String::NAME = "String";
+	
 	String::String (const StringT & value, bool unescape) : _value(value) {
 		if (unescape) {
 			_value = Parser::unescape_string(_value);
@@ -28,7 +30,6 @@ namespace Kai {
 	}
 	
 	String::~String () {
-		
 	}
 	
 	Ref<Symbol> String::identity(Frame * frame) const {
@@ -47,12 +48,11 @@ namespace Kai {
 		buffer << Parser::escape_string(_value);
 	}
 	
-	Ref<Object> String::join(Frame * frame)
-	{
+	Ref<Object> String::join(Frame * frame) {
 		StringStreamT buffer;
 		String * self;
 		
-		Cell * next = frame->extract()(self);
+		Cell * next = frame->extract()(self, "self");
 		
 		buffer << self->value();
 		
@@ -71,19 +71,17 @@ namespace Kai {
 		return new(frame) String(buffer.str());
 	}
 	
-	Ref<Object> String::size (Frame * frame)
-	{
+	Ref<Object> String::size (Frame * frame) {
 		String * self;
-		frame->extract()(self);
+		frame->extract()(self, "self");
 		
 		return new(frame) Integer(self->value().size());
 	}
 	
-	Ref<Object> String::at (Frame * frame)
-	{
+	Ref<Object> String::at (Frame * frame) {
 		String * self;
 		Integer * offset;
-		frame->extract()(self)(offset);
+		frame->extract()(self, "self")(offset, "offset");
 		
 		// Bounds checking
 		if (offset->value() < 0 || offset->value() > self->value().size()) {
@@ -95,19 +93,17 @@ namespace Kai {
 		return new(frame) String(character);
 	}
 	
-	Ref<Object> String::length (Frame * frame)
-	{
+	Ref<Object> String::length (Frame * frame) {
 		String * self;
 		
-		frame->extract()(self);
+		frame->extract()(self, "self");
 		
 		std::size_t result = utf8::distance(self->_value.begin(), self->_value.end());
 		
 		return new(frame) Integer(result);
 	}
 	
-	Ref<Object> String::each (Frame * frame)
-	{
+	Ref<Object> String::each (Frame * frame) {
 		String * self;
 		Object * function;
 		
@@ -119,7 +115,7 @@ namespace Kai {
 		Cell * last = NULL, * first = NULL;
 		
 		while (current != self->_value.end()) {
-			uint32_t value = utf8::next(current, self->_value.end());
+			uint32_t value = Unicode::next(current, self->_value.end());
 			
 			// Create a buffer to contain the single character:			
 			String * character = new(frame) String(StringT(previous, current));
@@ -134,8 +130,7 @@ namespace Kai {
 		return first;
 	}
 	
-	void String::import(Frame * frame)
-	{
+	void String::import(Frame * frame) {
 		Table * prototype = new(frame) Table;
 		
 		prototype->update(frame->sym("+"), KAI_BUILTIN_FUNCTION(String::join));

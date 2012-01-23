@@ -16,9 +16,16 @@
 #include "Function.h"
 
 namespace Kai {
+	
+	const char * const Integral::NAME = "Integral";
+	
 	Integral::~Integral() {
 		
 	}
+	
+#pragma mark -
+	
+	const char * const Integer::NAME = "Integer";
 	
 	Integer::Integer (ValueT value) : _value(value) {
 	}
@@ -99,7 +106,7 @@ namespace Kai {
 	Ref<Object> Integer::modulus (Frame * frame) {
 		Integer * number, * base;
 		
-		frame->extract()[number][base];
+		frame->extract()(number, "self")(base, "base");
 		
 		return new(frame) Integer(number->value() % base->value());
 	}
@@ -107,7 +114,7 @@ namespace Kai {
 	Ref<Object> Integer::power (Frame * frame) {
 		Integer * base, * exponent;
 		
-		frame->extract()(base)(exponent);
+		frame->extract()(base, "base")(exponent, "exponent");
 		
 		Math::Integer result;
 		result.set_power(base->value(), exponent->value());
@@ -119,7 +126,7 @@ namespace Kai {
 		Integer * self;
 		Integral * scale, * base;
 		
-		frame->extract()(self)(scale)[base];
+		frame->extract()(self, "self")(scale, "scale")[base];
 		
 		Math::Integer result;
 		
@@ -135,7 +142,7 @@ namespace Kai {
 	Ref<Object> Integer::greatest_common_divisor(Frame * frame) {
 		Integer * a = NULL, * b = NULL;
 		
-		frame->extract()(a)(b);
+		frame->extract()(a, "a")(b, "b");
 		
 		Math::Integer result;
 		result.calculate_greatest_common_divisor(a->value(), b->value());
@@ -147,7 +154,7 @@ namespace Kai {
 		Object * self = NULL;
 		Integral * length = NULL;
 		
-		frame->extract()(self)(length);
+		frame->extract()(self, "self")(length, "word-length");
 		
 		Math::Integer prime;
 		prime.generate_prime(length->to_integer().to_intermediate());
@@ -160,7 +167,7 @@ namespace Kai {
 		String * string;
 		Integral * radix;
 		
-		frame->extract()(self)(string)[radix];
+		frame->extract()(self, "self")(string, "text")[radix];
 		
 		Math::BaseT base;
 		
@@ -179,7 +186,7 @@ namespace Kai {
 		Integer * self;
 		Integral * radix;
 		
-		frame->extract()(self)[radix];
+		frame->extract()(self, "self")[radix];
 		
 		Math::Integer base;
 		
@@ -195,7 +202,7 @@ namespace Kai {
 	Ref<Object> Integer::to_number(Frame * frame) {
 		Integer * self;
 		
-		frame->extract()(self);
+		frame->extract()(self, "self");
 		
 		Math::Number value(self->value(), 0);
 		
@@ -238,6 +245,8 @@ namespace Kai {
 	}
 	
 #pragma mark -
+	
+	const char * const Number::NAME = "Number";
 	
 	Number::Number(ValueT value) : _value(value)
 	{

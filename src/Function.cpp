@@ -18,6 +18,8 @@ namespace Kai {
 
 #pragma mark -
 
+	const char * const DynamicFunction::NAME = "DynamicFunction";
+	
 	DynamicFunction::DynamicFunction (EvaluateFunctionT evaluateFunction) : _evaluateFunction(evaluateFunction) {
 	}
 	

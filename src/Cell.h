@@ -24,6 +24,8 @@ namespace Kai {
 		Object * _tail;
 		
 	public:
+		static const char * const NAME;
+		
 		Cell (Object * head = NULL, Object * tail = NULL);
 		virtual ~Cell ();
 		
@@ -128,27 +130,33 @@ namespace Kai {
 		
 		// Ensures argument is non-NULL
 		template <typename AnyT>
-		ArgumentExtractor operator()(AnyT *& t, bool required = true, const StringT & name = "unspecified") {
+		ArgumentExtractor operator()(AnyT *& t, const StringT & name, bool required = true) {
 			if (_current == NULL) {
-				throw ArgumentError(name, NULL, _frame);
+				throw ArgumentError(name, AnyT::NAME, NULL, _frame);
 			}
 			
 			t = _current->head().as<AnyT>();
 			
+			// If t is true or wasn't required, everything is okay.
 			if (t || !required) {
 				return ArgumentExtractor(_frame, _current->tail().as<Cell>());
 			}
 			
-			throw ArgumentError(name, _current, _frame);
+			// Else, something went wrong:
+			if (_current->head()) {
+				throw ArgumentError(name, AnyT::NAME, _current->head(), _frame);
+			} else {
+				throw ArgumentError(name, AnyT::NAME, NULL, _frame);
+			}
 		}
 		
 		// Ensures argument is non-NULL
 		template <typename AnyT>
-		ArgumentExtractor operator()(AnyT *& t, const StringT & name) {
-			return (*this)(t, true, name);
+		ArgumentExtractor operator()(AnyT *& t) {
+			return (*this)(t, "*unspecified*", true);
 		}
 		
-		inline operator Cell * () {
+		inline operator Cell *() {
 			return _current;
 		}
 	};

@@ -53,6 +53,8 @@ namespace Kai {
 	 */
 	class Object : public Memory::ManagedObject {
 	public:
+		static const char * const NAME;
+		
 		virtual ~Object();
 		
 		virtual Ref<Symbol> identity(Frame * frame) const;
@@ -103,9 +105,7 @@ namespace Kai {
 		static bool to_boolean(Frame * frame, Object * object);
 		
 		Ref<Object> as_value(Frame * frame);
-		
-		void debug();
-		
+				
 #pragma mark -
 				
 		// Converts the argument to a string value

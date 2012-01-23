@@ -84,6 +84,8 @@ namespace Kai {
 		Ref<Object> apply();
 		
 	public:
+		static const char * const NAME;
+		
 		/// Create a root level stack frame with a given scope.
 		Frame(Object * scope);
 		/// Create an intermediate stack frame with a given scope and previous frame.
@@ -107,6 +109,9 @@ namespace Kai {
 		
 		/// Lookup an identifier as above, but return the frame which defines the value.
 		Ref<Object> lookup(Symbol * identifier, Frame *& frame);
+		
+		/// this->lookup(identifier)
+		virtual Ref<Object> lookup(Frame * frame, Symbol * identifier);
 		
 		// Evaluate a given message in the specified scope.
 		Ref<Object> call(Object * scope, Cell * message);
