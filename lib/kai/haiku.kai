@@ -1,0 +1,8 @@
+{
+	# This is a simple Japanese Haiku used for testing UTF8 support.
+	[`Haiku = "初しぐれ猿も小蓑をほしげ也はつしぐれさるもこみのをほしげなり"]
+
+	[`MrUnhappyFace = "⌤"]
+
+	[`Ayako = "^_^"]
+}

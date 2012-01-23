@@ -1,0 +1,16 @@
+
+# This is a simple recursive function to count the number of cells, e.g. traversing a singly-linked list.
+{
+	(with Cell
+		{
+			[`count_n = (lambda `(cell count) 
+				`(if cell
+					(callee [cell tail] [count + 0x1])
+					count
+				)
+			)]
+			
+			[`count = (lambda `(cell) `(count_n cell 0x0))]
+		}
+	)
+}

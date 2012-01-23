@@ -1,0 +1,35 @@
+{
+	# Example instances for debugging
+	(class Person Class {
+		(def initialize {|self name age|
+			# Initialize the parent object:
+			((lookup Class initialize) self)
+		
+			[self set `name name]
+			[self set `age age]
+		
+			self
+		})
+	
+		(def introducing {|self|
+			["Hello, my name is " + [self name] " and I am " [[self age] to-string] " years old!"]
+		})
+	})
+
+	(class FamousPerson Person {
+		(def initialize {|self name age|
+			# It would be nice to have a better way to do this lookup...
+			# (($super initialize) self name age) ?
+			((lookup Person initialize) self name age)
+		
+			self
+		})
+	
+		(def introducing {|self|
+			["Hello, my name is Sir " + [self name] " and I am " [[self age] to-string] " years old!"]
+		})
+	})
+
+	[`Samuel = [[Person new] initialize "Samuel Williams" 26]]
+	[`Blake = [[FamousPerson new] initialize "William Blake" 74]]
+}

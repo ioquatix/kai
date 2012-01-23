@@ -1,0 +1,54 @@
+#
+#  kai/object.kai
+#  This file is part of the "Kai" project, and is released under the MIT license.
+#
+#  Created by Samuel Williams on 30/11/2010.
+#  Copyright 2010 Samuel Williams. All rights reserved.
+#
+#
+
+{
+	[`class = (macro `(name parent body) `{
+		[`table = (set (caller) $name [Table new])]
+		[table set-prototype (parent)]
+		[table set `name name]
+		
+		(with table (body))
+		
+		table
+	})]
+
+	[`Class = [Table new]]
+
+	(with Class {
+		[`name = `Class]
+		
+		[`def = (macro `(name function) `{
+			# In the scope of the caller, set the given name (i.e. a symbol)...
+			(set (caller) $name
+				# ... the value of the function as evaluated in the caller.
+				(with (caller) ($function))
+			)
+		})]
+		
+		# Lets you write (var foo 10)
+		[`var = (macro `(name value) `(with (caller) [$name = (with (caller) $value)]))]
+		
+		(def initialize {|self|
+			# Nothing... =)
+		})
+		
+		(def new {|class|
+			[`object = [Table new]]
+			# (var object [Table new])
+			
+			[object set-prototype class]
+						
+			object
+		})
+		
+		(def super {|self|
+			[[self prototype] prototype]
+		})
+	})
+}
