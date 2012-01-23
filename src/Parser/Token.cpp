@@ -1,11 +1,11 @@
-/*
- *  Token.cpp
- *  Kai Compiler
- *
- *  Created by Samuel Williams on 7/09/09.
- *  Copyright 2009 Orion Transfer Ltd. All rights reserved.
- *
- */
+//
+//  Token.cpp
+//  This file is part of the "Kai" project, and is released under the MIT license.
+//
+//  Created by Samuel Williams on 7/09/09.
+//  Copyright 2009 Orion Transfer Ltd. All rights reserved.
+//
+//
 
 #include "Token.h"
 #include "../SourceCode.h"

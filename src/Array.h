@@ -1,11 +1,11 @@
-/*
- *  Array.h
- *  Kai
- *
- *  Created by Samuel Williams on 21/09/10.
- *  Copyright 2010 Orion Transfer Ltd. All rights reserved.
- *
- */
+//
+//  Array.h
+//  This file is part of the "Kai" project, and is released under the MIT license.
+//
+//  Created by Samuel Williams on 21/09/10.
+//  Copyright 2010 Orion Transfer Ltd. All rights reserved.
+//
+//
 
 #ifndef _KAI_ARRAY_H
 #define _KAI_ARRAY_H

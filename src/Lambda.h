@@ -1,19 +1,11 @@
 //
 //  Lambda.h
-//  Kai
+//  This file is part of the "Kai" project, and is released under the MIT license.
 //
 //  Created by Samuel Williams on 27/09/11.
 //  Copyright 2011 Orion Transfer Ltd. All rights reserved.
 //
-
-/*
- *  Value.h
- *  This file is part of the "Kai" project, and is licensed under the GNU GPLv3.
- *
- *  Created by Samuel Williams on 10/04/10.
- *  Copyright 2010 Samuel Williams. All rights reserved.
- *
- */
+//
  
 #ifndef _KAI_LAMBDA_H
 #define _KAI_LAMBDA_H

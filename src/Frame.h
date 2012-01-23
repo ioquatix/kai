@@ -1,11 +1,11 @@
-/*
- *  Frame.h
- *  This file is part of the "Kai" project, and is licensed under the GNU GPLv3.
- *
- *  Created by Samuel Williams on 12/04/10.
- *  Copyright 2010 Samuel Williams. All rights reserved.
- *
- */
+//
+//  Frame.h
+//  This file is part of the "Kai" project, and is released under the MIT license.
+//
+//  Created by Samuel Williams on 12/04/10.
+//  Copyright 2010 Samuel Williams. All rights reserved.
+//
+//
 
 #ifndef _KAI_FRAME_H
 #define _KAI_FRAME_H

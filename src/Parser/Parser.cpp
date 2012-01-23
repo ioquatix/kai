@@ -1,11 +1,11 @@
-/*
- *  Parser.cpp
- *  Kai
- *
- *  Created by Samuel Williams on 17/06/10.
- *  Copyright 2010 Samuel Williams. All rights reserved.
- *
- */
+//
+//  Parser.cpp
+//  This file is part of the "Kai" project, and is released under the MIT license.
+//
+//  Created by Samuel Williams on 17/06/10.
+//  Copyright 2010 Samuel Williams. All rights reserved.
+//
+//
 
 #include "Parser.h"
 #include "../SourceCode.h"

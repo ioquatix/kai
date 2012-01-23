@@ -1,11 +1,11 @@
-/*
- *  Integer.cpp
- *  RSA
- *
- *  Created by Samuel Williams on 7/08/10.
- *  Copyright 2010 Orion Transfer Ltd. All rights reserved.
- *
- */
+//
+//  Integer.cpp
+//  RSA
+//
+//  Created by Samuel Williams on 7/08/10.
+//  Copyright 2010 Orion Transfer Ltd. All rights reserved.
+//
+//
 
 #include "Integer.h"
 #include <stdexcept>
@@ -1072,7 +1072,6 @@ namespace Kai {
 			char * buffer = (char *)alloca(length + 1);
 			char * end = buffer + length;
 			
-			memset(buffer, '****', length);
 			buffer[length] = '\0';
 			
 			// Calculate how many digits we can extract to a single precision with one division..

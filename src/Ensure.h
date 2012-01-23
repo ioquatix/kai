@@ -1,11 +1,11 @@
-/*
- *  Ensure.h
- *  This file is part of the "Kai" project, and is licensed under the GNU GPLv3.
- *
- *  Created by Samuel Williams on 1/03/10.
- *  Copyright 2010 Samuel Williams. All rights reserved.
- *
- */
+//
+//  Ensure.h
+//  This file is part of the "Kai" project, and is released under the MIT license.
+//
+//  Created by Samuel Williams on 1/03/10.
+//  Copyright 2010 Samuel Williams. All rights reserved.
+//
+//
 
 #ifndef _KAI_ENSURE_H
 #define _KAI_ENSURE_H

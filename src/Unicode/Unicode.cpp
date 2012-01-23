@@ -1,6 +1,6 @@
 //
 //  Unicode.cpp
-//  Kai
+//  This file is part of the "Kai" project, and is released under the MIT license.
 //
 //  Created by Samuel Williams on 7/12/11.
 //  Copyright (c) 2011 Orion Transfer Ltd. All rights reserved.

@@ -1,11 +1,11 @@
-/*
- *  System.h
- *  Kai
- *
- *  Created by Samuel Williams on 26/11/10.
- *  Copyright 2010 __MyCompanyName__. All rights reserved.
- *
- */
+//
+//  System.h
+//  This file is part of the "Kai" project, and is released under the MIT license.
+//
+//  Created by Samuel Williams on 26/11/10.
+//  Copyright 2010 __MyCompanyName__. All rights reserved.
+//
+//
 
 #ifndef _KAI_SYSTEM_H
 #define _KAI_SYSTEM_H

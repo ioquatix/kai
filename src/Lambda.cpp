@@ -1,6 +1,6 @@
 //
 //  Lambda.cpp
-//  Kai
+//  This file is part of the "Kai" project, and is released under the MIT license.
 //
 //  Created by Samuel Williams on 27/09/11.
 //  Copyright 2011 Orion Transfer Ltd. All rights reserved.

@@ -136,6 +136,7 @@
 		7E5B639E14962F0E00027AF5 /* ObjectAllocator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ObjectAllocator.h; sourceTree = "<group>"; };
 		7E8799C511A4CDC700051ED4 /* Token.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Token.h; sourceTree = "<group>"; };
 		7E8799C611A4CDC800051ED4 /* Token.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Token.cpp; sourceTree = "<group>"; };
+		7EA0A13314CD894500B43C61 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
 		7EA65849129F59F2008ED798 /* System.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = System.h; sourceTree = "<group>"; };
 		7EA6584A129F59F2008ED798 /* System.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = System.cpp; sourceTree = "<group>"; };
 		7EA658C112A4A268008ED798 /* lib */ = {isa = PBXFileReference; lastKnownFileType = folder; path = lib; sourceTree = "<group>"; };
@@ -165,6 +166,7 @@
 		08FB7794FE84155DC02AAC07 /* Kai */ = {
 			isa = PBXGroup;
 			children = (
+				7EA0A13314CD894500B43C61 /* README.md */,
 				7EA658B612A4A254008ED798 /* Resources */,
 				7E0E777411EAAE7F00A568DA /* base.xcconfig */,
 				7E0E777F11EADB0E00A568DA /* kai.xcconfig */,

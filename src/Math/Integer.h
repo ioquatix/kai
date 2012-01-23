@@ -1,11 +1,11 @@
-/*
- *  Integer.h
- *  RSA
- *
- *  Created by Samuel Williams on 7/08/10.
- *  Copyright 2010 Orion Transfer Ltd. All rights reserved.
- *
- */
+//
+//  Integer.h
+//  RSA
+//
+//  Created by Samuel Williams on 7/08/10.
+//  Copyright 2010 Orion Transfer Ltd. All rights reserved.
+//
+//
 
 #ifndef __MULTIPLE_INTEGER_H__
 #define __MULTIPLE_INTEGER_H__
