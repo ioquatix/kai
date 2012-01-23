@@ -49,12 +49,14 @@ namespace Kai {
 		Traversal::~Traversal() {
 			
 		}
-				
+		
+#ifdef KAI_MEMORY_STATISTICS
 		struct AllocatonStatistics {
 			std::size_t total;
 			std::size_t used;
 			std::size_t freed;
 		} g_statistics = {0, 0, 0};
+#endif
 		
 		ObjectAllocation::ObjectAllocation() : _ref_count(0) {
 		}
@@ -150,7 +152,9 @@ namespace Kai {
 			
 		PageAllocation * PageAllocation::create(std::size_t size) {
 			void * base = mmap(0, size, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
+#ifdef KAI_MEMORY_STATISTICS
 			g_statistics.total += size;
+#endif
 			
 //#ifdef KAI_MEMORY_DEBUG
 			std::cerr << "Allocating " << size << " bytes, mapped memory at offset " << base << std::endl;
@@ -220,7 +224,9 @@ namespace Kai {
 			ObjectAllocation * allocation = next_free;
 			next_free = next_free->split(size);
 			
+#ifdef KAI_MEMORY_STATISTICS
 			g_statistics.used += allocation->memory_size();
+#endif
 			
 			allocation->_flags |= USED;
 
@@ -229,13 +235,6 @@ namespace Kai {
 			
 			std::cerr << "Allocated (" << _allocation_id << ") " << size << " bytes at " << allocation << std::endl;
 #endif
-			
-			//bzero((ByteT *)allocation + sizeof(ObjectAllocation), allocation->memory_size() - sizeof(ObjectAllocation));
-			
-#ifdef KAI_MEMORY_DEBUG_ALLOC
-			allocation->check_link();
-#endif
-			
 			base->_next_free = next_free;
 			
 			return allocation;
@@ -249,14 +248,18 @@ namespace Kai {
 			// The next block is the block past the end:
 			free_allocation->_next = end->_next;
 			
+#ifdef KAI_MEMORY_DEBUG_DEALLOC
 			std::cerr << "Deallocating range from " << start << " -> " << end->_next << "(" << free_allocation->memory_size() << " bytes)" << std::endl;
+#endif
 			
 			// Insert the free block into the free list:
 			free_allocation->_next_free = this->_next_free;
 			this->_next_free = free_allocation;
 			
+#ifdef KAI_MEMORY_STATISTICS
 			g_statistics.freed += free_allocation->memory_size();
 			g_statistics.used -= free_allocation->memory_size();
+#endif
 		}
 		
 		bool PageAllocation::includes(ObjectAllocation * allocation) {
@@ -282,7 +285,9 @@ namespace Kai {
 		}
 		
 		void PageAllocation::debug() {
+#ifdef KAI_MEMORY_STATISTICS
 			std::cerr << "Total: " << g_statistics.total << " Used: " << g_statistics.used << " Freed: " << g_statistics.freed << std::endl;
+#endif
 			
 			ObjectAllocation * current = this;
 			while (current) {
