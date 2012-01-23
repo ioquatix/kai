@@ -37,18 +37,18 @@ namespace Kai {
 	}
 	
 	Ref<Object> System::run(const PathT & path, Frame * frame) {
-		std::cerr << "Running code at path: " << path << std::endl;
+		// std::cerr << "Running code at path: " << path << std::endl;
 		
 		SourceCode code(path);
 		
 		Expressions * expressions = Expressions::fetch(frame);
-		std::cerr << "Expression : " << Object::to_string(frame, expressions) << std::endl;
+		// std::cerr << "Expression : " << Object::to_string(frame, expressions) << std::endl;
 		
 		Ref<Object> value;
 		
 		try {
 			value = expressions->parse(frame, code).value;
-			std::cerr << "Value : " << Object::to_string(frame, value) << std::endl;
+			// std::cerr << "Value : " << Object::to_string(frame, value) << std::endl;
 		} catch (Parser::FatalParseFailure & fatal_parse_failure) {
 			// TODO: Need to implement better handling for this kind of failure - maybe convert to Kai::Exception and rethrow.
 			fatal_parse_failure.print_error(std::cerr, code);
@@ -57,7 +57,7 @@ namespace Kai {
 		}
 		
 		Ref<Object> result = value->evaluate(frame);
-		std::cerr << "Result : " << Object::to_string(frame, result) << std::endl;
+		//std::cerr << "Result : " << Object::to_string(frame, result) << std::endl;
 		
 		return result;
 	}
