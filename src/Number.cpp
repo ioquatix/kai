@@ -64,20 +64,17 @@ namespace Kai {
 		ValueT total = 0;
 		Integer * first;
 		
-		Cell * args = frame->extract()(first);
+		ArgumentExtractor arguments = frame->extract();
+		arguments = arguments(first, "left-value");
 		
 		total = first->value();
 		
-		while (args != NULL) {
-			Integer * integer = args->head().as<Integer>();
+		while (arguments) {
+			Integer * integer;
 			
-			if (integer) {
-				total -= integer->value();
-			} else {
-				throw Exception("Invalid Integer Value", frame);
-			}
+			arguments = arguments(integer, "right-value");
 			
-			args = args->tail().as<Cell>();
+			total -= integer->value();
 		}
 		
 		return new(frame) Integer(total);
@@ -86,18 +83,14 @@ namespace Kai {
 	Ref<Object> Integer::product (Frame * frame) {
 		ValueT total = 1;
 		
-		Cell * args = frame->unwrap();
+		ArgumentExtractor arguments = frame->extract();
 		
-		while (args != NULL) {
-			Integer * integer = args->head().as<Integer>();
+		while (arguments) {
+			Integer * integer;
 			
-			if (integer) {
-				total *= integer->value();
-			} else {
-				throw Exception("Invalid Integer Value", frame);
-			}
+			arguments = arguments(integer, "right-value");
 			
-			args = args->tail().as<Cell>();
+			total *= integer->value();
 		}
 		
 		return new(frame) Integer(total);
@@ -285,18 +278,14 @@ namespace Kai {
 	{
 		ValueT total = 1;
 		
-		Cell * args = frame->unwrap();
+		ArgumentExtractor arguments = frame->extract();
 		
-		while (args != NULL) {
-			Number * number = args->head().as<Number>();
+		while (arguments) {
+			Number * number;
 			
-			if (number) {
-				total *= number->value();
-			} else {
-				throw Exception("Invalid Number Value", frame);
-			}
+			arguments = arguments(number, "right-value");
 			
-			args = args->tail().as<Cell>();
+			total *= number->value();
 		}
 		
 		return new(frame) Number(total);
