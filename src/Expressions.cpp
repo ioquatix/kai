@@ -53,7 +53,7 @@ namespace Kai {
 		self->add(new(frame) OperatorExpression);
 		self->add(new(frame) CellExpression);
 		
-		self->add(new(frame) ScopeExpression("$", "global-scope"));
+		self->add(new(frame) ScopeExpression("$", "dynamic-scope"));
 		self->add(new(frame) ScopeExpression("@", "instance-scope"));
 		
 		self->add(new(frame) ValueExpression);

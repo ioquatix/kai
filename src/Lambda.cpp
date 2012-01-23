@@ -34,6 +34,20 @@ namespace Kai {
 		traversal->traverse(_code);
 	}
 	
+	struct LambdaScope {
+		Array * _chain;
+		
+		LambdaScope(Frame * frame, Frame * scope) {
+			_chain = frame->lookup(frame->sym("dynamic-scope-chain")).as<Array>();
+			
+			_chain->value().push_back(scope);
+		}
+		
+		~LambdaScope() {
+			_chain->value().pop_back();
+		}
+	};
+	
 	Ref<Object> Lambda::evaluate(Frame * frame) {
 		Table * locals = new(frame) Table;
 		
@@ -62,12 +76,15 @@ namespace Kai {
 		locals->update(frame->sym("caller"), frame->scope());
 		locals->update(frame->sym("callee"), this);
 		
-		Frame * next = new(frame) Frame(locals, _scope);
-		
-		if (_code)
-			return _code->evaluate(next);
-		else
-			return NULL;
+		{			
+			Frame * next = new(frame) Frame(locals, _scope);
+			LambdaScope lambda_scope(frame, next);
+			
+			if (_code)
+				return _code->evaluate(next);
+			else
+				return NULL;
+		}
 	}
 	
 	void Lambda::to_code(Frame * frame, StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const {
@@ -162,6 +179,23 @@ namespace Kai {
 		return lambda;
 	}
 	
+	Ref<Object> Lambda::dynamic_scope(Frame * frame) {
+		Symbol * name;
+		
+		frame->extract()(name, "name");
+		
+		Array * chain = frame->lookup(frame->sym("dynamic-scope-chain")).as<Array>();
+		
+		for (Array::ArrayT::reverse_iterator i = chain->value().rbegin(); i != chain->value().rend(); ++i) {
+			Object * result = (*i)->lookup(frame, name);
+			
+			if (result)
+				return result;
+		}
+		
+		return NULL;
+	}
+	
 	Ref<Object> Lambda::prototype(Frame * frame) {
 		return frame->lookup(frame->sym("Lambda"));
 	}
@@ -173,10 +207,14 @@ namespace Kai {
 		prototype->update(frame->sym("is-function?"), KAI_BUILTIN_FUNCTION(Lambda::is_function));
 		prototype->update(frame->sym("to-macro"), KAI_BUILTIN_FUNCTION(Lambda::to_macro));
 		prototype->update(frame->sym("new"), KAI_BUILTIN_FUNCTION(Lambda::lambda));
-		
+				
 		frame->update(frame->sym("Lambda"), prototype);
 		frame->update(frame->sym("lambda"), KAI_BUILTIN_FUNCTION(Lambda::lambda));
 		frame->update(frame->sym("macro"), KAI_BUILTIN_FUNCTION(Lambda::macro));
+		
+		// Lexicographic stack based on nested lambda evaluations.
+		frame->update(frame->sym("dynamic-scope-chain"), new(frame) Array);
+		frame->update(frame->sym("dynamic-scope"), KAI_BUILTIN_FUNCTION(Lambda::dynamic_scope));
 	}
 
 }
