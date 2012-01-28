@@ -114,6 +114,7 @@ namespace {
 		Symbol::import(frame);
 		Cell::import(frame);
 		String::import(frame);
+		StringBuffer::import(frame);
 		Table::import(frame);
 		Lambda::import(frame);
 		Logic::import(frame);

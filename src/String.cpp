@@ -36,6 +36,15 @@ namespace Kai {
 		return frame->sym(NAME);
 	}
 	
+	// Returns a function that takes a buffer.
+	Ref<Object> String::interpolation(Frame * frame) const {
+		Ref<Cell> result, current;
+		
+		Cell::append(frame, current, frame->sym("block"), result);
+		
+		return result;
+	}
+	
 	ComparisonResult String::compare(const Object * other) const {
 		return derived_compare(this, other);
 	}
@@ -142,5 +151,61 @@ namespace Kai {
 		
 		frame->update(frame->sym("String"), prototype);
 	}
+
+#pragma mark -
+
+	const char * const StringBuffer::NAME = "StringBuffer";
+	
+	StringBuffer::StringBuffer() {
+	}
+	
+	StringBuffer::~StringBuffer () {
+	}
+	
+	Ref<Symbol> StringBuffer::identity(Frame * frame) const {
+		return frame->sym(NAME);
+	}
+	
+	void StringBuffer::append(const StringT & string) {
+		_value << string;
+	}
+	
+	StringT StringBuffer::to_string() const {
+		return _value.str();
+	}
+	
+	Ref<Object> StringBuffer::new_(Frame * frame) {
+		return new(frame) StringBuffer;
+	}
+	
+	Ref<Object> StringBuffer::append(Frame * frame) {
+		StringBuffer * self;
+		String * string;
+		
+		frame->extract()(self)(string);
+		
+		self->append(string->value());
+		
+		return self;
+	}
+	
+	Ref<Object> StringBuffer::to_string(Frame * frame) {
+		StringBuffer * self;
+		
+		frame->extract()(self);
+		
+		return new(frame) String(self->to_string());
+	}
+	
+	void StringBuffer::import(Frame * frame) {
+		Table * prototype = new(frame) Table;
+		
+		prototype->update(frame->sym("append"), KAI_BUILTIN_FUNCTION(StringBuffer::append));
+		prototype->update(frame->sym("to-string"), KAI_BUILTIN_FUNCTION(StringBuffer::to_string));
+		prototype->update(frame->sym("new"), KAI_BUILTIN_FUNCTION(StringBuffer::new_));
+		
+		frame->update(frame->sym("StringBuffer"), prototype);
+	}
+
 	
 }

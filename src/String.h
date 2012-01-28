@@ -12,7 +12,7 @@
 #include "Object.h"
 
 namespace Kai {
-	
+		
 	class String : public Object {
 	protected:
 		StringT _value;
@@ -24,6 +24,11 @@ namespace Kai {
 		virtual ~String();
 		
 		virtual Ref<Symbol> identity(Frame * frame) const;
+
+		/// Interpolates a string using the standard Kai syntax:
+		/// Print a variable/code #{foo}
+		/// Execute a loop <# [list each {|item| #>#{item}<# } #>
+		Ref<Object> interpolation(Frame * frame) const;
 		
 		StringT & value() { return _value; }
 		const StringT & value() const { return _value; }
@@ -42,6 +47,31 @@ namespace Kai {
 		static Ref<Object> each(Frame * frame);
 		
 		static void import (Frame * frame);
+	};
+
+	class StringBuffer : public Object {
+	protected:
+		StringStreamT _value;
+		
+	public:
+		static const char * const NAME;
+		
+		StringBuffer();
+		virtual ~StringBuffer();
+		
+		virtual Ref<Symbol> identity(Frame * frame) const;
+		
+		void append(const StringT & string);
+		StringT to_string() const;
+		
+		StringStreamT & value() { return _value; }
+		const StringStreamT & value() const { return _value; }
+		
+		static Ref<Object> new_(Frame * frame);
+		static Ref<Object> append(Frame * frame);
+		static Ref<Object> to_string(Frame * frame);
+		
+		static void import(Frame * frame);
 	};
 	
 }
