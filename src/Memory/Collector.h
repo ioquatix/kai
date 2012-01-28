@@ -22,7 +22,7 @@ namespace Kai {
 			Collector(PageAllocation * start);
 			virtual ~Collector();
 			
-			virtual void traverse(ObjectAllocation * object);
+			virtual void traverse(const ObjectAllocation * object);
 			
 			void collect();
 		};

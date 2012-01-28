@@ -20,7 +20,7 @@ namespace Kai {
 			
 		}
 		
-		void Collector::traverse(ObjectAllocation * object) {
+		void Collector::traverse(const ObjectAllocation * object) {
 			if (object) {
 				if (!_start->includes(object)) {
 					//std::cerr << "Couldn't traverse foreign memory: " << object << " (Potential memory leak)." << std::endl;

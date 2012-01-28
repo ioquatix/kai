@@ -47,12 +47,12 @@ namespace Kai {
 		
 	class DynamicFunction : public Object {
 		protected:
-			EvaluateFunctionT _evaluateFunction;
+			EvaluateFunctionT _evaluate_function;
 			
 		public:
 			static const char * const NAME;
 		
-			DynamicFunction(EvaluateFunctionT evaluateFunction);
+			DynamicFunction(EvaluateFunctionT evaluate_function);
 			virtual ~DynamicFunction();
 			
 			virtual Ref<Object> evaluate(Frame * frame);

@@ -30,6 +30,8 @@ namespace Kai {
 			STRING = 20,
 			NUMBER = 22,
 			DECIMAL = 24,
+			
+			HEREDOC = 30,
 						
 			WHITESPACE = 100,
 			INDENTATION = 200,
@@ -60,12 +62,12 @@ namespace Kai {
 				Token(StringIteratorT begin, StringIteratorT end, Identity identity = UNIMPORTANT);
 				Token(const Token& current, StringIteratorT end);
 				
-				bool isValid() const;
+				bool is_valid() const;
 				
 				typedef StringIteratorT Token::* safe_bool;
 			
 				operator safe_bool() const {
-					return isValid() ? &Token::_begin : 0;
+					return is_valid() ? &Token::_begin : 0;
 				}
 				
 				unsigned length() const;
@@ -91,7 +93,7 @@ namespace Kai {
 				Token& operator++() { return *this += 1; }
 				
 				const Token& operator||(const Token & other) {
-					if (this->isValid()) {
+					if (this->is_valid()) {
 						return *this;
 					} else {
 						return other;
@@ -99,10 +101,10 @@ namespace Kai {
 				}
 				
 				Identity identity() const;
-				void setIdentity(Identity identity);
+				void set_identity(Identity identity);
 				
 				Token& operator[](Identity i) {
-					setIdentity(i);
+					set_identity(i);
 					return *this;
 				}
 				
@@ -120,12 +122,12 @@ namespace Kai {
 		struct FatalParseFailure {
 			protected:
 				Token _token;
-				const char* _failureMessage;
+				const char* _failure_message;
 				
 			public:
-				FatalParseFailure (const Token & token, const char * failureMessage);
+				FatalParseFailure (const Token & token, const char * failure_message);
 				
-				void print_error (std::ostream & outp, const SourceCode & sourceCode);
+				void print_error (std::ostream & outp, const SourceCode * source_code);
 				
 				const Token & token () const;
 		};
@@ -136,9 +138,9 @@ namespace Kai {
 #pragma mark Basic Parsing Primatives
 		
 		struct Counter {
-			unsigned _min, _max, _count;
+			std::size_t _min, _max, _count;
 			
-			Counter(unsigned min = 0, unsigned max = -1);
+			Counter(std::size_t min = 0, std::size_t max = -1);
 			
 			bool update();
 			bool failed();
@@ -153,9 +155,9 @@ namespace Kai {
 			while (s != end) {
 				StringIteratorT t = s;
 				
-				Unicode::CodePointT codePoint = Unicode::next(t, end);
+				Unicode::CodePointT code_point = Unicode::next(t, end);
 				
-				if (predicate(codePoint)) {
+				if (predicate(code_point)) {
 					s = t;
 				} else {
 					break;
@@ -193,13 +195,13 @@ namespace Kai {
 		}
 		
 		template <typename PrimitiveT>
-		PrimitiveT convert(const StringT& stringValue) {
-			StringStreamT stream(stringValue);
+		PrimitiveT convert(const StringT& string_value) {
+			StringStreamT stream(string_value);
 			
-			PrimitiveT primitiveValue;
-			stream >> primitiveValue;
+			PrimitiveT primitive_value;
+			stream >> primitive_value;
 			
-			return primitiveValue;
+			return primitive_value;
 		}
 		
 		Token parse_constant(StringIteratorT begin, StringIteratorT end, const StringT & constant);
@@ -211,7 +213,7 @@ namespace Kai {
 			typedef std::vector<StringT> OperatorsT;
 			OperatorsT operators;
 			
-			Token operator()(StringIteratorT begin, StringIteratorT end) {
+			Token operator()(StringIteratorT begin, StringIteratorT end) const {
 				for (OperatorsT::const_iterator i = operators.begin(); i != operators.end(); ++i) {
 					Token t = parse_constant(begin, end, *i);
 					

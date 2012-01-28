@@ -86,11 +86,11 @@ namespace Kai {
 				return 0;
 		}
 		
-		void ObjectAllocation::retain() {
+		void ObjectAllocation::retain() const {
 			_ref_count += 1;
 		}
 		
-		void ObjectAllocation::release() {
+		void ObjectAllocation::release() const {
 			_ref_count -= 1;
 		}
 		
@@ -262,7 +262,7 @@ namespace Kai {
 #endif
 		}
 		
-		bool PageAllocation::includes(ObjectAllocation * allocation) {
+		bool PageAllocation::includes(const ObjectAllocation * allocation) {
 			KAI_ENSURE(this->_flags & FRONT);
 			
 			if (allocation >= this && allocation <= this->_back) {
@@ -272,7 +272,7 @@ namespace Kai {
 			return false;
 		}
 		
-		PageAllocation * PageAllocation::base_of(ObjectAllocation * allocation) {
+		PageAllocation * PageAllocation::base_of(const ObjectAllocation * allocation) {
 			PageAllocation * base = this;
 			
 			while (base) {

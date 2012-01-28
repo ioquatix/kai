@@ -47,6 +47,8 @@ namespace Kai {
 	
 	Ref<Object> Expressions::basic_expressions(Frame * frame) {
 		Expressions * self = new(frame) Expressions;
+		
+		self->add(new(frame) HeredocExpression);
 
 		self->add(new(frame) NumberExpression);
 		
@@ -62,16 +64,17 @@ namespace Kai {
 		self->add(new(frame) CallExpression);
 		self->add(new(frame) LambdaExpression);
 		self->add(new(frame) BlockExpression);
-				
+						
 		return self;
 	}
 	
-	ParseResult Expressions::parse (Frame * frame, const SourceCode & code, bool partial) {
-		StringT::const_iterator begin = code.begin();
-		StringT::const_iterator end = code.end();
+	ParseResult Expressions::parse (Frame * frame, const SourceCode * code, bool partial) {
+		StringIteratorT begin = code->begin();
+		StringIteratorT end = code->end();
 		
 		// Parse value
-		ParseResult result = parse(frame, this, begin, end);
+		ParseState state = {code, this, begin, begin, end};
+		ParseResult result = parse(frame, state);
 		
 		if (!partial) {
 			if (!result.token) {
@@ -94,31 +97,33 @@ namespace Kai {
 		return result;
 	}
 	
-	ParseResult Expressions::parse(Frame * frame, Expression * top, StringIteratorT begin, StringIteratorT end) {		
+	ParseResult Expressions::parse(Frame * frame, const ParseState & state) const {		
 		ParseResult result;
 		
-		// We start off with the assumption that nothing has parsed correctly.
+		// We start off with the assumption that nothing has parsed correctly:
 		ParseResult::Status status = ParseResult::FAILED;
-		Parser::Token failedToken;
+		Parser::Token failed_token;
 		
-		// Eat whitespace
-		begin = Parser::parse_whitespace(begin, end).end();
+		// Eat whitespace:
+		StringIteratorT current = Parser::parse_whitespace(state.current, state.end).end();
 		
-		if (begin < end) {
-			for (ExpressionsT::iterator iter = _expressions.begin(); iter != _expressions.end(); iter++) {				
-				result = (*iter)->parse(frame, this, begin, end);
+		if (current < state.end) {
+			// Try all expressions in order to see if any parse:
+			for (auto expression : _expressions) {
+				result = expression->parse(frame, state.next(current));
 				status |= result.status;
 								
-				if (result.isOkay()) {
-					// We have successfully parsed the expression.
+				if (result.is_okay()) {
+					// We have successfully parsed the expression:
 					status = ParseResult::OKAY;
 					break;
-				} else if (result.isFailed()) {
-					if (!failedToken)
-						failedToken = result.token;
-				} else if (result.token.end() == end) {
+				} else if (result.is_failed()) {
+					// We have failed to parse correctly with the current parser:
+					if (!failed_token)
+						failed_token = result.token;
+				} else if (result.token.end() == state.end) {
 					// We have parsed something but it wasn't successful and parsed all data up to the end.
-					// This clause details with expressions which don't return INCOMPLETE.
+					// This clause deals with expressions which don't return INCOMPLETE.
 					status |= ParseResult::INCOMPLETE;
 				}
 			}
@@ -130,7 +135,12 @@ namespace Kai {
 		result.status = status;
 		
 		if (result.status == ParseResult::FAILED) {
-			result.token = failedToken;
+			result.token = failed_token;
+		}
+		
+		// Associate the parsed data with the source code index:
+		if (result.is_okay()) {
+			SourceCodeIndex::associate(frame, result.value, state.code, result.token.begin(), result.token.end());
 		}
 		
 		return result;
@@ -144,16 +154,16 @@ namespace Kai {
 
 	Ref<Object> Expressions::parse (Frame * frame) {
 		Expressions * self;
-		String * codeString;
+		String * code_string;
 		
-		frame->extract()[self][codeString];
+		frame->extract()[self][code_string];
 		
 		try {
-			SourceCode code("<program>", codeString->value());
+			Ref<SourceCode> code = new SourceCode("<program>", code_string->value());
 			
 			return self->parse(frame, code).value;
 		} catch (Parser::FatalParseFailure & failure) {
-			throw Exception("Could not parse input", codeString, frame);
+			throw Exception("Could not parse input", code_string, frame);
 		}
 	}
 
@@ -181,8 +191,8 @@ namespace Kai {
 	
 	}
 			
-	ParseResult StringExpression::parse(Frame * frame, Expression * top, StringIteratorT begin, StringIteratorT end) {
-		Parser::Token token = Parser::parse_string(begin, end);
+	ParseResult StringExpression::parse(Frame * frame, const ParseState & state) const {
+		Parser::Token token = Parser::parse_string(state.current, state.end);
 		
 		if (token) {
 			return ParseResult(token, new(frame) String(token.value(), true));
@@ -197,8 +207,8 @@ namespace Kai {
 	
 	}
 	
-	ParseResult SymbolExpression::parse(Frame * frame, Expression * top, StringIteratorT begin, StringIteratorT end) {
-		Parser::Token token = Parser::parse_identifier(begin, end);
+	ParseResult SymbolExpression::parse(Frame * frame, const ParseState & state) const {
+		Parser::Token token = Parser::parse_identifier(state.current, state.end);
 		
 		if (token) {
 			return ParseResult(token, frame->sym(token.value().c_str()));
@@ -219,11 +229,11 @@ namespace Kai {
 	
 	}
 	
-	ParseResult ScopeExpression::parse(Frame * frame, Expression * top, StringIteratorT begin, StringIteratorT end) {
-		Parser::Token token = Parser::parse_constant(begin, end, _prefix);
+	ParseResult ScopeExpression::parse(Frame * frame, const ParseState & state) const {
+		Parser::Token token = Parser::parse_constant(state.current, state.end, _prefix);
 		
 		if (token) {
-			Parser::Token identifier = Parser::parse_identifier(token.end(), end);
+			Parser::Token identifier = Parser::parse_identifier(token.end(), state.end);
 			
 			if (identifier) {
 				token &= identifier;
@@ -253,8 +263,8 @@ namespace Kai {
 	
 	}
 	
-	ParseResult OperatorExpression::parse(Frame * frame, Expression * top, StringIteratorT begin, StringIteratorT end) {
-		Parser::Token token = _operators(begin, end);
+	ParseResult OperatorExpression::parse(Frame * frame, const ParseState & state) const {
+		Parser::Token token = _operators(state.current, state.end);
 		
 		if (token) {
 			return ParseResult(token, frame->sym(token.value().c_str()));
@@ -269,10 +279,10 @@ namespace Kai {
 	
 	}
 	
-	ParseResult NumberExpression::parse(Frame * frame, Expression * top, StringIteratorT begin, StringIteratorT end) {
+	ParseResult NumberExpression::parse(Frame * frame, const ParseState & state) const {
 		Parser::Token token;
 		
-		token = Parser::parse_hexadecimal(begin, end);
+		token = Parser::parse_hexadecimal(state.current, state.end);
 		
 		if (token) {
 			Math::Integer value(token.value(), 16);
@@ -280,7 +290,7 @@ namespace Kai {
 			return ParseResult(token, new(frame) Integer(value));
 		}
 		
-		token = Parser::parse_decimal(begin, end);
+		token = Parser::parse_decimal(state.current, state.end);
 		
 		if (token) {
 			Math::Number value(token.value());
@@ -289,7 +299,7 @@ namespace Kai {
 		}
 		
 		/*
-		token = Parser::parse_integer(begin, end);
+		token = Parser::parse_integer(state.current, state.end);
 		
 		if (token) {
 			Math::Integer value(token.value(), 10);
@@ -311,7 +321,7 @@ namespace Kai {
 	
 	}
 	
-	Ref<Object> CellExpression::convert_to_result(Frame * frame, Cell * items) {
+	Ref<Object> CellExpression::convert_to_result(Frame * frame, Cell * items) const {
 		return items;
 	}
 
@@ -319,64 +329,64 @@ namespace Kai {
 	
 	}
 	
-	ParseResult CellExpression::parse_header(Frame * frame, Expression * top, StringIteratorT begin, StringIteratorT end) {
+	ParseResult CellExpression::parse_header(Frame * frame, const ParseState & state) const {
 		return ParseResult(ParseResult::FAILED);
 	}
 	
-	ParseResult CellExpression::parse(Frame * frame, Expression * top, StringIteratorT begin, StringIteratorT end) {
-		Parser::Token t(begin, Parser::CELL);
+	ParseResult CellExpression::parse(Frame * frame, const ParseState & state) const {
+		Parser::Token t(state.current, Parser::CELL);
 		Ref<Cell> first, list;
 		
 		ParseResult::Status status = ParseResult::OKAY;
 		
-		Parser::Token failedToken;
+		Parser::Token failed_token;
 		
-		if (t &= Parser::parse_constant(t.end(), end, _open)) {
+		if (t &= Parser::parse_constant(t.end(), state.end, _open)) {
 			bool header = _header;
 			
 			while (true) {
 				ParseResult result;
 				
 				if (header) {
-					result = parse_header(frame, top, t.end(), end);
+					result = parse_header(frame, state.next(t.end()));
 					header = false;
 				} else {
 					// Eat any whitespace before the expression because otherwise if the expression fails to parse we might
 					// be left with erroneous whitespace..
-					t += Parser::parse_whitespace(t.end(), end);
+					t += Parser::parse_whitespace(t.end(), state.end);
 					
-					result = top->parse(frame, top, t.end(), end);
+					result = state.top->parse(frame, state.next(t.end()));
 				}
 				
 				status |= result.status;
 				
-				if (result.isOkay()) {
+				if (result.is_okay()) {
 					list = Cell::append(frame, list, result.value, first);
 					t << result.token;
 				} else {
-					if (result.isFailed()) {
+					if (result.is_failed()) {
 						if (result.token)
 							// Take the token from the embedded expression.
-							failedToken = result.token;
+							failed_token = result.token;
 						else
 							// Build a token from the failed expression.
-							failedToken = Parser::Token(t.end(), end);
+							failed_token = Parser::Token(t.end(), state.end);
 					}
 				
 					break;
 				}
 				
-				t += Parser::parse_whitespace(t.end(), end);
+				t += Parser::parse_whitespace(t.end(), state.end);
 			}
 			
-			t &= Parser::parse_constant(t.end(), end, _close);
+			t &= Parser::parse_constant(t.end(), state.end, _close);
 			
 			// If the list is parsed correctly, token will be valid.
 			// Otherwise, it is either failed or incomplete.
 			if (t || status == ParseResult::OKAY) {
 				return ParseResult(t, convert_to_result(frame, first), ParseResult::OKAY);
 			} else {
-				return ParseResult(failedToken, NULL, status);
+				return ParseResult(failed_token, NULL, status);
 			}
 		}
 		
@@ -389,13 +399,15 @@ namespace Kai {
 	
 	}
 	
-	ParseResult ValueExpression::parse(Frame * frame, Expression * top, StringIteratorT begin, StringIteratorT end) {
-		Parser::Token token = Parser::parse_constant(begin, end, "`");
-		if (!token) return ParseResult(token);
+	ParseResult ValueExpression::parse(Frame * frame, const ParseState & state) const {
+		Parser::Token token = Parser::parse_constant(state.current, state.end, "`");
 		
-		ParseResult body = top->parse(frame, top, token.end(), end);
+		if (!token)
+			return ParseResult(token);
+		
+		ParseResult body = state.top->parse(frame, state.next(token.end()));
 			
-		if (body.isOkay()) {
+		if (body.is_okay()) {
 			return ParseResult(body.token, Cell::create(frame)(frame->sym("value"))(body.value));
 		}
 		
@@ -414,7 +426,7 @@ namespace Kai {
 	
 	}
 
-	Ref<Object> CallExpression::convert_to_result(Frame * frame, Cell * items) {
+	Ref<Object> CallExpression::convert_to_result(Frame * frame, Cell * items) const {
 		return Cell::create(frame)
 			(frame->sym("call"))
 			(items->head())
@@ -437,7 +449,7 @@ namespace Kai {
 	
 	}
 			
-	Ref<Object> BlockExpression::convert_to_result(Frame * frame, Cell * items)
+	Ref<Object> BlockExpression::convert_to_result(Frame * frame, Cell * items) const
 	{
 		return new(frame) Cell(frame->sym("block"), items);
 	}
@@ -452,24 +464,24 @@ namespace Kai {
 		
 	}
 	
-	ParseResult LambdaExpression::parse_header(Frame * frame, Expression * top, StringIteratorT begin, StringIteratorT end) {
+	ParseResult LambdaExpression::parse_header(Frame * frame, const ParseState & state) const {
 		SymbolExpression symbol_expression;
 		
-		Parser::Token t(begin, Parser::CELL);
+		Parser::Token t(state.current, Parser::CELL);
 		Ref<Cell> first, list;
 		
-		if (t &= Parser::parse_constant(t.end(), end, "|")) {
+		if (t &= Parser::parse_constant(t.end(), state.end, "|")) {
 			while (1) {
-				Parser::Token q = Parser::parse_constant(t.end(), end, "|");
+				Parser::Token q = Parser::parse_constant(t.end(), state.end, "|");
 				
 				if (q) {
 					t &= q;
 					
 					return ParseResult(t, first);
 				} else {
-					ParseResult result = symbol_expression.parse(frame, top, t.end(), end);
+					ParseResult result = symbol_expression.parse(frame, state.next(t.end()));
 					
-					if (result.isOkay()) {
+					if (result.is_okay()) {
 						list = Cell::append(frame, list, result.value, first);
 						t << result.token;
 					} else {
@@ -480,14 +492,14 @@ namespace Kai {
 					}
 				}
 				
-				t += Parser::parse_whitespace(t.end(), end);
+				t += Parser::parse_whitespace(t.end(), state.end);
 			}
 		} else {
 			return ParseResult();
 		}
 	}
 	
-	Ref<Object> LambdaExpression::convert_to_result(Frame * frame, Cell * items) {
+	Ref<Object> LambdaExpression::convert_to_result(Frame * frame, Cell * items) const {
 		KAI_ENSURE(items);
 		
 		Object * arguments = items->head();
@@ -502,5 +514,29 @@ namespace Kai {
 		}
 		
 		return Cell::create(frame)(frame->sym("lambda"))(arguments)(body);
+	}
+	
+#pragma mark -
+		
+	HeredocExpression::HeredocExpression() {
+		
+	}
+	
+	HeredocExpression::~HeredocExpression() {
+		
+	}
+	
+	ParseResult HeredocExpression::parse(Frame * frame, const ParseState & state) const {
+		Parser::Token result = Parser::parse_heredoc(state.current, state.end);
+		
+		if (result) {			
+			Parser::Token identifier = result.children().at(0);
+			Parser::Token body = result.children().at(1);
+			Parser::Token indentation = result.children().at(2).children().at(0);
+			
+			return ParseResult(result, Cell::create(frame)(frame->sym("heredoc"))(frame->sym(identifier.value().c_str()))(new(frame) String(indentation.value()))(new(frame) String(body.value())));
+		} else {
+			return ParseResult(result);
+		}
 	}
 }

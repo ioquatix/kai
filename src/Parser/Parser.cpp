@@ -29,7 +29,7 @@ namespace Kai {
 			Token t(begin, COMMENTS);
 			
 			if (t &= parse_constant(t.end(), end, SINGLE_LINE_COMMENT)) {
-				t += parse_characters(t.end(), end, &Unicode::isNotNewline);
+				t += parse_characters(t.end(), end, &Unicode::is_not_newline);
 			}
 			
 			return t;
@@ -81,9 +81,9 @@ namespace Kai {
 			StringIteratorT cur = begin;
 			
 			while (true) {
-				t += parse_characters(t.end(), end, Unicode::isWhitespace);
+				t += parse_characters(t.end(), end, Unicode::is_whitespace_or_newline);
 				t += parse_comment(t.end(), end);
-				t += parse_characters(t.end(), end, Unicode::isWhitespace);
+				t += parse_characters(t.end(), end, Unicode::is_whitespace_or_newline);
 				
 				if (t.end() == cur)
 					break;
@@ -97,7 +97,7 @@ namespace Kai {
 		Token parse_integer (StringIteratorT begin, StringIteratorT end) {
 			Token t(begin, NUMBER);
 			
-			t &= parse_characters(t.end(), end, Unicode::isNumeric);
+			t &= parse_characters(t.end(), end, Unicode::is_numeric);
 			
 			return t;
 		}
@@ -109,9 +109,9 @@ namespace Kai {
 			
 			t += parse_constant(t.end(), end, "-");
 			
-			if (t &= parse_characters(t.end(), end, Unicode::isNumeric)) {
+			if (t &= parse_characters(t.end(), end, Unicode::is_numeric)) {
 				if ((u = parse_constant(t.end(), end, Number_POINT))) {
-					u &= parse_characters(u.end(), end, Unicode::isNumeric);
+					u &= parse_characters(u.end(), end, Unicode::is_numeric);
 					
 					if (u)
 						t += u;
@@ -127,7 +127,7 @@ namespace Kai {
 			Token t(begin, NUMBER);
 			
 			if (t &= parse_constant(t.end(), end, PREFIX)) {
-				return parse_characters(t.end(), end, Unicode::isHexadecimal);
+				return parse_characters(t.end(), end, Unicode::is_hexadecimal);
 			}
 			
 			return t;
@@ -160,16 +160,16 @@ namespace Kai {
 			return t;
 		}
 		
-		bool is_identifier_start (Unicode::CodePointT codePoint) {
-			return Unicode::isLetter(codePoint) || codePoint == '_';
+		bool is_identifier_start (Unicode::CodePointT code_point) {
+			return Unicode::is_letter(code_point) || code_point == '_';
 		}
 		
-		bool is_identifier_middle (Unicode::CodePointT codePoint) {
-			return Unicode::isLetter(codePoint) || Unicode::isAlphaNumeric(codePoint) || codePoint == '_' || codePoint == '-';
+		bool is_identifier_middle (Unicode::CodePointT code_point) {
+			return Unicode::is_letter(code_point) || Unicode::is_alpha_numeric(code_point) || code_point == '_' || code_point == '-';
 		}
 		
-		bool is_identifier_end (Unicode::CodePointT codePoint) {
-			return codePoint == '?' || codePoint == '!' || codePoint == '=';
+		bool is_identifier_end (Unicode::CodePointT code_point) {
+			return code_point == '?' || code_point == '!' || code_point == '=';
 		}
 	
 		// Parses a variable name
@@ -185,5 +185,58 @@ namespace Kai {
 			return t;
 		}
 		
+		Token parse_heredoc(StringIteratorT begin, StringIteratorT end) {
+			Token start = parse_constant(begin, end, "<-");
+			
+			if (start) {
+				Token identifier = parse_identifier(start.end(), end);
+				
+				if (identifier) {
+					Token eol = parse_constant(identifier.end(), end, "\n");
+					
+					if (eol) {
+						// Setup the buffer to contain the body of the heredoc:
+						Token buffer(eol.end());
+						
+						// This identifier will finish the heredoc:
+						std::string eof_string = identifier.value();
+						
+						// Consume text until we encounter the eof_string on a line with only whitespace preceeding it:
+						while (buffer.end() != end) {
+							Token line(buffer.end());
+							line << parse_characters(line.end(), end, &Unicode::is_whitespace, Counter(0));
+							
+							Token eof = parse_constant(line.end(), end, eof_string);
+							if (eof) {
+								// Return the identifier, buffer, eof marker and indentation.
+								start << identifier;
+								start << buffer;
+								
+								line << eof;
+								start << line;
+								
+								return start;
+							}
+							
+							line += parse_characters(line.end(), end, &Unicode::is_not_newline);
+							
+							// TODO: What happens if this fails!?
+							line += parse_constant(line.end(), end, "\n");
+							
+							buffer += line;
+						}
+						
+						// We never encountered the end of the heredoc:
+						throw FatalParseFailure(buffer, "Unterminated heredoc");
+					} else {
+						return eol;
+					}
+				} else {
+					return identifier;
+				}
+			} else {
+				return start;
+			}
+		}
 	}
 }

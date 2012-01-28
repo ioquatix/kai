@@ -89,30 +89,6 @@ namespace Kai {
 		::kill(_pid, signal);
 	}
 	
-	/*
-	TermInfo * TermInfo::parse(std::istream & buffer)
-	{
-		
-	}
-	
-	TermInfo * TermInfo::currentTerminal()
-	{
-		int pid = fork();
-		
-		if (pid == 0) {
-			// Child
-		} else {
-			int status = 0;
-			waitpid(pid, &status, 0);
-		}
-	}
-	
-	TermInfo * TermInfo::forTerminal(StringT name)
-	{
-		
-	}
-	 */
-	
 	Terminal::Terminal(FileDescriptorT in, FileDescriptorT out, FileDescriptorT error) : _in(in), _out(out), _error(error) 
 	{
 		memset(&_settings, 0, sizeof(struct termios));
@@ -123,22 +99,22 @@ namespace Kai {
 		
 	}
 
-	bool Terminal::isTTY () const
+	bool Terminal::is_tty () const
 	{
 		return isatty(_in);
 	}
 
-	void Terminal::getCurrentSettings ()
+	void Terminal::current_settings ()
 	{
 		KAI_ENSURE(tcgetattr(_in, &_settings) == 0);
 	}
 
-	void Terminal::updateTerminalSettings (int optional_actions) const
+	void Terminal::update_settings (int optional_actions) const
 	{
 		KAI_ENSURE(tcsetattr(_in, optional_actions, &_settings) == 0);
 	}
 
-	void Terminal::updateFlags (unsigned flags, bool state)
+	void Terminal::update_flags (unsigned flags, bool state)
 	{
 		if (state)
 			_settings.c_lflag |= flags;
@@ -146,14 +122,14 @@ namespace Kai {
 			_settings.c_lflag &= ~flags;
 	}
 	
+	/*
 	std::string Terminal::color(int foreground, int background, int attributes)
 	{
 		std::stringstream buffer;
-		
 		buffer << "\e[" << attributes << ";" << (30 + foreground) << ";" << (40 + background) << "m";
-		
 		return buffer.str();
 	}
+	*/
 	
 	IEditor::~IEditor()
 	{
@@ -169,12 +145,12 @@ namespace Kai {
 	{
 	}
 			
-	bool TerminalEditor::readInput (StringT & buffer)
+	bool TerminalEditor::read_input (StringT & buffer)
 	{
-		return readInput(buffer, _prompt);
+		return read_input(buffer, _prompt);
 	}
 	
-	bool TerminalEditor::readInput (StringT & buffer, StringT & prompt)
+	bool TerminalEditor::read_input (StringT & buffer, StringT & prompt)
 	{
 		std::cout << prompt;
 		
@@ -196,25 +172,20 @@ namespace Kai {
 		return !feof(stdin);
 	}
 	
-	bool TerminalEditor::readInput (StringStreamT & buffer, IEditor & editor)
+	bool TerminalEditor::read_input (StringStreamT & buffer, IEditor & editor)
 	{
-		StringT prompt = editor.firstPrompt();
+		StringT prompt = editor.first_prompt();
 		
 		do {
 			StringT input = "";
 			
-			if (!readInput(input, prompt))
+			if (!read_input(input, prompt))
 				return false;
 			
 			buffer << input << std::endl;
 		} while (!editor.is_complete(buffer, prompt));
 		
 		return true;
-	}
-	
-	void TerminalEditor::writeOutput (StringT buffer)
-	{
-		std::cout << buffer << std::endl;
 	}
 	
 #pragma mark -
@@ -230,7 +201,7 @@ namespace Kai {
 	{
 	}
 	
-	StringT BasicEditor::firstPrompt()
+	StringT BasicEditor::first_prompt()
 	{
 		return "kai> ";
 	}
@@ -239,7 +210,7 @@ namespace Kai {
 	{
 		ParseResult result;
 		
-		SourceCode code("<editor>", buffer.str());
+		SourceCode * code = new(_expressions) SourceCode("<editor>", buffer.str());
 		prompt = "";
 		
 		try {
@@ -248,7 +219,7 @@ namespace Kai {
 			return false;
 		}
 		
-		if (result.isIncomplete()) {
+		if (result.is_incomplete()) {
 			return false;
 		} else {
 			// FAILED or OKAY

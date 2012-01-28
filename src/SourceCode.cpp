@@ -14,6 +14,8 @@
 #include "Function.h"
 #include "Table.h"
 #include "String.h"
+#include "Symbol.h"
+#include "Unicode.h"
 #include <fstream>
 
 namespace Kai {
@@ -23,24 +25,24 @@ namespace Kai {
 		
 	}
 
-	SourceCode::SourceCode (const PathT & sourceFilePath)
+	SourceCode::SourceCode (const PathT & source_file_path)
 	{
-		std::ifstream ifs(sourceFilePath.c_str());
+		std::ifstream ifs(source_file_path.c_str());
 		
 		if (!ifs)
-			throw SourceFileUnreadableError(sourceFilePath);
+			throw SourceFileUnreadableError(source_file_path);
 		
-		_inputName = sourceFilePath;
+		_input_name = source_file_path;
 		
 		_buffer = StringT((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
 		
-		calculateLineOffsets();
+		calculate_line_offsets();
 	}
 	
-	SourceCode::SourceCode (const StringT & inputName, const StringT & sourceCode)
-		: _inputName(inputName), _buffer(sourceCode)
+	SourceCode::SourceCode (const StringT & input_name, const StringT & source_code)
+		: _input_name(input_name), _buffer(source_code)
 	{
-		calculateLineOffsets();
+		calculate_line_offsets();
 	}
 	
 	SourceCode::~SourceCode()
@@ -48,86 +50,65 @@ namespace Kai {
 		
 	}
 	
-	StringT SourceCode::inputName () const {
-		return _inputName;
+	StringT SourceCode::input_name () const {
+		return _input_name;
 	}
 	
-	bool isLineBreak (const StringT & buffer, unsigned offset) {
-		if (buffer[offset] == '\r') {
-			if (buffer[offset] == '\n') {
-				return 2;
-			}
-			
-			return 1;
-		}
+	void SourceCode::calculate_line_offsets () {
+		StringIteratorT current = _buffer.begin();
+		StringIteratorT eol = current;
 		
-		 if (buffer[offset] == '\n') {
-			if (buffer[offset] == '\r') {
-				return 2;
-			}
+		while (current != _buffer.end()) {
+			Unicode::CodePointT code_point = Unicode::next(current, _buffer.cend());
 			
-			return 1;
-		}
-		
-		return 0;
-	}
-	
-	void SourceCode::calculateLineOffsets () {
-		unsigned offset = 0, lineEnding;
-		LineIndex li;
-		li.offset = 0;
-		li.length = 0;
-	
-		while (offset < _buffer.size()) {
-			lineEnding = isLineBreak(_buffer, offset);
-			
-			if (lineEnding) {
-				li.length = offset - li.offset;
-				_lineOffsets.push_back(li);
+			if (Unicode::is_newline(code_point)) {
+				LineIndex line_index = {eol - _buffer.begin(), current - eol};
 				
-				offset += lineEnding;
-				li.offset = offset;
-			} else {
-				offset += 1;
+				// We have processed one whole line:
+				_line_offsets.push_back(line_index);
+				
+				// Technically this points to the beginning of the next line, not the newline itself:
+				eol = current;
 			}
 		}
 		
-		if (offset > li.offset) {
-			// File does not finish with newline
-			li.length = offset - li.offset;
-			_lineOffsets.push_back(li);
-		}
+		// The file may not end with a newline, in which case we need to create a line for the trailing characters:
+		if (eol != _buffer.end()) {
+			LineIndex line_index = {eol - _buffer.begin(), _buffer.end() - eol};
+			
+			_line_offsets.push_back(line_index);
+		}		
 	}
 	
-	unsigned SourceCode::numberOfLines () const {
-		return _lineOffsets.size();
+	std::size_t SourceCode::number_of_lines () const {
+		return _line_offsets.size();
 	}
 	
-	unsigned SourceCode::lineForOffset (unsigned offset) const {
+	SourceCode::LineT SourceCode::line_for_offset (std::size_t offset) const {
 		if (offset > _buffer.size()) {
 			std::cerr << "Offset: " << offset << " bigger than buffer size: " << _buffer.size() << std::endl;
 			throw InvalidOffset();
 		}
 		
-		unsigned min = 0;
-		unsigned max = _lineOffsets.size();
+		std::size_t min = 0;
+		std::size_t max = _line_offsets.size();
 		
 		// Is this a hack?
 		if (max == 0)
 			return 0;
 		
-		// We should converge on the correct line in log(_lineOffsets.size()) iterations.
+		// We should converge on the correct line in log(_line_offsets.size()) iterations.
 		while (true) {
-			unsigned length = (max - min);
-			unsigned line = min + (length >> 1);
+			std::size_t length = (max - min);
+			std::size_t line = min + (length >> 1);
 
 			// Short circuit - we have converged to a single possible result
 			//if (length == 1)
 			//	return line;
 			
-			if (offset < _lineOffsets[line].offset) {
+			if (offset < _line_offsets[line].offset) {
 				max = line;
-			} else if (line+1 < max && offset >= _lineOffsets[line+1].offset) {
+			} else if (line+1 < max && offset >= _line_offsets[line+1].offset) {
 				min = line;
 			} else {
 				return line;
@@ -135,33 +116,33 @@ namespace Kai {
 		}
 	}
 	
-	unsigned SourceCode::offsetForLine (unsigned line) const {
-		if (line >= numberOfLines())
+	std::size_t SourceCode::offset_for_line (LineT line) const {
+		if (line >= number_of_lines())
 			throw InvalidLine();
 	
-		return _lineOffsets[line].offset;
+		return _line_offsets[line].offset;
 	}
 	
-	StringT SourceCode::stringForLine (unsigned line) const {
-		if (line >= numberOfLines())
+	StringT SourceCode::string_for_line (LineT line) const {
+		if (line >= number_of_lines())
 			throw InvalidLine();
 		
-		LineIndex li = _lineOffsets[line];
+		LineIndex li = _line_offsets[line];
 		
 		return StringT(&_buffer[li.offset], &_buffer[li.offset + li.length]);
 	}
 	
-	std::vector<StringT> SourceCode::stringsForLines (unsigned firstLine, unsigned lastLine) const {
+	std::vector<StringT> SourceCode::strings_for_lines (unsigned first_line, unsigned last_line) const {
 		std::vector<StringT> strings;
 		
-		for (unsigned line = firstLine; line <= lastLine; line += 1) {
-			strings.push_back(stringForLine(line));
+		for (unsigned line = first_line; line <= last_line; line += 1) {
+			strings.push_back(string_for_line(line));
 		}
 		
 		return strings;
 	}
 	
-	unsigned SourceCode::offsetForIterator (StringIteratorT it) const {
+	std::size_t SourceCode::offset_for_iterator (StringIteratorT it) const {
 		return it - _buffer.begin();
 	}
 	
@@ -179,7 +160,7 @@ namespace Kai {
 
 	void SourceCode::to_code(Frame * frame, StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const
 	{
-		buffer << "<SourceCode@" << this << "input_name=" << inputName() << " number_of_lines=" << numberOfLines() << ">";
+		buffer << "<SourceCode@" << this << "input_name=" << input_name() << " number_of_lines=" << number_of_lines() << ">";
 	}
 	
 	Ref<Object> SourceCode::evaluate (Frame * frame)
@@ -193,7 +174,7 @@ namespace Kai {
 		Integer * offset;
 		frame->extract()(source_code)(offset);
 		
-		//source_code->lineForOffset(offset->value().to<unsigned>)
+		//source_code->line_for_offset(offset->value().to<unsigned>)
 		
 		return NULL;
 	}
@@ -231,7 +212,7 @@ namespace Kai {
 		SourceCode * source_code;
 		frame->extract()(source_code);
 		
-		return new(frame) String(source_code->inputName());
+		return new(frame) String(source_code->input_name());
 	}
 	
 	Ref<Object> SourceCode::count(Frame * frame)
@@ -239,11 +220,11 @@ namespace Kai {
 		SourceCode * source_code;
 		frame->extract()(source_code);
 		
-		return new(frame) Integer(source_code->numberOfLines());
+		return new(frame) Integer(source_code->number_of_lines());
 	}
 	
-	Ref<Object> SourceCode::prototype(Frame * frame) {
-		return frame->lookup(frame->sym("SourceCode"));
+	Ref<Symbol> SourceCode::identity(Frame * frame) const {
+		return frame->sym("SourceCode");
 	}
 		
 	/// Import the global prototype and associated functions into an execution context.
@@ -262,4 +243,62 @@ namespace Kai {
 		frame->update(frame->sym("SourceCode"), prototype);
 	}
 
+#pragma mark -
+	
+	void SourceCodeIndex::mark(Memory::Traversal * traversal) const {
+		for (auto association : _associations) {
+			traversal->traverse(association.first);
+			traversal->traverse(association.second.source_code);
+		}
+	}
+	
+	SourceCodeIndex * SourceCodeIndex::fetch(Frame * frame) {
+		return frame->lookup(frame->sym("source-code-index")).as<SourceCodeIndex>();
+	}
+	
+	const SourceCodeIndex::Association * SourceCodeIndex::lookup(Object * object) {
+		auto result = _associations.find(object);
+		
+		if (result != _associations.end()) {
+			return &result->second;
+		}
+		
+		return NULL;
+	}
+	
+	const SourceCodeIndex::Association * SourceCodeIndex::lookup(Frame * frame, Object * object) {
+		SourceCodeIndex * source_code_index = fetch(frame);
+		
+		if (source_code_index) {
+			return source_code_index->lookup(object);
+		}
+		
+		return NULL;
+	}
+	
+	void SourceCodeIndex::associate(Object * object, const SourceCode * source_code, StringIteratorT begin, StringIteratorT end) {
+		Association association = {source_code, begin, end};
+		_associations[object] = association;
+	}
+	
+	void SourceCodeIndex::associate(Frame * frame, Object * object, const SourceCode * source_code, StringIteratorT begin, StringIteratorT end) {
+		SourceCodeIndex * source_code_index = fetch(frame);
+		
+		if (source_code_index) {
+			source_code_index->associate(object, source_code, begin, end);
+		}
+	}
+	
+	Ref<Symbol> SourceCodeIndex::identity(Frame * frame) const {
+		return frame->sym("SourceCodeIndex");
+	}
+	
+	void SourceCodeIndex::import (Frame * frame) {
+		Table * prototype = new(frame) Table;
+		
+		SourceCodeIndex * source_code_index = new(frame) SourceCodeIndex;
+		frame->update(frame->sym("source-code-index"), source_code_index);
+		
+		frame->update(frame->sym("SourceCodeIndex"), prototype);
+	}
 }

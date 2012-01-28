@@ -83,6 +83,8 @@ namespace Kai {
 		/// Given a stack frame, apply the function to the arguments.
 		Ref<Object> apply();
 		
+		void at(Object * object);
+		
 	public:
 		static const char * const NAME;
 		

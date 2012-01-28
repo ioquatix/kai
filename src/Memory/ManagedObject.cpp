@@ -21,6 +21,8 @@ namespace Kai {
 		
 		ManagedObject & ManagedObject::operator=(ManagedObject & other) {
 			// Don't copy memory management meta-data.
+			
+			return *this;
 		}
 		
 		ManagedObject::~ManagedObject() {

@@ -14,6 +14,7 @@
 #include "Number.h"
 #include "String.h"
 #include "Symbol.h"
+#include "SourceCode.h"
 
 //#define KAI_DEBUG
 
@@ -327,6 +328,17 @@ namespace Kai {
 		
 		return args->extract(this);
 	}
+	
+	void Frame::at(Object * object) {
+		const SourceCodeIndex::Association * association = SourceCodeIndex::lookup(this, object);
+		
+		if (association) {
+			SourceCode::Segment segment = association->segment();
+			std::string first_line = association->source_code->string_for_line(segment.begin.line);
+			
+			std::cerr << "\t\t At: " << association->source_code->input_name() << "[" << segment.begin.line << ":" << segment.begin.offset << "]: " << first_line << std::endl;
+		}
+	}
 
 	void Frame::debug(bool ascend) {
 		Frame * cur = this;
@@ -343,7 +355,9 @@ namespace Kai {
 			
 
 			std::cerr << "\t Function: " << Object::to_string(this, cell.head()) << std::endl;
+			at(cell.head());
 			std::cerr << "\t Message: " << Object::to_string(this, _message) << std::endl;
+			at(_message);
 			
 #ifdef KAI_DEBUG
 			if (cur->arguments()) {

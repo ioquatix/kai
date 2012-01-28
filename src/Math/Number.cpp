@@ -25,6 +25,7 @@ namespace Kai {
 				_negative = true;
 				_value = (value * -1);
 			} else {
+				_negative = false;
 				_value = value;
 			}
 		}
@@ -39,6 +40,8 @@ namespace Kai {
 			if (value[i] == '-') {
 				_negative = true;
 				i += 1;
+			} else {
+				_negative = false;
 			}
 			
 			// Remove the Number point and calculate the size of the fractional component:

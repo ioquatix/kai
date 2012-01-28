@@ -12,7 +12,7 @@
 
 namespace Kai {
 	namespace Parser {
-		const char* nameForIdentity(Identity identity) {
+		const char* name_for_identity(Identity identity) {
 			switch(identity) {
 			case UNIMPORTANT:
 				return "-----";
@@ -44,10 +44,10 @@ namespace Kai {
 		}
 	
 		void Token::add(const Token& other, bool merge) {
-			if (other.begin() < _begin || !isValid())
+			if (other.begin() < _begin || !is_valid())
 				_begin = other.begin();
 			
-			if (other.end() > _end || !isValid())
+			if (other.end() > _end || !is_valid())
 				_end = other.end();
 			
 			// Insert the children of the token in at some point:
@@ -70,37 +70,36 @@ namespace Kai {
 		Token::Token(const Token& current, StringIteratorT end) : _invalid(false), _begin(current.begin()), _end(end), _identity(UNIMPORTANT) {
 		}
 		
-		bool Token::isValid() const {
+		bool Token::is_valid() const {
 			return !_invalid;
 		}
 		
 		unsigned Token::length() const {
-			if (isValid())
+			if (is_valid())
 				return _end - _begin;
 			else
 				return 0;
 		}
 		
 		StringT Token::value() const {
-			if (isValid())
+			if (is_valid())
 				return StringT(_begin, _end);
 			else
 				return "";
 		}
 		
 		const Token& Token::operator<<(const Token& other) {
-			if (isValid() && other.isValid()) {
+			if (is_valid() && other.is_valid()) {
 				add(other, false);
 			} else {
-				// Become invalid
-				_begin = _end = StringIteratorT();
+				_invalid = true;
 			}
 			
 			return *this;
 		}
 		
 		const Token& Token::operator+=(const Token& other) {
-			if (isValid() && other.isValid()) {
+			if (is_valid() && other.is_valid()) {
 				add(other, true);
 				
 				return *this;
@@ -110,7 +109,7 @@ namespace Kai {
 		}
 		
 		const Token& Token::operator|=(const Token& other) {
-			if (!this->isValid()) {
+			if (!this->is_valid()) {
 				*this += other;
 			}
 			
@@ -118,7 +117,7 @@ namespace Kai {
 		}
 		
 		const Token& Token::operator&=(const Token& other) {
-			if (other.isValid()) {
+			if (other.is_valid()) {
 				add(other, true);
 			} else {
 				_invalid = true;
@@ -137,7 +136,7 @@ namespace Kai {
 			return _identity;
 		}
 		
-		void Token::setIdentity(Identity identity) {
+		void Token::set_identity(Identity identity) {
 			_identity = identity;
 		}
 		
@@ -164,9 +163,9 @@ namespace Kai {
 		void Token::print_tree(std::ostream& outp, unsigned indent) const {
 			//if (_identity != 0) {
 				//if (terminal()) {
-					outp << StringT(indent, '\t') << nameForIdentity(_identity) << " : '" << value() << "'" << std::endl;
+					outp << StringT(indent, '\t') << name_for_identity(_identity) << " : '" << value() << "'" << std::endl;
 				//} else {
-				//	outp << StringT(indent, '\t') << nameForIdentity(_identity) << " : " << std::endl;
+				//	outp << StringT(indent, '\t') << name_for_identity(_identity) << " : " << std::endl;
 				//}
 			//}
 			
@@ -176,7 +175,7 @@ namespace Kai {
 		}
 		
 		void Token::debug() const {
-			if (isValid()) {
+			if (is_valid()) {
 				std::cout << "Token: '" << value() << "'" << std::endl;
 			} else {
 				std::cout << "Token: Invalid" << std::endl;
@@ -185,8 +184,8 @@ namespace Kai {
 			print_tree(std::cerr, 0);
 		}
 		
-		FatalParseFailure::FatalParseFailure (const Token& token, const char * failureMessage) 
-			: _token(token), _failureMessage(failureMessage)
+		FatalParseFailure::FatalParseFailure (const Token& token, const char * failure_message) 
+			: _token(token), _failure_message(failure_message)
 		{
 
 		}
@@ -224,24 +223,24 @@ namespace Kai {
 			print_indicator_line(whitespace, outp, 0, size);
 		}
 		
-		void FatalParseFailure::print_error(std::ostream& outp, const SourceCode & sourceCode) {			
-			unsigned firstOffset = sourceCode.offsetForIterator(_token.begin());
-			unsigned lastOffset = sourceCode.offsetForIterator(_token.end());
+		void FatalParseFailure::print_error(std::ostream& outp, const SourceCode * source_code) {			
+			unsigned first_offset = source_code->offset_for_iterator(_token.begin());
+			unsigned last_offset = source_code->offset_for_iterator(_token.end());
 			
 			// Empty source code?
-			if (firstOffset >= sourceCode.size() || lastOffset > sourceCode.size()) {
+			if (first_offset >= source_code->size() || last_offset > source_code->size()) {
 				return;
 			}
 			
-			unsigned firstLine = sourceCode.lineForOffset(firstOffset);
-			unsigned lastLine = sourceCode.lineForOffset(lastOffset);
+			unsigned first_line = source_code->line_for_offset(first_offset);
+			unsigned last_line = source_code->line_for_offset(last_offset);
 			
-			unsigned firstLineStart = sourceCode.offsetForLine(firstLine);
-			unsigned lastLineStart = sourceCode.offsetForLine(lastLine);
+			unsigned first_line_start = source_code->offset_for_line(first_line);
+			unsigned last_line_start = source_code->offset_for_line(last_line);
 			
-			std::vector<StringT> strings = sourceCode.stringsForLines(firstLine, lastLine);
+			std::vector<StringT> strings = source_code->strings_for_lines(first_line, last_line);
 
-			outp << sourceCode.inputName() << ":" << firstLine << " " << _failureMessage << std::endl;
+			outp << source_code->input_name() << ":" << first_line << " " << _failure_message << std::endl;
 			
 			if (strings.size() == 0) {
 				// Ignore this case - no lines to print
@@ -252,10 +251,10 @@ namespace Kai {
 				if (length == 0)
 					length = 1;
 				
-				print_indicator_line(strings[0], outp, firstOffset - firstLineStart, length);
+				print_indicator_line(strings[0], outp, first_offset - first_line_start, length);
 			} else {
 				outp << strings[0] << std::endl;
-				print_indicator_line_to_end(strings[0], outp, firstOffset - firstLineStart, strings[0].size());
+				print_indicator_line_to_end(strings[0], outp, first_offset - first_line_start, strings[0].size());
 				
 				unsigned i = 1;
 				for (; i < strings.size() - 1; i += 1) {
@@ -264,7 +263,7 @@ namespace Kai {
 				}
 				
 				outp << strings[i] << std::endl;
-				print_indicator_line(strings[i], outp, 0, lastOffset - lastLineStart);
+				print_indicator_line(strings[i], outp, 0, last_offset - last_line_start);
 			}
 		}
 		
@@ -283,7 +282,7 @@ namespace Kai {
 #pragma mark -
 #pragma mark Basic Parsing Primatives
 		
-		Counter::Counter(unsigned min, unsigned max) : _min(min), _max(max), _count(0) {
+		Counter::Counter(std::size_t min, std::size_t max) : _min(min), _max(max), _count(0) {
 		
 		}
 		

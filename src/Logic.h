@@ -26,8 +26,8 @@ namespace Kai {
 		static Ref<Object> block(Frame * frame);
 		static Ref<Object> return_(Frame * frame);
 		
-		//static Ref<Object> anythingValue();
-		//static Ref<Object> nothingValue();
+		//static Ref<Object> anything_value();
+		//static Ref<Object> nothing_value();
 		
 		static void import(Frame * frame);
 	};

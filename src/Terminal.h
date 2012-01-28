@@ -42,18 +42,6 @@ namespace Kai {
 	};
 	
 	/*
-	struct TermInfo {
-		std::set<StringT> capabilities;
-		std::map<StringT, int> limits;
-		std::map<StringT, StringT> functions;
-
-		static TermInfo * parse(std::istream & buffer);
-		static TermInfo * currentTerminal();
-		static TermInfo * forTerminal(StringT name);
-	};
-	 */
-	
-	/*
 	 To provide advanced editing facilities, the Terminal class encapsulates all the features required for line editing, output and text colouring.
 	 */
 	class Terminal {
@@ -65,21 +53,19 @@ namespace Kai {
 			Terminal(FileDescriptorT in, FileDescriptorT out, FileDescriptorT error);
 			virtual ~Terminal();
 			
-			bool isTTY () const;
+			bool is_tty () const;
 			
-			void getCurrentSettings ();
-			void updateTerminalSettings (int optional_actions = TCSANOW) const;
-			
-			std::string color(int foreground, int background, int attributes);
-		
-			void updateFlags (unsigned flag, bool state);
+			void current_settings ();
+			void update_settings (int optional_actions = TCSANOW) const;
+					
+			void update_flags (unsigned flag, bool state);
 	};
 	
 	class IEditor
 	{
 		public:
 			virtual ~IEditor();
-			virtual StringT firstPrompt() = 0;
+			virtual StringT first_prompt() = 0;
 			virtual bool is_complete(const StringStreamT & buffer, StringT & prompt) = 0;
 	};
 	
@@ -92,11 +78,9 @@ namespace Kai {
 			TerminalEditor(Terminal * terminal, const StringT & prompt);
 			~TerminalEditor();
 			
-			bool readInput(StringT & buffer);
-			bool readInput(StringT & buffer, StringT & prompt);
-			void writeOutput(StringT);
-			
-			bool readInput (StringStreamT & buffer, IEditor & editor);
+			bool read_input(StringT & buffer);
+			bool read_input(StringT & buffer, StringT & prompt);			
+			bool read_input (StringStreamT & buffer, IEditor & editor);
 	};
 	
 	class Frame;
@@ -112,7 +96,7 @@ namespace Kai {
 		BasicEditor(Frame * context);
 		virtual ~BasicEditor();
 		
-		virtual StringT firstPrompt();
+		virtual StringT first_prompt();
 		virtual bool is_complete(const StringStreamT & buffer, StringT & prompt);
 	};
 }

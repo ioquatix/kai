@@ -30,7 +30,7 @@ namespace Kai {
 		return _what.c_str();
 	}
 
-	void InternalError::ensureHandler(bool condition, const char * expression, const char * func, const char * file, unsigned line) {
+	void InternalError::ensure_handler(bool condition, const char * expression, const char * func, const char * file, unsigned line) {
 		if (!condition) {
 			throw InternalError(expression, func, file, line);
 		}

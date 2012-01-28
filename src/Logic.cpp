@@ -84,26 +84,26 @@ namespace Kai {
 	}
 	
 	Ref<Object> Logic::if_ (Frame * frame) {
-		Object * condition, * trueClause, * falseClause;
+		Object * condition, * true_clause, * false_clause;
 		
-		frame->extract(false)[condition][trueClause][falseClause];
+		frame->extract(false)[condition][true_clause][false_clause];
 		
 		if (Object::to_boolean(frame, condition->evaluate(frame))) {
-			return trueClause->evaluate(frame);
+			return true_clause->evaluate(frame);
 		} else {
-			if (falseClause)
-				return falseClause->evaluate(frame);
+			if (false_clause)
+				return false_clause->evaluate(frame);
 			else
 				return NULL;
 		}
 	}
 	
 	/*
-	Ref<Object> Logic::anythingValue () {
+	Ref<Object> Logic::anything_value () {
 		return frame->sym("anything");
 	}
 	
-	Ref<Object> Logic::nothingValue () {
+	Ref<Object> Logic::nothing_value () {
 		return frame->sym("nothing");
 	}
 	 
@@ -152,10 +152,10 @@ namespace Kai {
 		frame->update(frame->sym("when"), KAI_BUILTIN_FUNCTION(Logic::when));
 		frame->update(frame->sym("if"), KAI_BUILTIN_FUNCTION(Logic::if_));
 		
-		//frame->update(frame->sym("true"), Logic::trueValue());
-		//frame->update(frame->sym("false"), Logic::falseValue());
+		//frame->update(frame->sym("true"), Logic::true_value());
+		//frame->update(frame->sym("false"), Logic::false_value());
 		
-		//frame->update(frame->sym("anything"), Logic::anythingValue());
-		//frame->update(frame->sym("nothing"), Logic::nothingValue());
+		//frame->update(frame->sym("anything"), Logic::anything_value());
+		//frame->update(frame->sym("nothing"), Logic::nothing_value());
 	}
 }

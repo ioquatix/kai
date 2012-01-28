@@ -35,9 +35,24 @@ namespace Kai {
 		Ref<Object> value;
 		Status status;
 		
-		bool isOkay() { return token && status == OKAY; }
-		bool isIncomplete() { return status == INCOMPLETE; }
-		bool isFailed() { return status == FAILED; }
+		bool is_okay() { return token && status == OKAY; }
+		bool is_incomplete() { return status == INCOMPLETE; }
+		bool is_failed() { return status == FAILED; }
+	};
+	
+	class Expression;
+	
+	struct ParseState {
+		const SourceCode * code;
+		
+		const Expression * top;
+		const StringIteratorT begin, current, end;
+		
+		ParseState next(StringIteratorT next) const {
+			ParseState state = {code, top, begin, next, end};
+			
+			return state;
+		}
 	};
 	
 	class Expression : public Object {
@@ -46,7 +61,7 @@ namespace Kai {
 		
 		virtual ~Expression();
 		
-		virtual ParseResult parse(Frame * frame, Expression * top, StringIteratorT begin, StringIteratorT end) abstract;
+		virtual ParseResult parse(Frame * frame, const ParseState & state) const abstract;
 	};
 	
 	class Expressions : public Expression {
@@ -62,9 +77,9 @@ namespace Kai {
 	
 		virtual void mark(Memory::Traversal *) const;
 		
-		ParseResult parse(Frame * frame, const SourceCode & code, bool partial = false);
+		ParseResult parse(Frame * frame, const SourceCode * code, bool partial = false);
 		
-		virtual ParseResult parse(Frame * frame, Expression * top, StringIteratorT begin, StringIteratorT end);
+		virtual ParseResult parse(Frame * frame, const ParseState & state) const;
 		
 		void add (Expression * expression);
 		
@@ -82,14 +97,14 @@ namespace Kai {
 		public:
 			virtual ~StringExpression();
 			
-			virtual ParseResult parse(Frame * frame, Expression * top, StringIteratorT begin, StringIteratorT end);
+			virtual ParseResult parse(Frame * frame, const ParseState & state) const;
 	};
 	
 	class SymbolExpression : public Expression {
 		public:
 			virtual ~SymbolExpression();
 			
-			virtual ParseResult parse(Frame * frame, Expression * top, StringIteratorT begin, StringIteratorT end);
+			virtual ParseResult parse(Frame * frame, const ParseState & state) const;
 	};
 	
 	class ScopeExpression : public Expression {
@@ -101,7 +116,7 @@ namespace Kai {
 			ScopeExpression (StringT prefix, StringT function);
 			virtual ~ScopeExpression ();
 			
-			virtual ParseResult parse(Frame * frame, Expression * top, StringIteratorT begin, StringIteratorT end);
+			virtual ParseResult parse(Frame * frame, const ParseState & state) const;
 	};
 	
 	class OperatorExpression : public Expression {
@@ -112,14 +127,14 @@ namespace Kai {
 			OperatorExpression();
 			virtual ~OperatorExpression();
 			
-			virtual ParseResult parse(Frame * frame, Expression * top, StringIteratorT begin, StringIteratorT end);
+			virtual ParseResult parse(Frame * frame, const ParseState & state) const;
 	};
 	
 	class NumberExpression : public Expression {
 		public:
 			virtual ~NumberExpression();
 			
-			virtual ParseResult parse(Frame * frame, Expression * top, StringIteratorT begin, StringIteratorT end);
+			virtual ParseResult parse(Frame * frame, const ParseState & state) const;
 	};
 		
 	class CellExpression : public Expression {
@@ -128,26 +143,26 @@ namespace Kai {
 			bool _header;
 			
 			CellExpression(StringT open, StringT close);
-			virtual Ref<Object> convert_to_result(Frame * frame, Cell * items);
+			virtual Ref<Object> convert_to_result(Frame * frame, Cell * items) const;
 			
-			virtual ParseResult parse_header(Frame * frame, Expression * top, StringIteratorT begin, StringIteratorT end);
+			virtual ParseResult parse_header(Frame * frame, const ParseState & state) const;
 		public:
 			CellExpression();
 			virtual ~CellExpression();
 			
-			virtual ParseResult parse(Frame * frame, Expression * top, StringIteratorT begin, StringIteratorT end);
+			virtual ParseResult parse(Frame * frame, const ParseState & state) const;
 	};
 	
 	class ValueExpression : public Expression {
 		public:
 			virtual ~ValueExpression();
 			
-			virtual ParseResult parse(Frame * frame, Expression * top, StringIteratorT begin, StringIteratorT end);
+			virtual ParseResult parse(Frame * frame, const ParseState & state) const;
 	};
 	
 	class CallExpression : public CellExpression {
 		protected:
-			virtual Ref<Object> convert_to_result(Frame * frame, Cell * items);
+			virtual Ref<Object> convert_to_result(Frame * frame, Cell * items) const;
 
 		public:
 			CallExpression();
@@ -156,7 +171,7 @@ namespace Kai {
 	
 	class BlockExpression : public CellExpression {
 		protected:
-			virtual Ref<Object> convert_to_result(Frame * frame, Cell * items);
+			virtual Ref<Object> convert_to_result(Frame * frame, Cell * items) const;
 
 		public:
 			BlockExpression();
@@ -165,13 +180,31 @@ namespace Kai {
 	
 	class LambdaExpression : public BlockExpression {
 		protected:
-			virtual Ref<Object> convert_to_result(Frame * frame, Cell * items);
+			virtual Ref<Object> convert_to_result(Frame * frame, Cell * items) const;
 			
-			virtual ParseResult parse_header(Frame * frame, Expression * top, StringIteratorT begin, StringIteratorT end);
+			virtual ParseResult parse_header(Frame * frame, const ParseState & state) const;
 
 		public:
 			LambdaExpression();
 			virtual ~LambdaExpression();
+	};
+	
+	/*
+		Example:
+			(trace `<-Godzilla
+				Hello,
+					World.
+			Godzilla)
+	 */
+	
+	class HeredocExpression : public Expression {
+		protected:
+			
+		public:
+			HeredocExpression();
+			virtual ~HeredocExpression();
+		
+			virtual ParseResult parse(Frame * frame, const ParseState & state) const;
 	};
 }
 

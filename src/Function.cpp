@@ -20,17 +20,17 @@ namespace Kai {
 
 	const char * const DynamicFunction::NAME = "DynamicFunction";
 	
-	DynamicFunction::DynamicFunction (EvaluateFunctionT evaluateFunction) : _evaluateFunction(evaluateFunction) {
+	DynamicFunction::DynamicFunction (EvaluateFunctionT evaluate_function) : _evaluate_function(evaluate_function) {
 	}
 	
 	DynamicFunction::~DynamicFunction () {
 	}
 
 	Ref<Object> DynamicFunction::evaluate (Frame * frame) {
-		return _evaluateFunction(frame);
+		return _evaluate_function(frame);
 	}
 
 	void DynamicFunction::to_code(Frame * frame, StringStreamT & buffer, MarkedT & marks, std::size_t indentation) {
-		buffer << "(dynamic-function " << _evaluateFunction << ")";
+		buffer << "(dynamic-function " << _evaluate_function << ")";
 	}
 }

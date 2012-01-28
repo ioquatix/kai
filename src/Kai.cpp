@@ -16,7 +16,7 @@
 
 namespace Kai {
 	
-	bool closeEnough (double a, double b) {
+	bool close_enough (double a, double b) {
 		double d = a - b;
 		if (d < 0) d *= -1;
 		
@@ -67,7 +67,7 @@ namespace Kai {
 		
 		t.normalize();
 		
-		assert(closeEnough(this->total() + other.total(), t.total()));
+		assert(close_enough(this->total() + other.total(), t.total()));
 		
 		return t;
 	}
@@ -81,7 +81,7 @@ namespace Kai {
 		
 		t.normalize();
 		
-		assert(closeEnough(this->total() - other.total(), t.total()));
+		assert(close_enough(this->total() - other.total(), t.total()));
 		
 		return t;
 	}
@@ -115,7 +115,7 @@ namespace Kai {
 		
 		t.normalize();
 		
-		assert(closeEnough(this->total() * other, t.total()));
+		assert(close_enough(this->total() * other, t.total()));
 		
 		return t;
 	}
@@ -130,7 +130,7 @@ namespace Kai {
 		
 		t.normalize();
 		
-		assert(closeEnough(this->total() / other, t.total()));
+		assert(close_enough(this->total() / other, t.total()));
 		
 		return t;
 	}

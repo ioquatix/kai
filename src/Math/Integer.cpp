@@ -858,14 +858,14 @@ namespace Kai {
 
 		// Returns a large random number. Digits is in multiple of 32 bits.
 		void Integer::generate_rando_number (DigitT length) {
-			static std::ifstream * randomDevice = NULL;
+			static std::ifstream * random_device = NULL;
 			
-			if (!randomDevice) {
-				randomDevice = new std::ifstream("/dev/urandom", std::ios::binary);
+			if (!random_device) {
+				random_device = new std::ifstream("/dev/urandom", std::ios::binary);
 			}
 			
 			_value.resize(length);
-			randomDevice->read((char*)&_value[0], (std::size_t)_value.size() * sizeof(DigitT));
+			random_device->read((char*)&_value[0], (std::size_t)_value.size() * sizeof(DigitT));
 		}
 
 		// Returns a large random number between min and max.

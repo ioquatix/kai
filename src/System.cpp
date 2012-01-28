@@ -41,7 +41,7 @@ namespace Kai {
 	Ref<Object> System::run(const PathT & path, Frame * frame) {
 		// std::cerr << "Running code at path: " << path << std::endl;
 		
-		SourceCode code(path);
+		Ref<SourceCode> code = new(frame) SourceCode(path);
 		
 		Expressions * expressions = Expressions::fetch(frame);
 		// std::cerr << "Expression : " << Object::to_string(frame, expressions) << std::endl;

@@ -39,7 +39,7 @@ namespace {
 	// Example:
 	// ["Möbius Frequency" each (lambda `(chr) `[chr size])]
 	
-	Ref<Object> run_code (Frame * frame, SourceCode & code, int & status, Terminal * terminal) {
+	Ref<Object> run_code (Frame * frame, SourceCode * code, int & status, Terminal * terminal) {
 		Ref<Object> value = NULL, result = NULL;
 
 		// Execution status
@@ -118,7 +118,9 @@ namespace {
 		Lambda::import(frame);
 		Logic::import(frame);
 		Expressions::import(frame);
+		
 		SourceCode::import(frame);
+		SourceCodeIndex::import(frame);
 		
 		Array::import(frame);
 		System::import(frame);
@@ -135,7 +137,7 @@ namespace {
 	}
 }
 
-void signalHang (int) {
+void signal_hang (int) {
 	puts("Segmentation Fault!\n");
 	for (;;) sleep(1);
 }
@@ -145,7 +147,7 @@ int main (int argc, const char * argv[]) {
 	
 	using namespace Kai;
 	
-	signal(SIGSEGV, signalHang);
+	signal(SIGSEGV, signal_hang);
 	
 	int result = 0;
 	Terminal console(STDIN_FILENO, STDOUT_FILENO, STDERR_FILENO);
@@ -155,29 +157,25 @@ int main (int argc, const char * argv[]) {
 	
 	if (argc == 3) {
 		if (StringT(argv[1]) == "-x") {
-			SourceCode code("<cmd>", argv[2]);
+			Ref<SourceCode> code = new(context) SourceCode("<x>", argv[2]);
 			run_code(context, code, result, &console);
 		} else if (StringT(argv[1]) == "-f") {
-			SourceCode code(argv[2]);
+			Ref<SourceCode> code = new(context) SourceCode(argv[2]);
 			run_code(context, code, result, &console);
 		} else {
 			std::cerr << "Unknown option: '" << argv[1] << "'" << std::endl;
 			result = 10;
 		}
-	} else if (console.isTTY()) {
+	} else if (console.is_tty()) {
 		// Running interactively
-		TerminalEditor terminalEditor(&console, "kai> ");
-		
+		TerminalEditor terminal_editor(&console, "kai> ");
 		StringStreamT buffer;
 		
 		std::cerr << "Startup time = " << (Time() - start) << std::endl;
 		
-		while (terminalEditor.readInput(buffer, editor)) {
-			Ref<Object> value;
-							
-			SourceCode currentLine("<stdin>", buffer.str());
-						
-			value = run_code(context, currentLine, result, &console);
+		while (terminal_editor.read_input(buffer, editor)) {	
+			Ref<SourceCode> input = new(context) SourceCode("<stdin>", buffer.str());
+			Ref<Object> value = run_code(context, input, result, &console);
 			
 			std::cout << Object::to_string(context, value) << std::endl;
 			
@@ -186,7 +184,7 @@ int main (int argc, const char * argv[]) {
 	} else {
 		StringStreamT buffer;
 		buffer << std::cin.rdbuf();
-		SourceCode code ("<stdin>", buffer.str());
+		Ref<SourceCode> code = new(context) SourceCode("<stdin>", buffer.str());
 		
 		run_code(context, code, result, &console);			
 	}

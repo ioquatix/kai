@@ -74,8 +74,8 @@ namespace Kai {
 			
 			virtual PageAllocation * allocator() const;
 			
-			void retain();
-			void release();
+			void retain() const;
+			void release() const;
 		};
 		
 		class FreeAllocation : public ObjectAllocation {			
@@ -109,8 +109,8 @@ namespace Kai {
 			ObjectAllocation * allocate(std::size_t size);
 			void deallocate(ObjectAllocation * start, ObjectAllocation * end);
 			
-			bool includes(ObjectAllocation * allocation);
-			PageAllocation * base_of(ObjectAllocation * allocation);
+			bool includes(const ObjectAllocation * allocation);
+			PageAllocation * base_of(const ObjectAllocation * allocation);
 			
 			void debug();
 		};
@@ -132,7 +132,7 @@ namespace Kai {
 		public:
 			virtual ~Traversal();
 			
-			virtual void traverse(ObjectAllocation *) = 0;
+			virtual void traverse(const ObjectAllocation *) = 0;
 		};
 	}
 }

@@ -48,10 +48,11 @@ namespace Kai {
 	}
 
 	StringT ArgumentError::what() {
-		if (_object)
+		if (_object) {
 			return name() + " : Expecting " + _name + " of type " + _type + ", got " + _object->identity(_frame)->value() + "!";
-		else
+		} else {
 			return name() + " : Expecting " + _name + " of type " + _type + ", got nil!";
+		}
 	}
 	
 	StringT ArgumentError::name() {

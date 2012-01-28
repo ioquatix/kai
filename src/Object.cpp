@@ -196,9 +196,8 @@ namespace Kai
 		// Wrap self so we can pass it to other functions
 		self = self->as_value(frame);
 		
-		Symbol * function_name = body->head().as<Symbol>();
-		
-		//std::cerr << "Calling " << Object::to_string(functionName) << " for " << Object::to_string(self) << std::endl;
+		Symbol * function_name = body->head().as<Symbol>();		
+		//std::cerr << "Calling " << Object::to_string(function_name) << " for " << Object::to_string(self) << std::endl;
 		
 		Cell * dispatch = Cell::create(frame)(frame->sym("lookup"))(self)(function_name);
 		

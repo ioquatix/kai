@@ -18,6 +18,7 @@ namespace Kai {
 		Token parse_hexadecimal(StringIteratorT begin, StringIteratorT end);
 		Token parse_whitespace(StringIteratorT begin, StringIteratorT end);
 		Token parse_identifier(StringIteratorT begin, StringIteratorT end);
+		Token parse_heredoc(StringIteratorT begin, StringIteratorT end);
 		
 		/*
 			[(this) set grammar [Grammar new]]
