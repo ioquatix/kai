@@ -12,7 +12,7 @@
 #include <ctime>
 #include <sys/time.h>
 #include <cmath>
-#include <cassert>
+#include "Ensure.h"
 
 namespace Kai {
 	
@@ -67,7 +67,7 @@ namespace Kai {
 		
 		time.normalize();
 		
-		ensure(close_enough(this->total() + other.total(), time.total()));
+		KAI_ENSURE(close_enough(this->total() + other.total(), time.total()));
 		
 		return time;
 	}
@@ -81,7 +81,7 @@ namespace Kai {
 		
 		time.normalize();
 		
-		assert(close_enough(this->total() - other.total(), time.total()));
+		KAI_ENSURE(close_enough(this->total() - other.total(), time.total()));
 		
 		return time;
 	}
@@ -115,7 +115,7 @@ namespace Kai {
 		
 		time.normalize();
 		
-		assert(close_enough(this->total() * other, time.total()));
+		KAI_ENSURE(close_enough(this->total() * other, time.total()));
 		
 		return time;
 	}
@@ -130,7 +130,7 @@ namespace Kai {
 		
 		time.normalize();
 		
-		assert(close_enough(this->total() / other, time.total()));
+		KAI_ENSURE(close_enough(this->total() / other, time.total()));
 		
 		return time;
 	}
