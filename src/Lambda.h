@@ -53,8 +53,6 @@ namespace Kai {
 		
 		static Ref<Object> dynamic_scope(Frame * frame);
 		
-		virtual Ref<Object> prototype(Frame * frame);
-		
 		static void import(Frame *);
 	};
 	

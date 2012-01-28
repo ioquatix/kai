@@ -9,9 +9,9 @@
 #include "ObjectAllocator.h"
 
 #include <iostream>
-#include "Ensure.h"
+#include "../Ensure.h"
 
-#include "Object.h"
+#include "../Object.h"
 
 // sysconf
 #include <unistd.h>

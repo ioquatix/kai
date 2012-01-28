@@ -7,7 +7,7 @@
 //
 
 #include "ManagedObject.h"
-#include "Ensure.h"
+#include "../Ensure.h"
 
 namespace Kai {
 	namespace Memory {

@@ -57,7 +57,7 @@ namespace Kai {
 		
 		virtual Ref<Object> evaluate(Frame * frame);
 		
-		virtual void to_code(Frame * frame, StringStreamT & buffer, MarkedT & marks, std::size_t indentation);
+		virtual void to_code(Frame * frame, StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const;
 	};	
 }
 

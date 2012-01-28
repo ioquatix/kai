@@ -30,7 +30,7 @@ namespace Kai {
 		return _evaluate_function(frame);
 	}
 	
-	void DynamicFunction::to_code(Frame * frame, StringStreamT & buffer, MarkedT & marks, std::size_t indentation) {
+	void DynamicFunction::to_code(Frame * frame, StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const {
 		buffer << "(dynamic-function " << _evaluate_function << ")";
 	}
 }

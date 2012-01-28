@@ -15,7 +15,7 @@
 #include "Table.h"
 #include "String.h"
 #include "Symbol.h"
-#include "Unicode.h"
+#include "Unicode/Unicode.h"
 #include <fstream>
 
 namespace Kai {

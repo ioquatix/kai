@@ -43,7 +43,7 @@ namespace Kai {
 	
 #pragma mark -
 	
-	ArgumentError::ArgumentError(StringT name, StringT type, Object * value, Frame * frame) : _name(name), _type(type), Exception("Error converting argument", value, frame) {
+	ArgumentError::ArgumentError(StringT name, StringT type, Object * value, Frame * frame) : Exception("Error converting argument", value, frame), _name(name), _type(type) {
 		
 	}
 	

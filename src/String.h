@@ -46,6 +46,9 @@ namespace Kai {
 		static Ref<Object> length(Frame * frame);
 		static Ref<Object> each(Frame * frame);
 		
+		// A helper for the heredoc syntax
+		static Ref<Object> heredoc(Frame * frame);
+		
 		static void import (Frame * frame);
 	};
 

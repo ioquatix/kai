@@ -114,8 +114,11 @@ namespace Kai {
 	
 #pragma mark -
 	
-	Symbol * SymbolTable::fetch(const char * name) {
-		HashT hash = Symbol::calculate_hash(name);
+	// This implementation is incomplete.
+	Symbol * SymbolTable::fetch(Frame * frame, const char * name) {
+		//HashT hash = Symbol::calculate_hash(name);
+		
+		return new Symbol(name);
 	}
 	
 }

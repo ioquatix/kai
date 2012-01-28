@@ -62,7 +62,7 @@ namespace Kai {
 		SymbolTable();
 		virtual ~SymbolTable();
 		
-		Symbol * fetch(const char * name);
+		Symbol * fetch(Frame * frame, const char * name);
 	};
 }
 

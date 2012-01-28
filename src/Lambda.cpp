@@ -27,7 +27,7 @@ namespace Kai {
 	}
 	
 	Ref<Symbol> Lambda::identity(Frame * frame) const {
-		return frame->sym("Lambda");
+		return frame->sym(NAME);
 	}
 	
 	void Lambda::mark(Memory::Traversal * traversal) const {
@@ -196,10 +196,6 @@ namespace Kai {
 		}
 		
 		return NULL;
-	}
-	
-	Ref<Object> Lambda::prototype(Frame * frame) {
-		return frame->lookup(frame->sym("Lambda"));
 	}
 	
 	void Lambda::import(Frame * frame) {

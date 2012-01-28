@@ -141,6 +141,8 @@ namespace Kai {
 		const Association * lookup(Object * object);
 		static const Association * lookup(Frame * frame, Object * object);
 		
+		using Object::lookup;
+		
 		/// Associates the given object with the given source code buffer:
 		void associate(Object * object, const SourceCode * source_code, StringIteratorT begin, StringIteratorT end);
 		static void associate(Frame * frame, Object * object, const SourceCode * source_code, StringIteratorT begin, StringIteratorT end);

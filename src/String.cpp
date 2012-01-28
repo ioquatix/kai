@@ -124,7 +124,7 @@ namespace Kai {
 		Cell * last = NULL, * first = NULL;
 		
 		while (current != self->_value.end()) {
-			uint32_t value = Unicode::next(current, self->_value.end());
+			/* Unicode::CodePointT value = */ Unicode::next(current, self->_value.end());
 			
 			// Create a buffer to contain the single character:			
 			String * character = new(frame) String(StringT(previous, current));
@@ -139,6 +139,16 @@ namespace Kai {
 		return first;
 	}
 	
+	Ref<Object> String::heredoc(Frame * frame) {
+		Symbol * identifier;
+		String * indentation;
+		String * body;
+		
+		frame->extract(false)(identifier)(indentation)(body);
+		
+		return body;
+	}
+	
 	void String::import(Frame * frame) {
 		Table * prototype = new(frame) Table;
 		
@@ -150,6 +160,7 @@ namespace Kai {
 		prototype->update(frame->sym("length"), KAI_BUILTIN_FUNCTION(String::length));
 		
 		frame->update(frame->sym("String"), prototype);
+		frame->update(frame->sym("heredoc"), KAI_BUILTIN_FUNCTION(String::heredoc));
 	}
 
 #pragma mark -

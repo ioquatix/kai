@@ -105,15 +105,20 @@ namespace Kai {
 		}
 		
 		Number Number::floor() {
+			std::cerr << "Unimplemented: " << __func__ << std::endl;
 			// floor(n) = n - frac(n)
+			return 0;
 		}
 		
 		Number Number::ceil() {
+			std::cerr << "Unimplemented: " << __func__ << std::endl;
 			// ceil(n) = floor(n) + 1
+			return 0;
 		}
 		
 		Number Number::absolute() {
-			
+			std::cerr << "Unimplemented: " << __func__ << std::endl;
+			return 0;
 		}
 		
 		std::string Number::to_string() const
