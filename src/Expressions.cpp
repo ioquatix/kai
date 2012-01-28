@@ -159,7 +159,7 @@ namespace Kai {
 		frame->extract()[self][code_string];
 		
 		try {
-			Ref<SourceCode> code = new SourceCode("<program>", code_string->value());
+			Ref<SourceCode> code = new(frame) SourceCode("<program>", code_string->value());
 			
 			return self->parse(frame, code).value;
 		} catch (Parser::FatalParseFailure & failure) {
