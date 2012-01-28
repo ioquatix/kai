@@ -173,7 +173,7 @@ namespace Kai {
 		
 		static Ref<Object> operands(Frame * frame);
 		static Ref<Object> arguments(Frame * frame);
-				
+		
 		static void import (Frame * frame);
 		
 		/// Convenience functions for allocation:

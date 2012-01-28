@@ -27,12 +27,12 @@ namespace Kai {
 			
 			// Scale is (10 ^ _scale) in base 10.
 			ScaleT _scale;
-		
+			
 		public:
 			Number(IntermediateT value = 0);
 			Number(std::string value);
 			Number(Integer value, unsigned scale, bool negative = false);
-						
+			
 			int compare_with(const Number & other) const;
 			
 			Integer fractional_part(const Integer & base = 10);
@@ -41,7 +41,7 @@ namespace Kai {
 			Number floor();
 			Number ceil();
 			Number absolute();
-
+			
 			void multiply(const Number & other);
 			
 			Number & operator*=(const Number & other) { this->multiply(other); return *this; }

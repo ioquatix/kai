@@ -247,7 +247,7 @@ namespace Kai {
 		Symbol * key = NULL;
 		
 		frame->extract()(table, "self")(key, "key");
-				
+		
 		return table->lookup(frame, key);
 	}
 	

@@ -46,9 +46,9 @@ namespace Kai {
 	
 	class Symbol;
 	class Frame;
-		
-	/** An object specifies the default behaviour for all objects in Kai.
 	
+	/** An object specifies the default behaviour for all objects in Kai.
+	 
 	 An object provides a specification for looking up and invoking functionality, along with memory management provided by ManagedObject.
 	 */
 	class Object : public Memory::ManagedObject {
@@ -105,9 +105,9 @@ namespace Kai {
 		static bool to_boolean(Frame * frame, Object * object);
 		
 		Ref<Object> as_value(Frame * frame);
-				
+		
 #pragma mark -
-				
+		
 		// Converts the argument to a string value
 		static Ref<Object> to_string(Frame * frame);
 		

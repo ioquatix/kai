@@ -38,7 +38,7 @@ namespace Kai {
 		
 		Ref<Object> tail() { return _tail; }
 		const Ref<Object> tail() const { return _tail; }
-				
+		
 		Cell * insert(Object * object);
 		Cell * append(Object * object);
 		
@@ -55,11 +55,11 @@ namespace Kai {
 		
 		virtual ComparisonResult compare(const Object * other) const;
 		ComparisonResult compare(const Cell * other) const;
-				
+		
 		virtual void to_code(Frame * frame, StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const;
 		
 		virtual Ref<Object> evaluate(Frame * frame);
-				
+		
 		ArgumentExtractor extract(Frame * frame);
 		
 		class ListBuilder {

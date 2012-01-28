@@ -45,42 +45,42 @@ namespace Kai {
 	 To provide advanced editing facilities, the Terminal class encapsulates all the features required for line editing, output and text colouring.
 	 */
 	class Terminal {
-		protected:
-			FileDescriptorT _in, _out, _error;
-			struct termios _settings;
-			
-		public:
-			Terminal(FileDescriptorT in, FileDescriptorT out, FileDescriptorT error);
-			virtual ~Terminal();
-			
-			bool is_tty () const;
-			
-			void current_settings ();
-			void update_settings (int optional_actions = TCSANOW) const;
-					
-			void update_flags (unsigned flag, bool state);
+	protected:
+		FileDescriptorT _in, _out, _error;
+		struct termios _settings;
+		
+	public:
+		Terminal(FileDescriptorT in, FileDescriptorT out, FileDescriptorT error);
+		virtual ~Terminal();
+		
+		bool is_tty () const;
+		
+		void current_settings ();
+		void update_settings (int optional_actions = TCSANOW) const;
+		
+		void update_flags (unsigned flag, bool state);
 	};
 	
 	class IEditor
 	{
-		public:
-			virtual ~IEditor();
-			virtual StringT first_prompt() = 0;
-			virtual bool is_complete(const StringStreamT & buffer, StringT & prompt) = 0;
+	public:
+		virtual ~IEditor();
+		virtual StringT first_prompt() = 0;
+		virtual bool is_complete(const StringStreamT & buffer, StringT & prompt) = 0;
 	};
 	
 	class TerminalEditor {
-		protected:
-			Terminal * _terminal;
-			StringT _prompt;
-			
-		public:
-			TerminalEditor(Terminal * terminal, const StringT & prompt);
-			~TerminalEditor();
-			
-			bool read_input(StringT & buffer);
-			bool read_input(StringT & buffer, StringT & prompt);			
-			bool read_input (StringStreamT & buffer, IEditor & editor);
+	protected:
+		Terminal * _terminal;
+		StringT _prompt;
+		
+	public:
+		TerminalEditor(Terminal * terminal, const StringT & prompt);
+		~TerminalEditor();
+		
+		bool read_input(StringT & buffer);
+		bool read_input(StringT & buffer, StringT & prompt);			
+		bool read_input (StringStreamT & buffer, IEditor & editor);
 	};
 	
 	class Frame;

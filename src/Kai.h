@@ -27,39 +27,39 @@ namespace Kai {
 	// Fundamentally, some parts of a given system must be immutable. It is whether these are well defined, or unspecified, which dictates the reliability of a given system.
 	
 	// Kai has a set of fundamental data types which are immutable, but can be extended within a given execution context namespace.
-
+	
 	typedef std::string StringT;
 	typedef std::size_t SizeT;
 	typedef std::stringstream StringStreamT;
 	typedef StringT::const_iterator StringIteratorT;
-
+	
 	class Time {
-		public:
-			typedef uint64_t SecondsT;
-			typedef double FractionT;
-			
-		protected:
-			SecondsT _seconds;
-			FractionT _fraction;
-			
-			void normalize();
-			
-		public:
-			Time();
-			Time(FractionT time);
-			
-			Time operator+(const Time & other);
-			Time operator-(const Time & other);
-			
-			Time & operator+=(const Time & other);
-			Time & operator-=(const Time & other);
-			
-			Time operator*(FractionT other);
-			Time operator/(FractionT other);
-			
-			const SecondsT & seconds() const { return _seconds; }
-			const FractionT & fraction() const { return _fraction; }
-			const FractionT total() const { return (FractionT)_seconds + _fraction; }
+	public:
+		typedef uint64_t SecondsT;
+		typedef double FractionT;
+		
+	protected:
+		SecondsT _seconds;
+		FractionT _fraction;
+		
+		void normalize();
+		
+	public:
+		Time();
+		Time(FractionT time);
+		
+		Time operator+(const Time & other);
+		Time operator-(const Time & other);
+		
+		Time & operator+=(const Time & other);
+		Time & operator-=(const Time & other);
+		
+		Time operator*(FractionT other);
+		Time operator/(FractionT other);
+		
+		const SecondsT & seconds() const { return _seconds; }
+		const FractionT & fraction() const { return _fraction; }
+		const FractionT total() const { return (FractionT)_seconds + _fraction; }
 	};
 	
 	std::ostream & operator<<(std::ostream & output, const Time & time);

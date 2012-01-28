@@ -22,20 +22,21 @@
 namespace Kai {
 	
 	class InternalError : public std::exception {
+	protected:
 		const char * _function;
 		const char * _expression;
 		const char * _file;
-
+		
 		unsigned _line;
-
+		
 		std::string _what;
 	public:
 		InternalError (const char * expression, const char * func, const char * file, unsigned line) throw ();
 		virtual ~InternalError () throw ();
-
+		
 		/// A descriptive string relating to the assertion that failed.
 		virtual const char * what () const throw ();
-
+		
 		/// The KAI_ENSURE() macro calls this function to handle throwing the actual exception.
 		static void ensure_handler (bool condition, const char * expression, const char * func, const char * file, unsigned line);
 	};

@@ -24,7 +24,7 @@ namespace Kai {
 	{
 		
 	}
-
+	
 	SourceCode::SourceCode (const PathT & source_file_path)
 	{
 		std::ifstream ifs(source_file_path.c_str());
@@ -40,7 +40,7 @@ namespace Kai {
 	}
 	
 	SourceCode::SourceCode (const StringT & input_name, const StringT & source_code)
-		: _input_name(input_name), _buffer(source_code)
+	: _input_name(input_name), _buffer(source_code)
 	{
 		calculate_line_offsets();
 	}
@@ -101,7 +101,7 @@ namespace Kai {
 		while (true) {
 			std::size_t length = (max - min);
 			std::size_t line = min + (length >> 1);
-
+			
 			// Short circuit - we have converged to a single possible result
 			//if (length == 1)
 			//	return line;
@@ -119,7 +119,7 @@ namespace Kai {
 	std::size_t SourceCode::offset_for_line (LineT line) const {
 		if (line >= number_of_lines())
 			throw InvalidLine();
-	
+		
 		return _line_offsets[line].offset;
 	}
 	
@@ -149,7 +149,7 @@ namespace Kai {
 	const StringT & SourceCode::buffer () {
 		return _buffer;
 	}
-		
+	
 	StringIteratorT SourceCode::begin () const {
 		return _buffer.begin();
 	}
@@ -157,7 +157,7 @@ namespace Kai {
 	StringIteratorT SourceCode::end () const {
 		return _buffer.end();
 	}
-
+	
 	void SourceCode::to_code(Frame * frame, StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const
 	{
 		buffer << "<SourceCode@" << this << "input_name=" << input_name() << " number_of_lines=" << number_of_lines() << ">";
@@ -226,12 +226,12 @@ namespace Kai {
 	Ref<Symbol> SourceCode::identity(Frame * frame) const {
 		return frame->sym("SourceCode");
 	}
-		
+	
 	/// Import the global prototype and associated functions into an execution context.
 	void SourceCode::import(Frame * frame)
 	{
 		Table * prototype = new(frame) Table;
-				
+		
 		prototype->update(frame->sym("from-path"), KAI_BUILTIN_FUNCTION(SourceCode::from_path));
 		prototype->update(frame->sym("from-string"), KAI_BUILTIN_FUNCTION(SourceCode::from_string));
 		
@@ -239,10 +239,10 @@ namespace Kai {
 		prototype->update(frame->sym("input-name"), KAI_BUILTIN_FUNCTION(SourceCode::input_name));
 		
 		prototype->update(frame->sym("count"), KAI_BUILTIN_FUNCTION(SourceCode::count));
-
+		
 		frame->update(frame->sym("SourceCode"), prototype);
 	}
-
+	
 #pragma mark -
 	
 	void SourceCodeIndex::mark(Memory::Traversal * traversal) const {

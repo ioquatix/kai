@@ -18,7 +18,7 @@
 namespace Kai {
 	
 	const char * const Array::NAME = "Array";
-
+	
 	Array::Array() {
 	}
 	
@@ -139,7 +139,7 @@ namespace Kai {
 		Array * self = NULL;
 		
 		frame->extract()(self);
-
+		
 		if (self->_value.size() == 0)
 			return NULL;
 		
@@ -149,7 +149,7 @@ namespace Kai {
 		
 		return object;
 	}
-				
+	
 	Ref<Object> Array::push_front(Frame * frame) {
 		Array * self = NULL;
 		Object * value = NULL;
@@ -232,7 +232,7 @@ namespace Kai {
 	Ref<Object> Array::find(Frame * frame) {
 		return NULL;
 	}
-
+	
 	void Array::import(Frame * frame) {
 		Table * prototype = new(frame) Table;
 		
@@ -249,5 +249,5 @@ namespace Kai {
 		
 		frame->update(frame->sym("Array"), prototype);
 	}
-
+	
 }

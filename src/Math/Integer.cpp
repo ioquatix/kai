@@ -106,7 +106,7 @@ namespace Kai {
 			
 			return width;
 		}
-
+		
 		Integer::Integer(IntermediateT value) {
 			for (std::size_t i = 0; i < sizeof(value); i += sizeof(DigitT)) {
 				DigitT d = (DigitT)value;
@@ -184,21 +184,21 @@ namespace Kai {
 				convert_string(value, base);
 			}
 		}
-
+		
 		Integer::Integer (ValueT v) : _value(v) {
 			
 		}
-
+		
 		Integer::~Integer () {
 			//debug();
 		}
-
+		
 		Integer & Integer::operator= (const Integer & other) {
 			_value = other._value;
 			
 			return *this;
 		}
-
+		
 		void Integer::normalize () {
 			if (_value.size() == 0) {
 				_value.push_back(0);
@@ -214,7 +214,7 @@ namespace Kai {
 			
 			_value.resize(c+1);
 		}
-
+		
 		int Integer::compare_with (const Integer & other) const {
 			std::size_t width = std::max(_value.size(), other._value.size());
 			
@@ -238,7 +238,7 @@ namespace Kai {
 			
 			return 0;
 		}
-
+		
 		bool Integer::operator< (const Integer & other) const {
 			int c = compare_with(other);
 			
@@ -248,11 +248,11 @@ namespace Kai {
 				return false;
 			}
 		}
-
+		
 		bool Integer::operator> (const Integer & other) const {
 			return (other < (*this));
 		}
-
+		
 		bool Integer::operator<= (const Integer & other) const {
 			int c = compare_with(other);
 			
@@ -262,11 +262,11 @@ namespace Kai {
 				return true;
 			}
 		}
-
+		
 		bool Integer::operator>= (const Integer & other) const {
 			return (other <= (*this));
 		}
-
+		
 		bool Integer::is_zero () const {
 			Integer z = 0;
 			
@@ -278,11 +278,11 @@ namespace Kai {
 			// The value needs to be normalized for this to work correctly.
 			return (_value.size() - 1) * DIGIT_BITS + fls(_value.back());
 		}
-
+		
 		bool Integer::operator!= (const Integer & other) const {
 			return !((*this) == other);
 		}
-
+		
 		bool Integer::operator== (const Integer & other) const {
 			int c = compare_with(other);
 			
@@ -292,7 +292,7 @@ namespace Kai {
 				return false;
 			}
 		}
-
+		
 		void Integer::add(const Integer & a) {
 			if (_value.size() < a._value.size()) {
 				_value.resize(a._value.size());
@@ -319,7 +319,7 @@ namespace Kai {
 				_value.push_back(carry);
 			}
 		}
-
+		
 		void Integer::subtract(const Integer & _a) {
 			Integer a = _a; a.normalize();
 			
@@ -352,21 +352,21 @@ namespace Kai {
 			// If we subtracted something, the end result should be less than the start.
 			//assert(*this <= start);
 		}
-
+		
 		void Integer::multiply(const Integer & other) {
 			Integer a = *this;
 			Integer b = other; // Make a copy of the integer data, to avoid aliasing issues.
 			
 			this->set_product(a, b);
 		}
-
+		
 		void Integer::modulus (const Integer & m) {
 			Integer numerator = *this;
 			Integer result = 0;
 			
 			result.set_fraction(numerator, m, *this);
 		}
-
+		
 		void Integer::set_product(const Integer & x, const Integer & y) {
 			assert(x.size() != 0);
 			assert(y.size() != 0);
@@ -391,7 +391,7 @@ namespace Kai {
 				for (std::size_t j = 0; j <= n; j++) {
 					IntermediateT product = (IntermediateT)x[j] * (IntermediateT)y[i];
 					IntermediateT result = (IntermediateT)_value[i+j] + product + carry;
-
+					
 					_value[i+j] = (DigitT)result;
 					carry = result >> DIGIT_BITS;
 				}
@@ -401,11 +401,11 @@ namespace Kai {
 			
 			this->normalize();
 		}
-
+		
 		struct Shift {
 			Integer count, product;
 		};
-
+		
 		bool Integer::set_fraction_slow(const Integer & numerator, const Integer & denominator, Integer & remainder) {
 			if (numerator == 0) {
 				remainder = 0;
@@ -420,7 +420,7 @@ namespace Kai {
 			
 			(*this) = 0; // Number of divisions possible.
 			Integer accumulator = 0; // Total value of doublings.
-				
+			
 			bool top = false;
 			
 			std::vector<Shift> shifts;
@@ -468,17 +468,17 @@ namespace Kai {
 					offset += 1;
 					
 					//if (offset >= shifts.size()) {
-						s.count.shift_left(1);
-						s.product.shift_left(1);
-						
-						shifts.push_back(s);
+					s.count.shift_left(1);
+					s.product.shift_left(1);
+					
+					shifts.push_back(s);
 					//} else {
 					//	s = shifts[offset];
 					//}
 				}
 			}
 		}
-
+		
 		void Integer::set_fraction(const Integer & numerator, const Integer & denominator, Integer & remainder) {
 			if (numerator < denominator) {
 				(*this) = 0;
@@ -513,27 +513,27 @@ namespace Kai {
 				x.shift_right(shift);
 			}
 			/*
-			Integer c;
-			c.set_product(*this, denominator);
-			c.add(x); // remainder
-			
-			// Check the result is correct
-			assert(x < denominator);
-			assert(numerator == c);
-			*/
+			 Integer c;
+			 c.set_product(*this, denominator);
+			 c.add(x); // remainder
+			 
+			 // Check the result is correct
+			 assert(x < denominator);
+			 assert(numerator == c);
+			 */
 			remainder = x;
 			remainder.normalize();
 		}
 		
 		/*void Integer::trim() {
-			std::size_t non_zero = _value.size() - 1;
-			
-			while (non_zero > 0 && _value[non_zero] == 0) {
-				non_zero -= 1;
-			}
-			
-			_value.resize(non_zero + 1);
-		}*/
+		 std::size_t non_zero = _value.size() - 1;
+		 
+		 while (non_zero > 0 && _value[non_zero] == 0) {
+		 non_zero -= 1;
+		 }
+		 
+		 _value.resize(non_zero + 1);
+		 }*/
 		
 		void Integer::set_fraction(Integer & x, Integer y) {
 			// The number of digits in the result
@@ -559,7 +559,7 @@ namespace Kai {
 			Integer bp; bp.set_power(B, nt);
 			
 			Integer tmp1, tmp2;
-
+			
 			if (y[t] < (B/2)) {
 				std::cerr << "Thar be the dragons!" << std::endl;
 			}
@@ -588,7 +588,7 @@ namespace Kai {
 				v.set_product(x[i], bb);
 				if (i > 0) { tmp1.set_product(x[i-1], B); v.add(tmp1); }
 				if (i > 1) v.add(x[i-2]);
-						
+				
 				while (true) {
 					tmp1.set_product(q[i-t-1], u);
 					if (tmp1 > v) {
@@ -597,7 +597,7 @@ namespace Kai {
 						break;
 					}
 				}
-								
+				
 				// Because B is 0x1_0000_0000, we can use a simple shift rather than power calculation.
 				//tmp1.set_power(B, i-t-1);
 				tmp1 = 1;
@@ -641,9 +641,9 @@ namespace Kai {
 			
 			return fraction;
 		}
-
+		
 #pragma mark Modular Exponentiation
-			
+		
 		BarrettReduction::BarrettReduction (const Integer & _mod) {
 			mod = _mod;
 			mod.normalize();
@@ -659,16 +659,16 @@ namespace Kai {
 			// Division by 0x100 is the same as shift_right(2)
 			bn = DIGIT_BITS * (mod.size() - 1);
 			bp = DIGIT_BITS * (mod.size() + 1);
-
+			
 			// Mask for base-2 modulus
 			bkp.set_power(b, mod.size() + 1);
 			bkm = bkp;
 			bkm.subtract(1);
 		}
-			
+		
 		void BarrettReduction::modulus (Integer & x) const {
 			Integer q1, q2, q3, r1, r2;
-
+			
 			q1 = x;
 			q1.shift_right(bn);
 			
@@ -708,7 +708,7 @@ namespace Kai {
 			BarrettReduction r (mod);
 			set_power(base, exponent, r);
 		}
-
+		
 		void Integer::set_power (Integer base, Integer exponent, const BarrettReduction & r) {
 			(*this) = 1;
 			Integer tmp;
@@ -729,7 +729,7 @@ namespace Kai {
 				r.modulus(base);
 			}
 		}
-
+		
 		void Integer::set_power (Integer base, const Integer & exponent) {
 			DigitT mask = 1 << (DIGIT_BITS - 1);
 			std::size_t offset = exponent.size() - 1;
@@ -784,7 +784,7 @@ namespace Kai {
 				_value.pop_back();
 			}
 		}
-
+		
 		void Integer::shift_right(DigitT amount) {
 			DigitT steps = (amount / DIGIT_BITS);
 			DigitT bits = (amount % DIGIT_BITS);
@@ -804,7 +804,7 @@ namespace Kai {
 					_value[s-1] |= result;
 				
 				_value[s] = (result >> DIGIT_BITS);
-
+				
 			}
 			
 			// Truncate the right hand side
@@ -826,7 +826,7 @@ namespace Kai {
 				_value[i] = 0;
 			}
 		}
-
+		
 		void Integer::binary_and(const Integer & other) {
 			std::size_t width = std::min(size(), other.size());
 			
@@ -838,7 +838,7 @@ namespace Kai {
 			
 			_value.resize(width);
 		}
-
+		
 		void Integer::binary_or(const Integer & other) {
 			std::size_t width = std::max(size(), other.size());
 			_value.resize(width);
@@ -849,13 +849,13 @@ namespace Kai {
 				_value[i] |= other[i];
 			}
 		}
-
+		
 		void Integer::binary_not() {
 			for (std::size_t i = 0; i < _value.size(); i += 1) {
 				_value[i] = ~_value[i];
 			}
 		}
-
+		
 		// Returns a large random number. Digits is in multiple of 32 bits.
 		void Integer::generate_rando_number (DigitT length) {
 			static std::ifstream * random_device = NULL;
@@ -867,11 +867,11 @@ namespace Kai {
 			_value.resize(length);
 			random_device->read((char*)&_value[0], (std::size_t)_value.size() * sizeof(DigitT));
 		}
-
+		
 		// Returns a large random number between min and max.
 		void Integer::generate_rando_number (Integer min, Integer max) {
 			generate_rando_number(max.value().size());
-
+			
 			Integer diff = max;
 			diff.subtract(min);
 			
@@ -881,7 +881,7 @@ namespace Kai {
 			assert(*this < max);
 			assert(*this > min);
 		}
-
+		
 		// Returns the greatest common divisor of a and b.
 		void Integer::calculate_greatest_common_divisor (Integer a, Integer b) {
 			while (b != 0) {
@@ -894,7 +894,7 @@ namespace Kai {
 			
 			(*this) = a;
 		}
-
+		
 		//	Computes inv = u^(-1) mod v */
 		//	Ref: Knuth Algorithm X Vol 2 p 342
 		//		ignoring u2, v2, t2
@@ -931,7 +931,7 @@ namespace Kai {
 				(*this) = u1;
 			}
 		}
-
+		
 		// This function implements simple jacobi test.
 		int jacobi (Integer m, Integer n) {
 			int i = 1;
@@ -965,7 +965,7 @@ namespace Kai {
 			
 			return i;
 		}
-
+		
 		bool Integer::is_probably_prime (int tests) const {
 			const Integer & p = *this;
 			
@@ -979,10 +979,10 @@ namespace Kai {
 			while (tests-- > 0) {
 				Integer a = 0;
 				a.generate_rando_number(2, p);
-
+				
 				Integer gcd = 0;
 				gcd.calculate_greatest_common_divisor(a, p);
-
+				
 				if (gcd == 1) {
 					Integer l = 0, e = 0, p1 = p;
 					p1.subtract(1);
@@ -1007,7 +1007,7 @@ namespace Kai {
 			
 			return true;
 		}
-
+		
 		void Integer::generate_prime (DigitT length) {
 			while (true) {
 				//std::cout << "." << std::flush;
@@ -1020,7 +1020,7 @@ namespace Kai {
 				}
 			}
 		}
-
+		
 		void Integer::generate_prime (Integer min, Integer max) {
 			while (true) {
 				//std::cout << "." << std::flush;
@@ -1033,7 +1033,7 @@ namespace Kai {
 				}
 			}
 		}
-
+		
 		bool Integer::find_prime_less_than (Integer max) {
 			while (max > 0) {
 				max.subtract(1);
@@ -1049,18 +1049,18 @@ namespace Kai {
 		
 		std::string Integer::to_hexadecimal(bool prefix) const {
 			std::stringstream buffer;
-
+			
 			if (prefix)
 				buffer << "0x";
-
+			
 			for (std::size_t i = 0; i < _value.size(); i += 1) {
 				DigitT d = _value[_value.size() - (i+1)];
-
+				
 				for (unsigned n = 0; n < DIGIT_BITS; n += 4) {
 					buffer << convert_to_character((d >> (DIGIT_BITS - (n+4))) & 0xF);
 				}
 			}
-
+			
 			return buffer.str();
 		}
 		
@@ -1087,7 +1087,7 @@ namespace Kai {
 				
 				char * next = end - width;
 				filled = single_precision_to_buffer(remainder.to_intermediate(), base, width, next);
-								
+				
 				if (!result.is_zero()) {
 					// There is still more of the number to come, make sure that any remaining space in the buffer is zero-filled.
 					while (filled < width) {
@@ -1104,7 +1104,7 @@ namespace Kai {
 				i += 1;
 			}	
 		}
-
+		
 		DigitT Integer::to_digit() const {
 			if (_value.size() == 0) {
 				return 0;
@@ -1141,7 +1141,7 @@ namespace Kai {
 		void Integer::debug() {
 			std::cerr << "Value = " << to_hexadecimal() << std::endl;
 		}
-
+		
 		std::ostream & operator<< (std::ostream & output, const Integer & i) {
 			output << i.to_string(16);
 			

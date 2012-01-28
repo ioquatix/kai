@@ -43,7 +43,7 @@ namespace Kai {
 		virtual Math::Integer to_integer() const;
 		
 		ValueT & value() { return _value; }
-				
+		
 		virtual ComparisonResult compare(const Object * other) const;
 		ComparisonResult compare(const Integer * other) const;
 		
@@ -74,7 +74,7 @@ namespace Kai {
 		
 	protected:
 		ValueT _value;
-	
+		
 	public:
 		static const char * const NAME;
 		
@@ -86,14 +86,14 @@ namespace Kai {
 		virtual Math::Integer to_integer() const;
 		
 		ValueT & value() { return _value; }
-				
+		
 		virtual ComparisonResult compare(const Object * other) const;
 		ComparisonResult compare(const Number * other) const;
 		
 		virtual void to_code(Frame * frame, StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const;
 		
 		static Ref<Object> product(Frame * frame);
-
+		
 		static void import(Frame * frame);
 	};
 }

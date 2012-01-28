@@ -49,7 +49,7 @@ namespace Kai {
 		Expressions * self = new(frame) Expressions;
 		
 		self->add(new(frame) HeredocExpression);
-
+		
 		self->add(new(frame) NumberExpression);
 		
 		self->add(new(frame) StringExpression);
@@ -64,7 +64,7 @@ namespace Kai {
 		self->add(new(frame) CallExpression);
 		self->add(new(frame) LambdaExpression);
 		self->add(new(frame) BlockExpression);
-						
+		
 		return self;
 	}
 	
@@ -112,7 +112,7 @@ namespace Kai {
 			for (auto expression : _expressions) {
 				result = expression->parse(frame, state.next(current));
 				status |= result.status;
-								
+				
 				if (result.is_okay()) {
 					// We have successfully parsed the expression:
 					status = ParseResult::OKAY;
@@ -151,7 +151,7 @@ namespace Kai {
 	}
 	
 #pragma mark -
-
+	
 	Ref<Object> Expressions::parse (Frame * frame) {
 		Expressions * self;
 		String * code_string;
@@ -166,7 +166,7 @@ namespace Kai {
 			throw Exception("Could not parse input", code_string, frame);
 		}
 	}
-
+	
 	void Expressions::to_code(Frame * frame, StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const {
 		buffer << "(Expressions@" << this << ")";
 	}
@@ -184,13 +184,13 @@ namespace Kai {
 	Expressions * Expressions::fetch (Frame * frame) {
 		return frame->lookup(frame->sym("expressions")).as<Expressions>();
 	}
-
-#pragma mark -
-
-	StringExpression::~StringExpression() {
 	
+#pragma mark -
+	
+	StringExpression::~StringExpression() {
+		
 	}
-			
+	
 	ParseResult StringExpression::parse(Frame * frame, const ParseState & state) const {
 		Parser::Token token = Parser::parse_string(state.current, state.end);
 		
@@ -200,11 +200,11 @@ namespace Kai {
 			return ParseResult(token);
 		}
 	}
-
-#pragma mark -
-
-	SymbolExpression::~SymbolExpression() {
 	
+#pragma mark -
+	
+	SymbolExpression::~SymbolExpression() {
+		
 	}
 	
 	ParseResult SymbolExpression::parse(Frame * frame, const ParseState & state) const {
@@ -218,15 +218,15 @@ namespace Kai {
 	}
 	
 #pragma mark -
-
-	ScopeExpression::ScopeExpression(StringT prefix, StringT function)
-		: _prefix(prefix), _function(function)
-	{
 	
+	ScopeExpression::ScopeExpression(StringT prefix, StringT function)
+	: _prefix(prefix), _function(function)
+	{
+		
 	}
 	
 	ScopeExpression::~ScopeExpression() {
-	
+		
 	}
 	
 	ParseResult ScopeExpression::parse(Frame * frame, const ParseState & state) const {
@@ -239,16 +239,16 @@ namespace Kai {
 				token &= identifier;
 				
 				return ParseResult(token, 
-					Cell::create(frame)(frame->sym(_function.c_str()))(frame->sym(identifier.value().c_str())->as_value(frame))
-				);
+								   Cell::create(frame)(frame->sym(_function.c_str()))(frame->sym(identifier.value().c_str())->as_value(frame))
+								   );
 			}
 		}
-
+		
 		return ParseResult(token);
 	}
 	
 #pragma mark -
-
+	
 	OperatorExpression::OperatorExpression() {
 		// Operators must be in longest to shortest order
 		_operators << "==" << "<=>";
@@ -258,9 +258,9 @@ namespace Kai {
 		_operators << "+" << "-" << "*" << "/" << "%" << "^";
 		_operators << "=";
 	}
-
-	OperatorExpression::~OperatorExpression() {
 	
+	OperatorExpression::~OperatorExpression() {
+		
 	}
 	
 	ParseResult OperatorExpression::parse(Frame * frame, const ParseState & state) const {
@@ -274,9 +274,9 @@ namespace Kai {
 	}
 	
 #pragma mark -
-
-	NumberExpression::~NumberExpression() {
 	
+	NumberExpression::~NumberExpression() {
+		
 	}
 	
 	ParseResult NumberExpression::parse(Frame * frame, const ParseState & state) const {
@@ -299,34 +299,34 @@ namespace Kai {
 		}
 		
 		/*
-		token = Parser::parse_integer(state.current, state.end);
-		
-		if (token) {
-			Math::Integer value(token.value(), 10);
-			
-			return ParseResult(token, new(frame) Integer(value));
-		}
+		 token = Parser::parse_integer(state.current, state.end);
+		 
+		 if (token) {
+		 Math::Integer value(token.value(), 10);
+		 
+		 return ParseResult(token, new(frame) Integer(value));
+		 }
 		 */
-					
+		
 		return ParseResult(token);
 	}
 	
 #pragma mark -
-
+	
 	CellExpression::CellExpression(StringT open, StringT close) : _open(open), _close(close), _header(false) {
-	
+		
 	}
-			
-	CellExpression::CellExpression() : _open("("), _close(")"), _header(false) {
 	
+	CellExpression::CellExpression() : _open("("), _close(")"), _header(false) {
+		
 	}
 	
 	Ref<Object> CellExpression::convert_to_result(Frame * frame, Cell * items) const {
 		return items;
 	}
-
-	CellExpression::~CellExpression() {
 	
+	CellExpression::~CellExpression() {
+		
 	}
 	
 	ParseResult CellExpression::parse_header(Frame * frame, const ParseState & state) const {
@@ -372,7 +372,7 @@ namespace Kai {
 							// Build a token from the failed expression.
 							failed_token = Parser::Token(t.end(), state.end);
 					}
-				
+					
 					break;
 				}
 				
@@ -392,11 +392,11 @@ namespace Kai {
 		
 		return ParseResult();
 	}
-
-#pragma mark -
-
-	ValueExpression::~ValueExpression() {
 	
+#pragma mark -
+	
+	ValueExpression::~ValueExpression() {
+		
 	}
 	
 	ParseResult ValueExpression::parse(Frame * frame, const ParseState & state) const {
@@ -406,7 +406,7 @@ namespace Kai {
 			return ParseResult(token);
 		
 		ParseResult body = state.top->parse(frame, state.next(token.end()));
-			
+		
 		if (body.is_okay()) {
 			return ParseResult(body.token, Cell::create(frame)(frame->sym("value"))(body.value));
 		}
@@ -415,45 +415,45 @@ namespace Kai {
 	}
 	
 #pragma mark -
-
+	
 	CallExpression::CallExpression()
-		: CellExpression("[", "]")
+	: CellExpression("[", "]")
 	{
-	
+		
 	}
-
+	
 	CallExpression::~CallExpression() {
-	
+		
 	}
-
+	
 	Ref<Object> CallExpression::convert_to_result(Frame * frame, Cell * items) const {
 		return Cell::create(frame)
-			(frame->sym("call"))
-			(items->head())
-			(Cell::create(frame)
-				(frame->sym("value"))
-				(items->tail())
-			);
+		(frame->sym("call"))
+		(items->head())
+		(Cell::create(frame)
+		 (frame->sym("value"))
+		 (items->tail())
+		 );
 	}
 	
 #pragma mark -
-
-	BlockExpression::BlockExpression()
-		: CellExpression("{", "}")
-	{
 	
+	BlockExpression::BlockExpression()
+	: CellExpression("{", "}")
+	{
+		
 	}
-
+	
 	BlockExpression::~BlockExpression()
 	{
-	
+		
 	}
-			
+	
 	Ref<Object> BlockExpression::convert_to_result(Frame * frame, Cell * items) const
 	{
 		return new(frame) Cell(frame->sym("block"), items);
 	}
-
+	
 #pragma mark -
 	
 	LambdaExpression::LambdaExpression() {
@@ -517,7 +517,7 @@ namespace Kai {
 	}
 	
 #pragma mark -
-		
+	
 	HeredocExpression::HeredocExpression() {
 		
 	}

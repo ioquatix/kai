@@ -28,11 +28,11 @@ namespace Kai {
 	
 	Time::Time()
 	{
-		struct timeval t;
-		gettimeofday (&t, (struct timezone*)0);
+		struct timeval time_value;
+		gettimeofday (&time_value, (struct timezone*)0);
 		
-		_seconds = t.tv_sec;
-		_fraction = (FractionT)t.tv_usec / 1000000.0;
+		_seconds = time_value.tv_sec;
+		_fraction = (FractionT)time_value.tv_usec / 1000000.0;
 	}
 	
 	Time::Time(FractionT time)
@@ -60,30 +60,30 @@ namespace Kai {
 	
 	Time Time::operator+(const Time & other)
 	{
-		Time t(*this);
+		Time time(*this);
 		
-		t._seconds += other._seconds;
-		t._fraction += other._fraction;
+		time._seconds += other._seconds;
+		time._fraction += other._fraction;
 		
-		t.normalize();
+		time.normalize();
 		
-		assert(close_enough(this->total() + other.total(), t.total()));
+		ensure(close_enough(this->total() + other.total(), time.total()));
 		
-		return t;
+		return time;
 	}
 	
 	Time Time::operator-(const Time & other)
 	{
-		Time t(*this);
+		Time time(*this);
 		
-		t._seconds -= other._seconds;
-		t._fraction -= other._fraction;
+		time._seconds -= other._seconds;
+		time._fraction -= other._fraction;
 		
-		t.normalize();
+		time.normalize();
 		
-		assert(close_enough(this->total() - other.total(), t.total()));
+		assert(close_enough(this->total() - other.total(), time.total()));
 		
-		return t;
+		return time;
 	}
 	
 	Time & Time::operator+=(const Time & other)
@@ -102,37 +102,37 @@ namespace Kai {
 		_fraction -= other._fraction;
 		
 		normalize();
-	
+		
 		return *this;
 	}
 	
 	Time Time::operator*(FractionT other)
 	{
-		Time t(*this);
+		Time time(*this);
 		
-		t._seconds *= other;
-		t._fraction *= other;
+		time._seconds *= other;
+		time._fraction *= other;
 		
-		t.normalize();
+		time.normalize();
 		
-		assert(close_enough(this->total() * other, t.total()));
+		assert(close_enough(this->total() * other, time.total()));
 		
-		return t;
+		return time;
 	}
 	
 	Time Time::operator/(FractionT other)
 	{
-		Time t(*this);
+		Time time(*this);
 		
 		FractionT current = this->total();
-		t._seconds = 0;
-		t._fraction = current / other;
+		time._seconds = 0;
+		time._fraction = current / other;
 		
-		t.normalize();
+		time.normalize();
 		
-		assert(close_enough(this->total() / other, t.total()));
+		assert(close_enough(this->total() / other, time.total()));
 		
-		return t;
+		return time;
 	}
 	
 	std::ostream & operator<<(std::ostream & output, const Time & time)

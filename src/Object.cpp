@@ -78,7 +78,7 @@ namespace Kai
 	}
 	
 #pragma mark -
-		
+	
 	Ref<Object> Object::to_string(Frame * frame) {
 		Object * value;
 		
@@ -217,7 +217,7 @@ namespace Kai
 		prototype->update(frame->sym("=="), KAI_BUILTIN_FUNCTION(Object::equal));
 		prototype->update(frame->sym("prototype"), KAI_BUILTIN_FUNCTION(Object::prototype_));
 		prototype->update(frame->sym("value"), KAI_BUILTIN_FUNCTION(Object::value));
-				
+		
 		prototype->update(frame->sym("lookup"), KAI_BUILTIN_FUNCTION(Object::lookup));
 		prototype->update(frame->sym("call"), KAI_BUILTIN_FUNCTION(Object::call));
 		

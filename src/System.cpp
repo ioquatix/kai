@@ -78,7 +78,7 @@ namespace Kai {
 	
 	bool path_exists(PathT path) {
 		struct stat s;
-				
+		
 		if (stat(path.c_str(), &s) == 0) {
 			return true;
 		}

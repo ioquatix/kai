@@ -19,9 +19,9 @@
 //#define KAI_DEBUG
 
 namespace Kai {
-
-	Tracer::Statistics::Statistics() : total_time(0), count(0) {
 	
+	Tracer::Statistics::Statistics() : total_time(0), count(0) {
+		
 	}
 	
 	Tracer::~Tracer() {
@@ -37,7 +37,7 @@ namespace Kai {
 			traversal->traverse(i->first);
 		}
 	}
-
+	
 	void Tracer::enter(Object * value)
 	{
 		Statistics & stats = _statistics[value];
@@ -111,9 +111,9 @@ namespace Kai {
 			_tracer->exit(_frame->function());
 		}
 	};
-
+	
 #pragma mark -
-
+	
 	const char * const Frame::NAME = "Frame";
 	
 	Frame::Frame(Object * scope) : _previous(NULL), _scope(scope), _message(NULL), _function(NULL), _arguments(NULL), _depth(0) {
@@ -129,7 +129,7 @@ namespace Kai {
 		std::cerr << "Frame: " << this << " Arguments: " << arguments() << std::endl;
 #endif
 	}
-
+	
 	Frame::Frame(Object * scope, Cell * message, Frame * previous) : _previous(previous), _scope(scope), _message(message), _function(NULL), _arguments(NULL) {
 		_allocator = previous->_allocator;
 		
@@ -206,18 +206,18 @@ namespace Kai {
 		std::cerr << "-- " << Object::to_string(this, _message) << " <= " << Object::to_string(this, _scope) << std::endl;
 		std::cerr << StringT(_depth, '\t') << "Fetching Function " << Object::to_string(this, _message->head()) << std::endl;
 #endif
-
+		
 		_function = _message->head()->evaluate(this);
-
+		
 #ifdef KAI_DEBUG
 		std::cerr << StringT(_depth, '\t') << "Executing Function " << Object::to_string(this, _function) << std::endl;		
 		this->debug(true);
 #endif
-
+		
 		if (!_function) {
 			throw Exception("Invalid Function", _message->head(), this);
 		}
-
+		
 #ifdef KAI_TRACE
 		// trace will be deconstructed even in the event of an exception.
 		Trace trace(this);
@@ -225,7 +225,7 @@ namespace Kai {
 		
 		return _function->evaluate(this);
 	}
-
+	
 	Ref<Object> Frame::call(Object * scope, Cell * message) {
 		if (message == NULL) {
 			throw Exception("Invalid Message", this);
@@ -241,15 +241,15 @@ namespace Kai {
 		
 		return frame->apply();
 	}
-
+	
 	Cell * Frame::message() {
 		return _message;
 	}
-
+	
 	Frame * Frame::previous() {
 		return _previous;
 	}
-
+	
 	Object * Frame::scope() {
 		Ref<Object> scope = _scope;
 		
@@ -265,18 +265,18 @@ namespace Kai {
 		
 		return scope;
 	}
-
+	
 	Ref<Object> Frame::function() {
 		return _function;
 	}
-
+	
 	Cell * Frame::operands() {
 		if (_message)
 			return _message->tail().as<Cell>();
 		else
 			return NULL;
 	}
-
+	
 	// With optimisations turned on, this function seems to cause stack frames to be reused and cause problems..!?
 	Cell * Frame::unwrap() {
 #ifdef KAI_DEBUG
@@ -301,11 +301,11 @@ namespace Kai {
 		
 		return _arguments;
 	}
-
+	
 	Cell * Frame::arguments() {
 		return _arguments;
 	}
-
+	
 	bool Frame::top() {
 		return _previous == NULL;
 	}
@@ -322,7 +322,7 @@ namespace Kai {
 		// We don't need this as long as all arguments are optional.. otherwise, as expected, required arguments will cause an error.
 		//if (args == NULL) {
 		//	throw Exception("No arguments provided!", this);
-			// Dummy for extraction of null arguments.
+		// Dummy for extraction of null arguments.
 		//	args = new Cell(NULL, NULL);
 		//}
 		
@@ -339,7 +339,7 @@ namespace Kai {
 			std::cerr << "\t\t At: " << association->source_code->input_name() << "[" << segment.begin.line << ":" << segment.begin.offset << "]: " << first_line << std::endl;
 		}
 	}
-
+	
 	void Frame::debug(bool ascend) {
 		Frame * cur = this;
 		
@@ -353,7 +353,7 @@ namespace Kai {
 				std::cerr << "\t Scope: " << Object::to_string(this, cur->scope()) << std::endl;
 #endif
 			
-
+			
 			std::cerr << "\t Function: " << Object::to_string(this, cell.head()) << std::endl;
 			at(cell.head());
 			std::cerr << "\t Message: " << Object::to_string(this, _message) << std::endl;
@@ -392,10 +392,10 @@ namespace Kai {
 		
 		std::cerr << "Total time for " << times->value() << " runs = " << duration << std::endl;
 		std::cerr << "Average time taken = " << (duration / times->value().to_intermediate()) << std::endl;
-
+		
 		return result;
 	}
-		
+	
 	Ref<Object> Frame::where(Frame * frame)
 	{
 		Symbol * identifier = NULL;
@@ -450,16 +450,16 @@ namespace Kai {
 	class Wrapper : public Object {
 	protected:
 		Object * _value;
-	
+		
 	public:
 		Wrapper(Object * value) : _value(value) {
-		
+			
 		}
-	
+		
 		virtual void mark(Memory::Traversal * traversal) const {
 			traversal->traverse(_value);
 		}
-			
+		
 		virtual Ref<Object> evaluate(Frame * frame) {
 			Cell * arguments = frame->unwrap();
 			
@@ -476,10 +476,10 @@ namespace Kai {
 		
 		virtual void to_code(Frame * frame, StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const {
 			buffer << "(wrapper ";
-
+			
 			if (_value)
 				_value->to_code(frame, buffer);
-				
+			
 			buffer << ')';
 		}
 	};
@@ -493,46 +493,46 @@ namespace Kai {
 	}
 	
 	class Unwrapper : public Object {
-		protected:
-			Object * _value;
+	protected:
+		Object * _value;
+		
+	public:
+		Unwrapper(Object * value) : _value(value) {
+		}
+		
+		virtual void mark(Memory::Traversal * traversal) const {
+			traversal->traverse(_value);
+		}
+		
+		virtual Ref<Object> evaluate(Frame * frame) {
+			Cell * operands = frame->operands();
+			Cell * message = new(frame) Cell(_value);
+			Cell * next = message;
+			Symbol * value = frame->sym("value");
 			
-		public:
-			Unwrapper(Object * value) : _value(value) {
-			}
-			
-			virtual void mark(Memory::Traversal * traversal) const {
-				traversal->traverse(_value);
-			}
-			
-			virtual Ref<Object> evaluate(Frame * frame) {
-				Cell * operands = frame->operands();
-				Cell * message = new(frame) Cell(_value);
-				Cell * next = message;
-				Symbol * value = frame->sym("value");
+			while (operands != NULL) {
+				next = next->append(
+									Cell::create(frame)(value)(operands->head())
+									);
 				
-				while (operands != NULL) {
-					next = next->append(
-						Cell::create(frame)(value)(operands->head())
-					);
-					
-					operands = operands->tail().as<Cell>();
-				}
-				
-				return frame->call(NULL, message);
+				operands = operands->tail().as<Cell>();
 			}
 			
-			Ref<Object> value() {
-				return _value;
-			}
+			return frame->call(NULL, message);
+		}
+		
+		Ref<Object> value() {
+			return _value;
+		}
+		
+		virtual void to_code(Frame * frame, StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const {
+			buffer << "(unwrapper ";
 			
-			virtual void to_code(Frame * frame, StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const {
-				buffer << "(unwrapper ";
-
-				if (_value)
-					_value->to_code(frame, buffer);
-					
-				buffer << ')';
-			}
+			if (_value)
+				_value->to_code(frame, buffer);
+			
+			buffer << ')';
+		}
 	};
 	
 	Ref<Object> Frame::unwrap(Frame * frame) {
@@ -553,7 +553,7 @@ namespace Kai {
 		Cell * cur = frame->operands();
 		Ref<Object> scope = frame->scope();
 		Frame * next = frame;
-				
+		
 		while (cur != NULL) {
 			scope = cur->head()->evaluate(next);
 			next = new(frame) Frame(scope, next);
@@ -571,7 +571,7 @@ namespace Kai {
 	Ref<Object> Frame::arguments(Frame * frame) {
 		return frame->unwrap();
 	}
-		
+	
 	void Frame::import(Frame * frame) {
 		Table * prototype = new(frame) Table;
 		

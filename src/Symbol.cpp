@@ -102,7 +102,7 @@ namespace Kai {
 		
 		return value;
 	}
-			
+	
 	void Symbol::import(Frame * frame) {
 		Table * prototype = new(frame) Table;
 		

@@ -33,7 +33,7 @@
 #include "System.h"
 
 namespace {
-
+	
 	using namespace Kai;
 	
 	// Example:
@@ -41,10 +41,10 @@ namespace {
 	
 	Ref<Object> run_code (Frame * frame, SourceCode * code, int & status, Terminal * terminal) {
 		Ref<Object> value = NULL, result = NULL;
-
+		
 		// Execution status
 		status = 0;
-	
+		
 		try {
 			Ref<Expressions> expressions = Expressions::fetch(frame);
 			
@@ -82,7 +82,7 @@ namespace {
 			
 			status = 2;
 		}
-	
+		
 		return NULL;
 	}
 	
@@ -106,7 +106,7 @@ namespace {
 		Table::import(frame);
 		
 		global->set_prototype(frame->lookup(frame->sym("Table")));
-				
+		
 		Integer::import(frame);
 		Number::import(frame);
 		Frame::import(frame);
@@ -152,7 +152,7 @@ int main (int argc, const char * argv[]) {
 	int result = 0;
 	Terminal console(STDIN_FILENO, STDOUT_FILENO, STDERR_FILENO);
 	Ref<Frame> context = build_context();
-
+	
 	BasicEditor editor(context);
 	
 	if (argc == 3) {

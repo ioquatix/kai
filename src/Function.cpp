@@ -15,9 +15,9 @@
 #include <iostream>
 
 namespace Kai {
-
+	
 #pragma mark -
-
+	
 	const char * const DynamicFunction::NAME = "DynamicFunction";
 	
 	DynamicFunction::DynamicFunction (EvaluateFunctionT evaluate_function) : _evaluate_function(evaluate_function) {
@@ -25,11 +25,11 @@ namespace Kai {
 	
 	DynamicFunction::~DynamicFunction () {
 	}
-
+	
 	Ref<Object> DynamicFunction::evaluate (Frame * frame) {
 		return _evaluate_function(frame);
 	}
-
+	
 	void DynamicFunction::to_code(Frame * frame, StringStreamT & buffer, MarkedT & marks, std::size_t indentation) {
 		buffer << "(dynamic-function " << _evaluate_function << ")";
 	}

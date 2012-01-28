@@ -30,7 +30,7 @@ namespace Kai {
 		
 		ParseResult(Status status = FAILED);
 		ParseResult(Parser::Token _token, Object * _value = NULL, Status status = OKAY);
-
+		
 		Parser::Token token;
 		Ref<Object> value;
 		Status status;
@@ -68,13 +68,13 @@ namespace Kai {
 	protected:
 		typedef std::list<Expression*> ExpressionsT;
 		ExpressionsT _expressions;
-					
+		
 	public:
 		Expressions();
 		virtual ~Expressions();
 		
 		virtual Ref<Symbol> identity(Frame * frame) const;
-	
+		
 		virtual void mark(Memory::Traversal *) const;
 		
 		ParseResult parse(Frame * frame, const SourceCode * code, bool partial = false);
@@ -94,117 +94,117 @@ namespace Kai {
 	};
 	
 	class StringExpression : public Expression {
-		public:
-			virtual ~StringExpression();
-			
-			virtual ParseResult parse(Frame * frame, const ParseState & state) const;
+	public:
+		virtual ~StringExpression();
+		
+		virtual ParseResult parse(Frame * frame, const ParseState & state) const;
 	};
 	
 	class SymbolExpression : public Expression {
-		public:
-			virtual ~SymbolExpression();
-			
-			virtual ParseResult parse(Frame * frame, const ParseState & state) const;
+	public:
+		virtual ~SymbolExpression();
+		
+		virtual ParseResult parse(Frame * frame, const ParseState & state) const;
 	};
 	
 	class ScopeExpression : public Expression {
-		protected:
-			StringT _prefix;
-			StringT _function;
-			
-		public:
-			ScopeExpression (StringT prefix, StringT function);
-			virtual ~ScopeExpression ();
-			
-			virtual ParseResult parse(Frame * frame, const ParseState & state) const;
+	protected:
+		StringT _prefix;
+		StringT _function;
+		
+	public:
+		ScopeExpression (StringT prefix, StringT function);
+		virtual ~ScopeExpression ();
+		
+		virtual ParseResult parse(Frame * frame, const ParseState & state) const;
 	};
 	
 	class OperatorExpression : public Expression {
-		protected:
-			Parser::OperatorParser _operators;
-			
-		public:
-			OperatorExpression();
-			virtual ~OperatorExpression();
-			
-			virtual ParseResult parse(Frame * frame, const ParseState & state) const;
+	protected:
+		Parser::OperatorParser _operators;
+		
+	public:
+		OperatorExpression();
+		virtual ~OperatorExpression();
+		
+		virtual ParseResult parse(Frame * frame, const ParseState & state) const;
 	};
 	
 	class NumberExpression : public Expression {
-		public:
-			virtual ~NumberExpression();
-			
-			virtual ParseResult parse(Frame * frame, const ParseState & state) const;
-	};
+	public:
+		virtual ~NumberExpression();
 		
+		virtual ParseResult parse(Frame * frame, const ParseState & state) const;
+	};
+	
 	class CellExpression : public Expression {
-		protected:
-			StringT _open, _close;
-			bool _header;
-			
-			CellExpression(StringT open, StringT close);
-			virtual Ref<Object> convert_to_result(Frame * frame, Cell * items) const;
-			
-			virtual ParseResult parse_header(Frame * frame, const ParseState & state) const;
-		public:
-			CellExpression();
-			virtual ~CellExpression();
-			
-			virtual ParseResult parse(Frame * frame, const ParseState & state) const;
+	protected:
+		StringT _open, _close;
+		bool _header;
+		
+		CellExpression(StringT open, StringT close);
+		virtual Ref<Object> convert_to_result(Frame * frame, Cell * items) const;
+		
+		virtual ParseResult parse_header(Frame * frame, const ParseState & state) const;
+	public:
+		CellExpression();
+		virtual ~CellExpression();
+		
+		virtual ParseResult parse(Frame * frame, const ParseState & state) const;
 	};
 	
 	class ValueExpression : public Expression {
-		public:
-			virtual ~ValueExpression();
-			
-			virtual ParseResult parse(Frame * frame, const ParseState & state) const;
+	public:
+		virtual ~ValueExpression();
+		
+		virtual ParseResult parse(Frame * frame, const ParseState & state) const;
 	};
 	
 	class CallExpression : public CellExpression {
-		protected:
-			virtual Ref<Object> convert_to_result(Frame * frame, Cell * items) const;
-
-		public:
-			CallExpression();
-			virtual ~CallExpression();
+	protected:
+		virtual Ref<Object> convert_to_result(Frame * frame, Cell * items) const;
+		
+	public:
+		CallExpression();
+		virtual ~CallExpression();
 	};
 	
 	class BlockExpression : public CellExpression {
-		protected:
-			virtual Ref<Object> convert_to_result(Frame * frame, Cell * items) const;
-
-		public:
-			BlockExpression();
-			virtual ~BlockExpression();
+	protected:
+		virtual Ref<Object> convert_to_result(Frame * frame, Cell * items) const;
+		
+	public:
+		BlockExpression();
+		virtual ~BlockExpression();
 	};
 	
 	class LambdaExpression : public BlockExpression {
-		protected:
-			virtual Ref<Object> convert_to_result(Frame * frame, Cell * items) const;
-			
-			virtual ParseResult parse_header(Frame * frame, const ParseState & state) const;
-
-		public:
-			LambdaExpression();
-			virtual ~LambdaExpression();
+	protected:
+		virtual Ref<Object> convert_to_result(Frame * frame, Cell * items) const;
+		
+		virtual ParseResult parse_header(Frame * frame, const ParseState & state) const;
+		
+	public:
+		LambdaExpression();
+		virtual ~LambdaExpression();
 	};
 	
 	/*
-		Example:
-			(trace `<-Godzilla
-				Hello,
-					World.
-			Godzilla)
+	 Example:
+	 (trace `<-Godzilla
+	 Hello,
+	 World.
+	 Godzilla)
 	 */
 	
 	class HeredocExpression : public Expression {
-		protected:
-			
-		public:
-			HeredocExpression();
-			virtual ~HeredocExpression();
+	protected:
 		
-			virtual ParseResult parse(Frame * frame, const ParseState & state) const;
+	public:
+		HeredocExpression();
+		virtual ~HeredocExpression();
+		
+		virtual ParseResult parse(Frame * frame, const ParseState & state) const;
 	};
 }
 

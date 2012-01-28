@@ -36,7 +36,7 @@ namespace Kai {
 	Ref<Symbol> Integer::identity(Frame * frame) const {
 		return frame->sym("Integer");
 	}
-		
+	
 	Math::Integer Integer::to_integer() const {
 		return _value;
 	}

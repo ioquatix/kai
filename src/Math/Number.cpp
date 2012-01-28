@@ -33,7 +33,7 @@ namespace Kai {
 		Number::Number(std::string value) : _scale(0)
 		{
 			std::stringstream buffer;
-						
+			
 			std::size_t i = 0;
 			
 			// Is the number negative?
@@ -72,7 +72,7 @@ namespace Kai {
 			}
 			
 			// We need to normalize the integers based on the scale factor.
-
+			
 			// Broken =)
 			return Integer::EQUAL;
 		}

@@ -14,7 +14,7 @@
 #include <deque>
 
 namespace Kai {
-		
+	
 	class Array : public Object {
 	public:
 		typedef std::deque<Object *> ArrayT;
@@ -35,7 +35,7 @@ namespace Kai {
 		
 		ArrayT & value() { return _value; }
 		const ArrayT & value() const { return _value; }
-					
+		
 		virtual ComparisonResult compare(const Object * other) const;
 		ComparisonResult compare(const Array * other) const;
 		
@@ -46,7 +46,7 @@ namespace Kai {
 		static Ref<Object> minimum(Frame * frame);
 		static Ref<Object> maximum(Frame * frame);
 		static Ref<Object> at(Frame * frame);
-					
+		
 		static Ref<Object> push_back(Frame * frame);
 		static Ref<Object> pop_back(Frame * frame);			
 		static Ref<Object> push_front(Frame * frame);

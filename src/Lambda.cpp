@@ -15,11 +15,11 @@
 #include "Logic.h"
 
 namespace Kai {
-
+	
 #pragma mark -
-
+	
 	const char * const Lambda::NAME = "Lambda";
-
+	
 	Lambda::Lambda(Frame * scope, Cell * arguments, Cell * code) : _scope(scope), _arguments(arguments), _code(code), _macro(false) {
 	}
 	
@@ -72,7 +72,7 @@ namespace Kai {
 			names = names->tail().as<Cell>();
 			values = values->tail().as<Cell>();
 		}
-				
+		
 		// Give the execution scope access to the executing lambda:
 		locals->update(frame->sym("frame"), frame);
 		locals->update(frame->sym("caller"), frame->scope());
@@ -112,7 +112,7 @@ namespace Kai {
 				_arguments->to_code(frame, buffer, recurse, indentation + 1);
 			else
 				buffer << "()";
-				
+			
 			buffer << " `";
 			
 			if (_code)
@@ -209,7 +209,7 @@ namespace Kai {
 		prototype->update(frame->sym("is-function?"), KAI_BUILTIN_FUNCTION(Lambda::is_function));
 		prototype->update(frame->sym("to-macro"), KAI_BUILTIN_FUNCTION(Lambda::to_macro));
 		prototype->update(frame->sym("new"), KAI_BUILTIN_FUNCTION(Lambda::lambda));
-				
+		
 		frame->update(frame->sym("Lambda"), prototype);
 		frame->update(frame->sym("lambda"), KAI_BUILTIN_FUNCTION(Lambda::lambda));
 		frame->update(frame->sym("macro"), KAI_BUILTIN_FUNCTION(Lambda::macro));
@@ -218,5 +218,5 @@ namespace Kai {
 		frame->update(frame->sym("dynamic-scope-chain"), new(frame) Array);
 		frame->update(frame->sym("dynamic-scope"), KAI_BUILTIN_FUNCTION(Lambda::dynamic_scope));
 	}
-
+	
 }

@@ -99,13 +99,13 @@ namespace Kai {
 	}
 	
 	/*
-	Ref<Object> Logic::anything_value () {
-		return frame->sym("anything");
-	}
-	
-	Ref<Object> Logic::nothing_value () {
-		return frame->sym("nothing");
-	}
+	 Ref<Object> Logic::anything_value () {
+	 return frame->sym("anything");
+	 }
+	 
+	 Ref<Object> Logic::nothing_value () {
+	 return frame->sym("nothing");
+	 }
 	 
 	 */
 	

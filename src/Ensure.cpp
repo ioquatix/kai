@@ -12,7 +12,7 @@
 #include "Kai.h"
 
 namespace Kai {
-
+	
 	InternalError::InternalError(const char * expression, const char * func, const char * file, unsigned line) throw () : _function(func), _expression (expression), _file (file), _line (line) {
 		try {
 			StringStreamT buffer;
@@ -22,14 +22,14 @@ namespace Kai {
 			_what = "Undefined Internal Error";
 		}
 	}
-
+	
 	InternalError::~InternalError() throw () {
 	}
-
+	
 	const char * InternalError::what() const throw () {
 		return _what.c_str();
 	}
-
+	
 	void InternalError::ensure_handler(bool condition, const char * expression, const char * func, const char * file, unsigned line) {
 		if (!condition) {
 			throw InternalError(expression, func, file, line);

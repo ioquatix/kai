@@ -21,7 +21,7 @@
 #include <signal.h>
 
 namespace Kai {
-
+	
 	// infocmp -L -1
 	Process::Process(StringT path, std::vector<StringT> & arguments)
 	{
@@ -98,22 +98,22 @@ namespace Kai {
 	{
 		
 	}
-
+	
 	bool Terminal::is_tty () const
 	{
 		return isatty(_in);
 	}
-
+	
 	void Terminal::current_settings ()
 	{
 		KAI_ENSURE(tcgetattr(_in, &_settings) == 0);
 	}
-
+	
 	void Terminal::update_settings (int optional_actions) const
 	{
 		KAI_ENSURE(tcsetattr(_in, optional_actions, &_settings) == 0);
 	}
-
+	
 	void Terminal::update_flags (unsigned flags, bool state)
 	{
 		if (state)
@@ -123,13 +123,13 @@ namespace Kai {
 	}
 	
 	/*
-	std::string Terminal::color(int foreground, int background, int attributes)
-	{
-		std::stringstream buffer;
-		buffer << "\e[" << attributes << ";" << (30 + foreground) << ";" << (40 + background) << "m";
-		return buffer.str();
-	}
-	*/
+	 std::string Terminal::color(int foreground, int background, int attributes)
+	 {
+	 std::stringstream buffer;
+	 buffer << "\e[" << attributes << ";" << (30 + foreground) << ";" << (40 + background) << "m";
+	 return buffer.str();
+	 }
+	 */
 	
 	IEditor::~IEditor()
 	{
@@ -137,14 +137,14 @@ namespace Kai {
 	}
 	
 	TerminalEditor::TerminalEditor(Terminal * terminal, const StringT & prompt)
-		: _terminal(terminal), _prompt(prompt)
+	: _terminal(terminal), _prompt(prompt)
 	{
 	}
 	
 	TerminalEditor::~TerminalEditor ()
 	{
 	}
-			
+	
 	bool TerminalEditor::read_input (StringT & buffer)
 	{
 		return read_input(buffer, _prompt);
@@ -226,5 +226,5 @@ namespace Kai {
 			return true;
 		}
 	}
-
+	
 }

@@ -180,7 +180,7 @@ namespace Kai {
 		
 		return NULL;
 	}
-		
+	
 	void Cell::import(Frame * frame) {
 		Table * prototype = new(frame) Table;
 		

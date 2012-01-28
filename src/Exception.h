@@ -14,7 +14,7 @@
 #include "Reference.h"
 
 namespace Kai {
-
+	
 	class Object;
 	class Cell;
 	class Frame;
@@ -28,15 +28,15 @@ namespace Kai {
 	public:
 		Exception(StringT what, Frame * frame);
 		Exception(StringT what, Object * object, Frame * frame);
-
+		
 		virtual ~Exception();
 		
 		Frame * top();
 		virtual StringT what();
-	
+		
 		virtual StringT name();
 	};
-
+	
 	class ArgumentError : public Exception {
 	protected:
 		StringT _name, _type;
