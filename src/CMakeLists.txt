@@ -1,23 +1,36 @@
 
-set(CORELIBS ${BOEHMGC_LIBRARIES} ${LLVM_LIBRARIES} stdc++)
+set(CORELIBS stdc++)
 
 add_executable(kai 
-	Compiler.cpp
-	Ensure.cpp
-	Exception.cpp
-	Expressions.cpp
-	Frame.cpp
-	Function.cpp
-	Kai.cpp
-	main.cpp
-	SourceCode.cpp
-	Terminal.cpp
-	BasicEditor.cpp
-	Value.cpp
-	
-	Parser/Parser.cpp
-	Parser/Strings.cpp
-	Parser/Token.cpp
+	./Array.cpp
+	./Cell.cpp
+	./Ensure.cpp
+	./Exception.cpp
+	./Expressions.cpp
+	./Frame.cpp
+	./Function.cpp
+	./Kai.cpp
+	./Lambda.cpp
+	./Logic.cpp
+	./Math/Integer.cpp
+	./Math/Number.cpp
+	./Memory/Collector.cpp
+	./Memory/ManagedObject.cpp
+	./Memory/ObjectAllocator.cpp
+	./Number.cpp
+	./Object.cpp
+	./Parser/Parser.cpp
+	./Parser/Strings.cpp
+	./Parser/Token.cpp
+	./Reference.cpp
+	./SourceCode.cpp
+	./String.cpp
+	./Symbol.cpp
+	./System.cpp
+	./Table.cpp
+	./Terminal.cpp
+	./Unicode/Unicode.cpp
+	./main.cpp
 )
 
 target_link_libraries(kai ${CORELIBS})
@@ -28,7 +41,3 @@ install(
 	RUNTIME DESTINATION
 		bin
 )
-
-# add_library(machine.o STATIC
-# 	Machine.cpp
-# )
