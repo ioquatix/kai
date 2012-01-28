@@ -6,6 +6,22 @@
 	objectVersion = 46;
 	objects = {
 
+/* Begin PBXAggregateTarget section */
+		7EBE51F214D39B970054B478 /* Local Install */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = 7EBE51F314D39B980054B478 /* Build configuration list for PBXAggregateTarget "Local Install" */;
+			buildPhases = (
+				7EBE51F814D39BA60054B478 /* CopyFiles */,
+				7EBE51FA14D39BF20054B478 /* CopyFiles */,
+			);
+			dependencies = (
+				7EBE51F714D39B9E0054B478 /* PBXTargetDependency */,
+			);
+			name = "Local Install";
+			productName = "Local Install";
+		};
+/* End PBXAggregateTarget section */
+
 /* Begin PBXBuildFile section */
 		7E33117D11732F0D00DC72B5 /* Frame.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7E33117C11732F0D00DC72B5 /* Frame.cpp */; };
 		7E33123A117356BA00DC72B5 /* Function.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7E331239117356BA00DC72B5 /* Function.cpp */; };
@@ -32,6 +48,8 @@
 		7E8799C911A4CDC800051ED4 /* Token.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7E8799C611A4CDC800051ED4 /* Token.cpp */; };
 		7EA6584B129F59F2008ED798 /* System.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7EA6584A129F59F2008ED798 /* System.cpp */; };
 		7EA658D712A4A36A008ED798 /* lib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 7EA658C112A4A268008ED798 /* lib */; };
+		7EBE51F914D39BCD0054B478 /* kai in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8DD76FB20486AB0100D96B5E /* kai */; };
+		7EBE51FB14D39BFD0054B478 /* lib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 7EA658C112A4A268008ED798 /* lib */; };
 		7EBE565111F09DC2006C2044 /* Strings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7EBE565011F09DC2006C2044 /* Strings.cpp */; };
 		7EC49DEF129E75CA006F7B90 /* Array.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7EA9758012483FD20041AAB3 /* Array.cpp */; };
 		7EC7BDEC123A9BAA0018AEA2 /* Expressions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7EC7BDEB123A9BAA0018AEA2 /* Expressions.cpp */; };
@@ -54,6 +72,16 @@
 		};
 /* End PBXBuildRule section */
 
+/* Begin PBXContainerItemProxy section */
+		7EBE51F614D39B9E0054B478 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8DD76FA90486AB0100D96B5E;
+			remoteInfo = "Kai Interpreter";
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXCopyFilesBuildPhase section */
 		7EA658DA12A4A39D008ED798 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
@@ -62,6 +90,26 @@
 			dstSubfolderSpec = 7;
 			files = (
 				7EA658D712A4A36A008ED798 /* lib in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7EBE51F814D39BA60054B478 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /opt/kai/bin;
+			dstSubfolderSpec = 0;
+			files = (
+				7EBE51F914D39BCD0054B478 /* kai in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7EBE51FA14D39BF20054B478 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /opt/kai;
+			dstSubfolderSpec = 0;
+			files = (
+				7EBE51FB14D39BFD0054B478 /* lib in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -360,6 +408,7 @@
 			projectRoot = "";
 			targets = (
 				8DD76FA90486AB0100D96B5E /* Kai Interpreter */,
+				7EBE51F214D39B970054B478 /* Local Install */,
 			);
 		};
 /* End PBXProject section */
@@ -402,6 +451,14 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		7EBE51F714D39B9E0054B478 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8DD76FA90486AB0100D96B5E /* Kai Interpreter */;
+			targetProxy = 7EBE51F614D39B9E0054B478 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		1DEB928608733DD80010E9CD /* Debug */ = {
@@ -471,6 +528,20 @@
 			};
 			name = Release;
 		};
+		7EBE51F414D39B980054B478 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		7EBE51F514D39B980054B478 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -491,6 +562,14 @@
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
+		};
+		7EBE51F314D39B980054B478 /* Build configuration list for PBXAggregateTarget "Local Install" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7EBE51F414D39B980054B478 /* Debug */,
+				7EBE51F514D39B980054B478 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
 		};
 /* End XCConfigurationList section */
 	};
