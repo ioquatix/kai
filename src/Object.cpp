@@ -23,7 +23,7 @@ namespace Kai
 	}
 	
 	Ref<Symbol> Object::identity(Frame * frame) const {
-		return frame->sym("Object");
+		return frame->sym(NAME);
 	}
 	
 	Ref<Object> Object::prototype(Frame * frame) const {

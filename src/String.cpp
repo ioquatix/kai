@@ -33,7 +33,7 @@ namespace Kai {
 	}
 	
 	Ref<Symbol> String::identity(Frame * frame) const {
-		return frame->sym("String");
+		return frame->sym(NAME);
 	}
 	
 	ComparisonResult String::compare(const Object * other) const {
