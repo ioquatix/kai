@@ -156,12 +156,12 @@ int main (int argc, const char * argv[]) {
 	
 	BasicEditor editor(context);
 	
-	if (argc == 3) {
+	if (argc > 1) {
 		if (StringT(argv[1]) == "-x") {
 			Ref<SourceCode> code = new(context) SourceCode("<x>", argv[2]);
 			run_code(context, code, result, &console);
-		} else if (StringT(argv[1]) == "-f") {
-			Ref<SourceCode> code = new(context) SourceCode(argv[2]);
+		} else if (argc == 2) {
+			Ref<SourceCode> code = new(context) SourceCode(argv[1]);
 			run_code(context, code, result, &console);
 		} else {
 			std::cerr << "Unknown option: '" << argv[1] << "'" << std::endl;
