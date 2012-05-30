@@ -24,7 +24,7 @@ namespace Kai {
 		const char * _name;
 		
 	public:
-		static const char * const NAME = "BuiltinFunction";
+		static const char * const NAME;
 		
 		BuiltinFunction(const char * name) : _name(name) {
 		}
@@ -37,6 +37,9 @@ namespace Kai {
 			buffer << "(builtin-function " << _name << ")";
 		}
 	};
+	
+	template <Ref<Object> (*FunctionT)(Frame *)>
+	const char * const BuiltinFunction<FunctionT>::NAME = "BuiltinFunction";
 	
 	template <Ref<Object> (*FunctionT)(Frame *)>
 	BuiltinFunction<FunctionT> * builtin_function(const char * name) {
