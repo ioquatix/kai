@@ -33,6 +33,11 @@ The Kai stack frame serves as the fundamental unit of evaluation and lookup. Due
 
 Due to this, supporting multiple isolated interpreters is as easy as having separate stack frames. Isolated interpreters can be run on different threads and will not interact in any way (except by design).
 
+Compatibility
+-------------
+
+Kai will build and work on any platform that provides a modern C++11 compiler, e.g. Ubuntu Precise+, Mac OS X 10.6+. Kai is primarily built and tested with `clang++`.
+
 License
 -------
 
