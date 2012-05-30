@@ -62,7 +62,7 @@ namespace Kai {
 			Unicode::CodePointT code_point = Unicode::next(current, _buffer.cend());
 			
 			if (Unicode::is_newline(code_point)) {
-				LineIndex line_index = {eol - _buffer.begin(), current - eol};
+				LineIndex line_index = {LineT(eol - _buffer.begin()), LineT(current - eol)};
 				
 				// We have processed one whole line:
 				_line_offsets.push_back(line_index);
@@ -74,7 +74,7 @@ namespace Kai {
 		
 		// The file may not end with a newline, in which case we need to create a line for the trailing characters:
 		if (eol != _buffer.end()) {
-			LineIndex line_index = {eol - _buffer.begin(), _buffer.end() - eol};
+			LineIndex line_index = {LineT(eol - _buffer.begin()), LineT(_buffer.end() - eol)};
 			
 			_line_offsets.push_back(line_index);
 		}		
