@@ -112,7 +112,7 @@ namespace Kai {
 		}
 	};
 	
-#pragma mark -
+// MARK: -
 	
 	const char * const Frame::NAME = "Frame";
 	
@@ -591,7 +591,7 @@ namespace Kai {
 		frame->update(frame->sym("defines"), KAI_BUILTIN_FUNCTION(Frame::where));
 	}
 	
-#pragma mark -
+// MARK: -
 	
 	Symbol * Frame::sym(const char * name) {
 		return new(this) Symbol(name);

@@ -41,7 +41,7 @@ namespace Kai {
 		return "Exception";
 	}
 	
-#pragma mark -
+// MARK: -
 	
 	ArgumentError::ArgumentError(StringT name, StringT type, Object * value, Frame * frame) : Exception("Error converting argument", value, frame), _name(name), _type(type) {
 		
@@ -59,7 +59,7 @@ namespace Kai {
 		return "Argument Error";
 	}
 	
-#pragma mark -
+// MARK: -
 	
 	RangeError::RangeError(StringT what, Object * value, Frame * frame) : Exception(what, value, frame) {
 		

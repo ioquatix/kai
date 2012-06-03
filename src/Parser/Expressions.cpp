@@ -158,7 +158,7 @@ namespace Kai {
 			_expressions.push_back(expression);
 		}
 		
-#pragma mark -
+// MARK: -
 		
 		Ref<Object> Expressions::parse (Frame * frame) {
 			Expressions * self;
@@ -194,7 +194,7 @@ namespace Kai {
 			return frame->lookup(frame->sym("expressions")).as<Expressions>();
 		}
 		
-#pragma mark -
+// MARK: -
 		
 		StringExpression::~StringExpression() {
 			
@@ -210,7 +210,7 @@ namespace Kai {
 			}
 		}
 		
-#pragma mark -
+// MARK: -
 		
 		SymbolExpression::~SymbolExpression() {
 			
@@ -226,7 +226,7 @@ namespace Kai {
 			}
 		}
 		
-#pragma mark -
+// MARK: -
 		
 		ScopeExpression::ScopeExpression(StringT prefix, StringT function)
 		: _prefix(prefix), _function(function)
@@ -256,7 +256,7 @@ namespace Kai {
 			return ParseResult(token);
 		}
 		
-#pragma mark -
+// MARK: -
 		
 		OperatorExpression::OperatorExpression() {
 			// Operators must be in longest to shortest order
@@ -282,7 +282,7 @@ namespace Kai {
 			}
 		}
 		
-#pragma mark -
+// MARK: -
 		
 		NumberExpression::~NumberExpression() {
 			
@@ -320,7 +320,7 @@ namespace Kai {
 			return ParseResult(token);
 		}
 		
-#pragma mark -
+// MARK: -
 		
 		CellExpression::CellExpression(StringT open, StringT close) : _open(open), _close(close), _header(false) {
 			
@@ -402,7 +402,7 @@ namespace Kai {
 			return ParseResult();
 		}
 		
-#pragma mark -
+// MARK: -
 		
 		ValueExpression::~ValueExpression() {
 			
@@ -423,7 +423,7 @@ namespace Kai {
 			return body;
 		}
 		
-#pragma mark -
+// MARK: -
 		
 		CallExpression::CallExpression()
 		: CellExpression("[", "]")
@@ -445,7 +445,7 @@ namespace Kai {
 			 );
 		}
 		
-#pragma mark -
+// MARK: -
 		
 		BlockExpression::BlockExpression()
 		: CellExpression("{", "}")
@@ -463,7 +463,7 @@ namespace Kai {
 			return new(frame) Cell(frame->sym("block"), items);
 		}
 		
-#pragma mark -
+// MARK: -
 		
 		LambdaExpression::LambdaExpression() {
 			_header = true;
@@ -525,7 +525,7 @@ namespace Kai {
 			return Cell::create(frame)(frame->sym("lambda"))(arguments)(body);
 		}
 		
-#pragma mark -
+// MARK: -
 		
 		HeredocExpression::HeredocExpression() {
 			

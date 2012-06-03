@@ -189,7 +189,7 @@ namespace Kai {
 		return true;
 	}
 	
-#pragma mark -
+// MARK: -
 	
 	BasicEditor::BasicEditor(Frame * context) : _context(context)
 	{

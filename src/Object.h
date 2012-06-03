@@ -106,7 +106,7 @@ namespace Kai {
 		
 		Ref<Object> as_value(Frame * frame);
 		
-#pragma mark -
+// MARK: -
 		
 		// Converts the argument to a string value
 		static Ref<Object> to_string(Frame * frame);

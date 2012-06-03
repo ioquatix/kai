@@ -23,7 +23,7 @@ namespace Kai {
 		
 	}
 	
-#pragma mark -
+// MARK: -
 	
 	const char * const Integer::NAME = "Integer";
 	
@@ -244,7 +244,7 @@ namespace Kai {
 		frame->update(frame->sym("Integer"), prototype);
 	}
 	
-#pragma mark -
+// MARK: -
 	
 	const char * const Number::NAME = "Number";
 	

@@ -63,7 +63,7 @@ namespace Kai {
 			}
 		}
 		
-#pragma mark -
+// MARK: -
 		
 		DigitT Integer::maximu_length_of_conversion(BaseT in_base, DigitT in_length, BaseT out_base)
 		{
@@ -642,7 +642,7 @@ namespace Kai {
 			return fraction;
 		}
 		
-#pragma mark Modular Exponentiation
+// MARK: Modular Exponentiation
 		
 		BarrettReduction::BarrettReduction (const Integer & _mod) {
 			mod = _mod;

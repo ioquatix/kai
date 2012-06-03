@@ -15,8 +15,8 @@
 
 namespace Kai {
 	
-#pragma mark -
-#pragma mark Lambda
+// MARK: -
+// MARK: Lambda
 	
 	class Lambda : public Object {
 	protected:

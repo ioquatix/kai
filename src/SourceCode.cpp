@@ -243,7 +243,7 @@ namespace Kai {
 		frame->update(frame->sym("SourceCode"), prototype);
 	}
 	
-#pragma mark -
+// MARK: -
 	
 	void SourceCodeIndex::mark(Memory::Traversal * traversal) const {
 		for (auto association : _associations) {

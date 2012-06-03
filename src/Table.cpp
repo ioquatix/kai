@@ -189,7 +189,7 @@ namespace Kai {
 		return _prototype;
 	}
 	
-#pragma mark Builtins
+// MARK: Builtins
 	
 	Ref<Object> Table::new_(Frame * frame) {
 		Table * table = new(frame) Table;

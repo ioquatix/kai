@@ -102,7 +102,7 @@ namespace Kai {
 		static void import(Frame * frame);
 	};
 	
-#pragma mark -
+// MARK: -
 	
 	class ArgumentExtractor {
 		Frame * _frame;

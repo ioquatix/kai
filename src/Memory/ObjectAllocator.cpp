@@ -94,7 +94,7 @@ namespace Kai {
 			_ref_count -= 1;
 		}
 		
-#pragma mark -
+// MARK: -
 		
 		FreeAllocation::FreeAllocation(FreeAllocation * next_free) : _next_free(next_free) {
 		}
@@ -140,7 +140,7 @@ namespace Kai {
 			return next_free;
 		}
 		
-#pragma mark -
+// MARK: -
 		
 		PageAllocation::PageAllocation() {
 			
@@ -297,7 +297,7 @@ namespace Kai {
 			}
 		}
 				
-#pragma mark -
+// MARK: -
 		
 		PageBoundary::PageBoundary() {
 			

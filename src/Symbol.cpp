@@ -112,7 +112,7 @@ namespace Kai {
 		frame->update(frame->sym("Symbol"), prototype);
 	}
 	
-#pragma mark -
+// MARK: -
 	
 	// This implementation is incomplete.
 	Symbol * SymbolTable::fetch(Frame * frame, const char * name) {

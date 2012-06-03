@@ -285,8 +285,8 @@ namespace Kai {
 			return outp;
 		}
 		
-#pragma mark -
-#pragma mark Basic Parsing Primatives
+// MARK: -
+// MARK: Basic Parsing Primatives
 		
 		Counter::Counter(std::size_t min, std::size_t max) : _min(min), _max(max), _count(0) {
 		

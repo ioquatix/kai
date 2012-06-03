@@ -77,7 +77,7 @@ namespace Kai
 		return Cell::create(frame)(frame->sym("value"))(this);
 	}
 	
-#pragma mark -
+// MARK: -
 	
 	Ref<Object> Object::to_string(Frame * frame) {
 		Object * value;

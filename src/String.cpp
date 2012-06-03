@@ -163,7 +163,7 @@ namespace Kai {
 		frame->update(frame->sym("heredoc"), KAI_BUILTIN_FUNCTION(String::heredoc));
 	}
 
-#pragma mark -
+// MARK: -
 
 	const char * const StringBuffer::NAME = "StringBuffer";
 	

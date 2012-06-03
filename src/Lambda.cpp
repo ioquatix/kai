@@ -16,7 +16,7 @@
 
 namespace Kai {
 	
-#pragma mark -
+// MARK: -
 	
 	const char * const Lambda::NAME = "Lambda";
 	

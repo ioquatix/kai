@@ -142,8 +142,8 @@ namespace Kai {
 		
 		std::ostream & operator<< (std::ostream & outp, const Token & token);
 		
-#pragma mark -
-#pragma mark Basic Parsing Primatives
+// MARK: -
+// MARK: Basic Parsing Primatives
 		
 		struct Counter {
 			std::size_t _min, _max, _count;
@@ -214,8 +214,8 @@ namespace Kai {
 		
 		Token parse_constant(StringIteratorT begin, StringIteratorT end, const StringT & constant);
 		
-#pragma mark -
-#pragma mark Operator Parsing
+// MARK: -
+// MARK: Operator Parsing
 		
 		struct OperatorParser {
 			typedef std::vector<StringT> OperatorsT;
