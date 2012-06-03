@@ -36,6 +36,12 @@ namespace Kai {
 				return " CMTS";
 			case CELL:
 				return " CELL";
+			case EXPRESSION_MARKER:
+				return "EXP-M";
+			case BODY_MARKER:
+				return "BOD-M";
+			case TEXT_BLOCK:
+				return " TEXT";	
 			default:
 				break;
 			}
@@ -303,6 +309,21 @@ namespace Kai {
 		Token parse_constant(StringIteratorT begin, StringIteratorT end, const StringT & constant) {
 			StringIteratorT s = begin;
 			StringIteratorT c = constant.begin();
+			
+			while (s != end && c != constant.end() && *c == *s) s++, c++;
+			
+			if (c == constant.end()) {
+				return Token(begin, s);
+			} else {
+				return Token();
+			}
+		}
+		
+		Token parse_until_constant(StringIteratorT begin, StringIteratorT end, const StringT & constant) {
+			StringIteratorT s = begin;
+			StringIteratorT c = constant.begin();
+			
+			
 			
 			while (s != end && c != constant.end() && *c == *s) s++, c++;
 			

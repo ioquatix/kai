@@ -18,6 +18,8 @@
 #include <string>
 #include <iostream>
 
+#include "Parser/Expressions.h"
+
 namespace Kai {
 	
 	typedef int FileDescriptorT;
@@ -84,12 +86,11 @@ namespace Kai {
 	};
 	
 	class Frame;
-	class Expressions;
 	
 	class BasicEditor : virtual public IEditor
 	{
 	protected:
-		Expressions * _expressions;
+		Parser::Expressions * _expressions;
 		Frame * _context;
 		
 	public:

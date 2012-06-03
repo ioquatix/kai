@@ -238,5 +238,32 @@ namespace Kai {
 				return start;
 			}
 		}
+		
+		/*
+		Token parse_interpolation(StringIteratorT begin, StringIteratorT end) {
+			Token t(begin, STRING);
+			
+			StringIteratorT s = begin;
+			
+			while (s != end) {
+				StringIteratorT t = s;
+				
+				Unicode::CodePointT code_point = Unicode::next(t, end);
+				
+				if (t != end) {
+					Unicode::CodePointT next_code_point = Unicode::next(t, end);
+					
+					if (code_point == '#' && next_code_point == '(') {
+						// Now processing expression directive
+						
+						t &= parse_interpolation_expression(s, end);
+					} else if (code_point == '<' && next_code_point == '#') {
+						// Now processing tag directive
+						
+						t &= parse_interpolation_tag(s, end);
+					}
+				}
+			}
+		}*/
 	}
 }

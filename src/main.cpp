@@ -21,7 +21,8 @@
 #include "Exception.h"
 #include "Terminal.h"
 #include "SourceCode.h"
-#include "Expressions.h"
+#include "Parser/Expressions.h"
+#include "Parser/InterpolationExpression.h"
 
 #include "Lambda.h"
 #include "Logic.h"
@@ -46,7 +47,7 @@ namespace {
 		status = 0;
 		
 		try {
-			Ref<Expressions> expressions = Expressions::fetch(frame);
+			Ref<Parser::Expressions> expressions = Parser::Expressions::fetch(frame);
 			
 			value = expressions->parse(frame, code).value;
 			
@@ -118,7 +119,9 @@ namespace {
 		Table::import(frame);
 		Lambda::import(frame);
 		Logic::import(frame);
-		Expressions::import(frame);
+		
+		Parser::Expressions::import(frame);
+		Parser::InterpolationExpression::import(frame);
 		
 		SourceCode::import(frame);
 		SourceCodeIndex::import(frame);

@@ -32,11 +32,19 @@ namespace Kai {
 			DECIMAL = 24,
 			
 			HEREDOC = 30,
-						
+			
+			/// Used for parsing '$' from string interpolations:
+			EXPRESSION_MARKER = 80,
+			
+			/// Used for parsing '<%' from string interpolations: 
+			BODY_MARKER = 82,
+			
+			/// Used for parsing text from string interpolations:
+			TEXT_BLOCK = 84,
+			
 			WHITESPACE = 100,
 			INDENTATION = 200,
-			
-			COMMENTS = 300
+			COMMENTS = 250
 		};
 		
 		struct Token {

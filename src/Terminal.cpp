@@ -193,7 +193,7 @@ namespace Kai {
 	
 	BasicEditor::BasicEditor(Frame * context) : _context(context)
 	{
-		_expressions = Expressions::fetch(context);
+		_expressions = Parser::Expressions::fetch(context);
 		
 		KAI_ENSURE(_expressions);
 	}
@@ -209,7 +209,7 @@ namespace Kai {
 	
 	bool BasicEditor::is_complete(const StringStreamT & buffer, StringT & prompt)
 	{
-		ParseResult result;
+		Parser::ParseResult result;
 		
 		SourceCode * code = new(_expressions) SourceCode("<editor>", buffer.str());
 		prompt = "";

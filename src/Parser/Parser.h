@@ -20,6 +20,8 @@ namespace Kai {
 		Token parse_identifier(StringIteratorT begin, StringIteratorT end);
 		Token parse_heredoc(StringIteratorT begin, StringIteratorT end);
 		
+		Token parse_interpolation(StringIteratorT begin, StringIteratorT end);
+		
 		/*
 			[(this) set grammar [Grammar new]]
 			

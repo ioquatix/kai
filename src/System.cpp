@@ -43,7 +43,7 @@ namespace Kai {
 		
 		Ref<SourceCode> code = new(frame) SourceCode(path);
 		
-		Expressions * expressions = Expressions::fetch(frame);
+		Parser::Expressions * expressions = Parser::Expressions::fetch(frame);
 		// std::cerr << "Expression : " << Object::to_string(frame, expressions) << std::endl;
 		
 		Ref<Object> value;
