@@ -124,19 +124,27 @@ namespace Kai {
 		std::string Number::to_string() const
 		{
 			std::stringstream buffer;
-			std::string string = _value.to_string(10);
-			
-			std::size_t fractional_offset = string.size() - _scale;
+			std::string value_string = _value.to_string(10);
+
+			std::size_t width = value_string.size();
+
+			// We might require some leading 0s:
+			if (width < _scale) {
+				std::string padding(1 + _scale - width, '0');
+				value_string = padding + value_string;
+			}
+
+			std::size_t fractional_offset = value_string.size() - _scale;
 			
 			if (_negative) {
 				buffer << '-';
 			}
 			
-			buffer.write(string.data(), fractional_offset);
+			buffer.write(value_string.data(), fractional_offset);
 			
 			if (_scale) {
 				buffer << '.';
-				buffer.write(string.data() + fractional_offset, _scale);
+				buffer.write(value_string.data() + fractional_offset, _scale);
 			}
 			
 			return buffer.str();
