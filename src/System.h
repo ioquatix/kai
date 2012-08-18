@@ -18,6 +18,7 @@ namespace Kai {
 	class System : public Object {
 	protected:
 		Ref<Array> _load_paths;
+		Ref<Array> _arguments;
 		
 		// Run a script at the given path
 		Ref<Object> run(const PathT & path, Frame * frame);
@@ -31,6 +32,8 @@ namespace Kai {
 		System(Frame * frame);
 		virtual ~System();
 		
+		void set_arguments(std::size_t argc, const char * argv[]);
+		
 		virtual Ref<Symbol> identity(Frame * frame) const;
 		
 		// Returns true if the file_path can be found (either an absolute path or as a sub-path of one of _load_paths), and puts the full path in result.
@@ -43,6 +46,7 @@ namespace Kai {
 		static Ref<Object> load_paths(Frame * frame);
 		static Ref<Object> working_directory(Frame * frame);
 		static Ref<Object> environment(Frame * frame);
+		static Ref<Object> arguments(Frame * frame);
 		
 		static void import(Frame * frame);
 	};

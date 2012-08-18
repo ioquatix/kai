@@ -117,6 +117,16 @@ namespace Kai {
 		buffer << "(System@" << this << ")" << std::endl;
 	}
 	
+	void System::set_arguments(std::size_t argc, const char * argv[]) {
+		Array * arguments = new(this) Array;
+		
+		for (std::size_t i = 0; i < argc; i += 1) {
+			arguments->value().push_back(new(this) String(argv[i]));
+		}
+		
+		_arguments = arguments;
+	}
+	
 	Ref<Object> System::require(Frame * frame) {
 		System * system = NULL;
 		String * name = NULL;
@@ -201,6 +211,14 @@ namespace Kai {
 		return env;
 	}
 	
+	Ref<Object> System::arguments(Frame * frame) {
+		System * system = NULL;
+		
+		frame->extract()(system);
+		
+		return system->_arguments;
+	}
+	
 	void System::import(Frame * frame) {
 		Table * prototype = new(frame) Table;
 		
@@ -209,6 +227,7 @@ namespace Kai {
 		prototype->update(frame->sym("load-paths"), KAI_BUILTIN_FUNCTION(System::load_paths));
 		prototype->update(frame->sym("working-directory"), KAI_BUILTIN_FUNCTION(System::working_directory));
 		prototype->update(frame->sym("environment"), KAI_BUILTIN_FUNCTION(System::environment));
+		prototype->update(frame->sym("arguments"), KAI_BUILTIN_FUNCTION(System::arguments));
 		
 		frame->update(frame->sym("System"), prototype);
 		
