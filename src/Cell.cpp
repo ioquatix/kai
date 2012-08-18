@@ -24,7 +24,7 @@ namespace Kai {
 	}
 	
 	Ref<Symbol> Cell::identity(Frame * frame) const {
-		return frame->sym("Cell");
+		return frame->sym(NAME);
 	}
 	
 	void Cell::mark(Memory::Traversal * traversal) const {

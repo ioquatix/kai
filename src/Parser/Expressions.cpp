@@ -24,7 +24,7 @@ namespace Kai {
 		ParseResult::ParseResult (Parser::Token _token, Object * _value, Status _status) : token(_token), value(_value), status(_status) {
 		}
 		
-		const char * const Expression::NAME = "Ex pression";
+		const char * const Expression::NAME = "Expression";
 		
 		Expression::~Expression () {
 		}
@@ -36,7 +36,7 @@ namespace Kai {
 		}
 		
 		Ref<Symbol> Expressions::identity(Frame * frame) const {
-			return frame->sym("Expressions");
+			return frame->sym(NAME);
 		}
 		
 		void Expressions::mark(Memory::Traversal * traversal) const {

@@ -26,7 +26,7 @@ namespace Kai {
 	}
 	
 	Ref<Symbol> Array::identity(Frame * frame) const {
-		return frame->sym("Array");
+		return frame->sym(NAME);
 	}
 	
 	void Array::mark(Memory::Traversal * traversal) const {

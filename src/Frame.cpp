@@ -577,7 +577,7 @@ namespace Kai {
 		
 		frame->update(frame->sym("Frame"), prototype);
 		
-		frame->update(frame->sym("this"), KAI_BUILTIN_FUNCTION(Frame::scope));
+		frame->update(frame->sym("self"), KAI_BUILTIN_FUNCTION(Frame::scope));
 		frame->update(frame->sym("trace"), KAI_BUILTIN_FUNCTION(Frame::trace));
 		frame->update(frame->sym("unwrap"), KAI_BUILTIN_FUNCTION(Frame::unwrap));
 		frame->update(frame->sym("wrap"), KAI_BUILTIN_FUNCTION(Frame::wrap));

@@ -37,7 +37,7 @@ namespace Kai {
 	}
 	
 	Ref<Symbol> Symbol::identity(Frame * frame) const {
-		return frame->sym("Symbol");
+		return frame->sym(NAME);
 	}
 	
 	ComparisonResult Symbol::compare(const Object * other) const {
