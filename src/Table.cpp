@@ -151,6 +151,9 @@ namespace Kai {
 			
 			buffer << "(table@" << this;
 			
+			// Indent table key/value pairs.
+			indentation += 1;
+			
 			for (unsigned i = 0; i < _bins.size(); i += 1) {
 				Bin * bin = _bins[i];
 				

@@ -106,6 +106,7 @@ namespace {
 		Object::import(frame);
 		Table::import(frame);
 		
+		// Hook up the global prototype:
 		global->set_prototype(frame->lookup(frame->sym("Table")));
 		
 		Integer::import(frame);
@@ -129,6 +130,13 @@ namespace {
 		Array::import(frame);
 		System::import(frame);
 		
+		// Console manipulation:
+		Terminal::import(frame);
+		
+		Ref<Terminal> terminal = new(frame) Terminal(STDIN_FILENO, STDOUT_FILENO, STDERR_FILENO);
+		frame->update(frame->sym("terminal"), terminal);
+		
+		// Garbage collection debugging:
 		global->update(frame->sym("gc-debug"), KAI_BUILTIN_FUNCTION(managed_memory_debug));
 		
 		Table * context = new(frame) Table;
@@ -154,43 +162,52 @@ int main (int argc, const char * argv[]) {
 	signal(SIGSEGV, signal_hang);
 	
 	int result = 0;
-	Terminal console(STDIN_FILENO, STDOUT_FILENO, STDERR_FILENO);
 	Ref<Frame> context = build_context();
 	
-	BasicEditor editor(context);
+	// Used later for setting up system arguments:
+	Ref<System> system = context->lookup(context->sym("system"));
+	
+	CommandLineEditor editor(context);
+	Ref<Terminal> terminal = context->lookup(context->sym("terminal"));
 	
 	if (argc > 1) {
-		if (StringT(argv[1]) == "-x") {
+		if (argc > 3 && StringT(argv[1]) == "-x") {
 			Ref<SourceCode> code = new(context) SourceCode("<x>", argv[2]);
-			run_code(context, code, result, &console);
-		} else if (argc == 2) {
+			system->set_arguments(argc - 3, argv + 3);
+			run_code(context, code, result, terminal);
+		} else if (argc > 2) {
 			Ref<SourceCode> code = new(context) SourceCode(argv[1]);
-			run_code(context, code, result, &console);
+			system->set_arguments(argc - 2, argv + 2);
+			run_code(context, code, result, terminal);
 		} else {
 			std::cerr << "Unknown option: '" << argv[1] << "'" << std::endl;
 			result = 10;
 		}
-	} else if (console.is_tty()) {
+	} else if (terminal->is_tty()) {
+		terminal->set_raw_mode(true);
+		
 		// Running interactively
-		TerminalEditor terminal_editor(&console, "kai> ");
+		XTerminalSession terminal_editor(terminal, "kai> ");
 		StringStreamT buffer;
 		
 		std::cerr << "Startup time = " << (Time() - start) << std::endl;
 		
 		while (terminal_editor.read_input(buffer, editor)) {	
 			Ref<SourceCode> input = new(context) SourceCode("<stdin>", buffer.str());
-			Ref<Object> value = run_code(context, input, result, &console);
+			Ref<Object> value = run_code(context, input, result, terminal);
 			
 			std::cout << Object::to_string(context, value) << std::endl;
 			
 			buffer.str("");
 		}
+		
+		terminal->set_raw_mode(false);
 	} else {
 		StringStreamT buffer;
 		buffer << std::cin.rdbuf();
 		Ref<SourceCode> code = new(context) SourceCode("<stdin>", buffer.str());
 		
-		run_code(context, code, result, &console);			
+		run_code(context, code, result, terminal);			
 	}
 	
 #ifdef KAI_TRACE
