@@ -103,14 +103,14 @@ namespace Kai {
 		}
 
 		Token parse_decimal (StringIteratorT begin, StringIteratorT end) {
-			static const StringT Number_POINT = ".";
+			static const StringT DECIMAL_POINT = ".";
 			
 			Token t(begin, DECIMAL), u;
 			
 			t += parse_constant(t.end(), end, "-");
 			
 			if (t &= parse_characters(t.end(), end, Unicode::is_numeric)) {
-				if ((u = parse_constant(t.end(), end, Number_POINT))) {
+				if ((u = parse_constant(t.end(), end, DECIMAL_POINT))) {
 					u &= parse_characters(u.end(), end, Unicode::is_numeric);
 					
 					if (u)
