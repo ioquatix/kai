@@ -152,10 +152,16 @@ namespace Kai {
 	
 	Ref<Object> Array::push_front(Frame * frame) {
 		Array * self = NULL;
-		Object * value = NULL;
-		ArgumentExtractor arguments = frame->extract()(self);
 		
-		self->_value.push_front(value);
+		ArgumentExtractor arguments = frame->extract()(self);
+
+		while (arguments) {
+			Object * item = nullptr;
+
+			arguments = arguments(item, "item", false);
+
+			self->_value.push_front(item);
+		}
 		
 		return self;
 	}
