@@ -156,9 +156,9 @@ namespace Kai {
 			g_statistics.total += size;
 #endif
 			
-//#ifdef KAI_MEMORY_DEBUG
+#ifdef KAI_MEMORY_DEBUG
 			std::cerr << "Allocating " << size << " bytes, mapped memory at offset " << base << std::endl;
-//#endif
+#endif
 			
 			PageAllocation * front = new(base) PageAllocation;
 			front->_next_page_allocation = NULL;			
