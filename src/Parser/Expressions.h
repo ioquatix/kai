@@ -67,7 +67,9 @@ namespace Kai {
 			static const char * const NAME;
 			
 			virtual ~Expression();
-			
+
+			virtual Ref<Symbol> identity(Frame * frame) const;
+
 			virtual ParseResult parse(Frame * frame, const ParseState & state) const = 0;
 		};
 		
@@ -79,6 +81,8 @@ namespace Kai {
 			bool _ignore_whitespace;
 			
 		public:
+			static const char * const NAME;
+
 			Expressions(bool ignore_whitespace = true);
 			virtual ~Expressions();
 			

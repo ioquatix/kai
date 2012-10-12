@@ -28,7 +28,13 @@ namespace Kai {
 		
 		Expression::~Expression () {
 		}
-		
+
+		Ref<Symbol> Expression::identity(Frame * frame) const {
+			return frame->sym(NAME);
+		}
+
+		const char * const Expressions::NAME = "Expressions";
+
 		Expressions::Expressions (bool ignore_whitespace) : _ignore_whitespace(ignore_whitespace) {
 		}
 		
