@@ -19,7 +19,7 @@ namespace Kai {
 	class Cell;
 	class Frame;
 	
-	class Exception {
+	class Exception : std::exception {
 	protected:
 		StringT _what;
 		Ref<Object> _object;
@@ -32,9 +32,12 @@ namespace Kai {
 		virtual ~Exception();
 		
 		Frame * top();
-		virtual StringT what();
+		virtual StringT message() noexcept;
+
+		// For std::exception
+		virtual const char* what() const noexcept;
 		
-		virtual StringT name();
+		virtual StringT name() noexcept;
 	};
 	
 	class ArgumentError : public Exception {
@@ -44,15 +47,15 @@ namespace Kai {
 	public:
 		ArgumentError(StringT name, StringT type, Object * value, Frame * frame);
 		
-		virtual StringT what();
-		virtual StringT name();
+		virtual StringT message() noexcept;
+		virtual StringT name() noexcept;
 	};
 	
 	class RangeError : public Exception {
 	public:
 		RangeError(StringT what, Object * value, Frame * frame);
 		
-		virtual StringT name();
+		virtual StringT name() noexcept;
 	};
 	
 }

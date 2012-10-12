@@ -30,14 +30,18 @@ namespace Kai {
 		return _frame;
 	}
 	
-	StringT Exception::what () {
+	StringT Exception::message () noexcept {
 		if (_object)
 			return name() + " : " + _what + " : " + Object::to_string(_frame, _object);
 		else
 			return name() + " : " + _what;
 	}
+
+	const char* Exception::what() const noexcept {
+		return _what.c_str();
+	}
 	
-	StringT Exception::name() {
+	StringT Exception::name() noexcept {
 		return "Exception";
 	}
 	
@@ -47,7 +51,7 @@ namespace Kai {
 		
 	}
 	
-	StringT ArgumentError::what() {
+	StringT ArgumentError::message() noexcept {
 		if (_object) {
 			return name() + " : Expecting " + _name + " of type " + _type + ", got " + _object->identity(_frame)->value() + "!";
 		} else {
@@ -55,7 +59,7 @@ namespace Kai {
 		}
 	}
 	
-	StringT ArgumentError::name() {
+	StringT ArgumentError::name() noexcept {
 		return "Argument Error";
 	}
 	
@@ -65,7 +69,7 @@ namespace Kai {
 		
 	}
 	
-	StringT RangeError::name() {
+	StringT RangeError::name() noexcept {
 		return "Range Error";
 	}
 }
