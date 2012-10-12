@@ -18,15 +18,13 @@
 #include <vector>
 #include <stdint.h>
 
-#define abstract = 0
-
 namespace Kai {
 	
 	// Immutability is an important trait of a programmable system, because it provides a defined set of axioms on which further abstractions can be built.
 	
 	// Fundamentally, some parts of a given system must be immutable. It is whether these are well defined, or unspecified, which dictates the reliability of a given system.
 	
-	// Kai has a set of fundamental data types which are immutable, but can be extended within a given execution context namespace.
+	// Kai has a set of fundamental data types which are immutable, but can be extended within a given execution context namespace. Functionality is tied to objects using the object's identity. This way, an object represents state but functionality is dependent on the context. Objects don't carry functionality explicitly with them by default, but instead the identity is used to look up a prototype which provides functionality.
 	
 	typedef std::string StringT;
 	typedef std::size_t SizeT;

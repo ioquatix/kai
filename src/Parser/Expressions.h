@@ -68,7 +68,7 @@ namespace Kai {
 			
 			virtual ~Expression();
 			
-			virtual ParseResult parse(Frame * frame, const ParseState & state) const abstract;
+			virtual ParseResult parse(Frame * frame, const ParseState & state) const = 0;
 		};
 		
 		class Expressions : public Expression {

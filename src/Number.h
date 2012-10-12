@@ -20,7 +20,7 @@ namespace Kai {
 		
 		virtual ~Integral();
 		
-		virtual Math::Integer to_integer() const abstract;
+		virtual Math::Integer to_integer() const = 0;
 	};
 	
 	class Integer : public Object, virtual public Integral {
