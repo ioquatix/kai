@@ -10,6 +10,7 @@
 #define _KAI_STRING_UNICODE_H
 
 #include <cstdint>
+#include <string>
 #include "utf8.h"
 
 namespace Kai {
@@ -32,6 +33,15 @@ namespace Kai {
 		bool is_whitespace_or_newline(CodePointT i);
 		bool is_newline(CodePointT i);
 		bool is_not_newline(CodePointT i);
+
+		inline std::size_t length(const std::string & value) {
+			return utf8::distance(value.begin(), value.end());
+		}
+
+		std::size_t fixed_width(const std::string & value);
+		std::size_t fixed_width(CodePointT code_point);
+
+		std::size_t sequence_length(unsigned char first_byte);
 	};
 }
 

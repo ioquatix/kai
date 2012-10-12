@@ -138,6 +138,16 @@ namespace Kai {
 		
 		return first;
 	}
+
+	Ref<Object> String::fixed_width(Frame * frame) {
+		String * self;
+
+		frame->extract()(self, "self");
+
+		std::size_t width = Unicode::fixed_width(self->value());
+
+		return new(frame) Integer(width);
+	}
 	
 	Ref<Object> String::heredoc(Frame * frame) {
 		Symbol * identifier;
@@ -158,6 +168,7 @@ namespace Kai {
 		
 		prototype->update(frame->sym("each"), KAI_BUILTIN_FUNCTION(String::each));
 		prototype->update(frame->sym("length"), KAI_BUILTIN_FUNCTION(String::length));
+		prototype->update(frame->sym("fixed-width"), KAI_BUILTIN_FUNCTION(String::fixed_width));
 		
 		frame->update(frame->sym("String"), prototype);
 		frame->update(frame->sym("heredoc"), KAI_BUILTIN_FUNCTION(String::heredoc));

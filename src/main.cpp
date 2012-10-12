@@ -38,54 +38,7 @@ namespace {
 	using namespace Kai;
 	
 	// Example:
-	// ["Möbius Frequency" each (lambda `(chr) `[chr size])]
-	
-	Ref<Object> run_code (Frame * frame, SourceCode * code, int & status, Terminal * terminal) {
-		Ref<Object> value = NULL, result = NULL;
-		
-		// Execution status
-		status = 0;
-		
-		try {
-			Ref<Parser::Expressions> expressions = Parser::Expressions::fetch(frame);
-			
-			value = expressions->parse(frame, code).value;
-			
-			if (value) {
-				result = value->evaluate(frame);				
-			}
-			
-			// Save the result of the expression into the special variable "_":
-			frame->update(frame->sym("_"), result);
-			
-			// Run the garbage collector for the memory pool that contains value:
-			Memory::Collector collector(frame->allocator());
-			collector.collect();
-			
-			return result;
-		} catch (Exception & ex) {
-			// Execution failed
-			status = 1;
-			
-			if (value) {
-				std::cerr << "Executing : " << Object::to_string(frame, value) << std::endl;
-			}
-			
-			std::cerr << "Exception : " << ex.what() << std::endl;
-			
-			ex.top()->debug();
-		} catch (Parser::FatalParseFailure & ex) {
-			// Print syntax error message
-			
-			//std::cerr << "\x1b[31;1m";
-			ex.print_error(std::cerr, code);
-			//std::cerr << "\x1b[0m";
-			
-			status = 2;
-		}
-		
-		return NULL;
-	}
+	// (trace ["Möbius Frequency" each (lambda `(chr) `[chr size])])
 	
 	// ["Möbius Frequency" each (lambda `(chr) `[chr size])]
 	
@@ -142,8 +95,6 @@ namespace {
 		Table * context = new(frame) Table;
 		context->set_prototype(global);
 		
-		std::cerr << "Global: " << global << " Context: " << context << std::endl << std::flush;
-		
 		// Return a new stack frame one level down.
 		return new(frame) Frame(context);
 	}
@@ -163,51 +114,32 @@ int main (int argc, const char * argv[]) {
 	
 	int result = 0;
 	Ref<Frame> context = build_context();
-	
+
 	// Used later for setting up system arguments:
 	Ref<System> system = context->lookup(context->sym("system"));
-	
-	CommandLineEditor editor(context);
 	Ref<Terminal> terminal = context->lookup(context->sym("terminal"));
-	
-	if (argc > 1) {
-		if (argc > 3 && StringT(argv[1]) == "-x") {
-			Ref<SourceCode> code = new(context) SourceCode("<x>", argv[2]);
-			system->set_arguments(argc - 3, argv + 3);
-			run_code(context, code, result, terminal);
-		} else if (argc > 2) {
-			Ref<SourceCode> code = new(context) SourceCode(argv[1]);
-			system->set_arguments(argc - 2, argv + 2);
-			run_code(context, code, result, terminal);
-		} else {
-			std::cerr << "Unknown option: '" << argv[1] << "'" << std::endl;
-			result = 10;
-		}
-	} else if (terminal->is_tty()) {
-		terminal->set_raw_mode(true);
-		
-		// Running interactively
-		XTerminalSession terminal_editor(terminal, "kai> ");
-		StringStreamT buffer;
-		
-		std::cerr << "Startup time = " << (Time() - start) << std::endl;
-		
-		while (terminal_editor.read_input(buffer, editor)) {	
-			Ref<SourceCode> input = new(context) SourceCode("<stdin>", buffer.str());
-			Ref<Object> value = run_code(context, input, result, terminal);
-			
-			std::cout << Object::to_string(context, value) << std::endl;
-			
-			buffer.str("");
-		}
-		
-		terminal->set_raw_mode(false);
+
+	Ref<SourceCode> code;
+
+	if (argc >= 2) {
+		// First argument is a file path
+		system->set_arguments(argc - 1, argv + 1);
+
+		code = new(context) SourceCode(argv[1]);
 	} else {
+		// Source code expected from stdin
+		system->set_arguments(argc, argv);
+
 		StringStreamT buffer;
 		buffer << std::cin.rdbuf();
-		Ref<SourceCode> code = new(context) SourceCode("<stdin>", buffer.str());
-		
-		run_code(context, code, result, terminal);			
+
+		code = new(context) SourceCode("<stdin>", buffer.str());
+	}
+
+	try {
+		run_code(context, code, result, terminal);
+	} catch (std::exception & error) {
+		std::cerr << "Fatal Error: " << error.what() << std::endl;
 	}
 	
 #ifdef KAI_TRACE

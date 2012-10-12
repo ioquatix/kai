@@ -26,6 +26,10 @@ namespace Kai {
 	typedef int FileDescriptorT;
 	typedef int ProcessIdentifierT;
 	typedef int ProcessStatusT;
+
+	class Terminal;
+
+	Ref<Object> run_code (Frame * frame, SourceCode * code, int & status, Terminal * terminal);
 	
 	class Process {
 	protected:
@@ -55,12 +59,26 @@ namespace Kai {
 		bool _raw_mode;
 
 		void fetch_current_settings();
-		
+		void set_raw_mode(bool enabled);
+
 	public:
 		static const char * const NAME;
 		
 		Terminal(FileDescriptorT in, FileDescriptorT out, FileDescriptorT error);
 		virtual ~Terminal();
+
+		class RawModeLock {
+			Terminal * _terminal;
+
+		public:
+			RawModeLock(Terminal * terminal) : _terminal(terminal) {
+				_terminal->set_raw_mode(true);
+			}
+
+			~RawModeLock() {
+				_terminal->set_raw_mode(false);
+			}
+		};
 		
 		FileDescriptorT input_file() { return _input_file; }
 		FileDescriptorT output_file() { return _output_file; }
@@ -69,7 +87,6 @@ namespace Kai {
 		virtual Ref<Symbol> identity(Frame * frame) const;
 		
 		bool is_tty() const;
-		void set_raw_mode(bool enabled);
 		
 		std::string terminal_name();
 		
@@ -86,6 +103,9 @@ namespace Kai {
 		
 		static Ref<Object> size(Frame * frame);
 		static Ref<Object> is_tty(Frame * frame);
+
+		static Ref<Object> run(Frame * frame);
+
 		static void import(Frame * frame);
 	};
 	
@@ -93,29 +113,42 @@ namespace Kai {
 	public:
 		virtual ~ICommandLineEditor();
 		virtual StringT first_prompt() = 0;
-		virtual bool is_complete(const StringStreamT & buffer, StringT & prompt) = 0;
+		virtual bool is_complete(const StringT & buffer, StringT & prompt) = 0;
 	};
 	
 	class XTerminalSession : public Object {
 	protected:
 		Terminal * _terminal;
-		StringT _prompt;
-		
+
+		// A history of single lines which have been entered by the user:
 		std::vector<StringT> _history;
+
+		// The current input buffer which contains all the text entered by the user as individual lines:
+		StringStreamT _buffer;
+		StringT _current_line;
+
+		std::size_t _history_position;
 		std::size_t _cursor_position;
 		
 		void refresh_prompt (const StringT & prompt, const StringT & buffer);
-		
+
+		void clear_buffer();
+		void set_buffer(const StringT & buffer);
+		StringT & current_line();
+		std::size_t column_offset();
+
+		void begin_edit();
+
+		bool read_input(StringT & prompt);
+
 	public:
-		XTerminalSession(Terminal * terminal, const StringT & prompt);
+		XTerminalSession(Terminal * terminal);
 		virtual ~XTerminalSession();
 		
 		// TODO:
 		virtual void mark(Memory::Traversal * traversal) const;
-		
-		bool read_input(StringT & buffer);
-		bool read_input(StringT & buffer, StringT & prompt);			
-		bool read_input(StringStreamT & buffer, ICommandLineEditor & editor);
+
+		bool read_input(StringT & buffer, ICommandLineEditor & editor);
 		
 		struct OutputMode {
 			enum Attributes {
@@ -159,7 +192,7 @@ namespace Kai {
 		virtual ~CommandLineEditor();
 		
 		virtual StringT first_prompt();
-		virtual bool is_complete(const StringStreamT & buffer, StringT & prompt);
+		virtual bool is_complete(const StringT & buffer, StringT & prompt);
 	};
 }
 

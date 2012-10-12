@@ -45,6 +45,9 @@ namespace Kai {
 		// These two functions are unicode aware
 		static Ref<Object> length(Frame * frame);
 		static Ref<Object> each(Frame * frame);
+
+		// The number of columns required in a fixed-width font:
+		static Ref<Object> fixed_width(Frame * frame);
 		
 		// A helper for the heredoc syntax
 		static Ref<Object> heredoc(Frame * frame);
