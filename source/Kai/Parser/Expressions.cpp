@@ -171,12 +171,14 @@ namespace Kai {
 			String * code_string;
 			
 			frame->extract()(self, "self")(code_string, "code_string");
-			
+
+			Ref<SourceCode> code = new(frame) SourceCode("<program>", code_string->value());
+
 			try {
-				Ref<SourceCode> code = new(frame) SourceCode("<program>", code_string->value());
-				
 				return self->parse(frame, code).value;
 			} catch (Parser::FatalParseFailure & failure) {
+				failure.print_error(std::cerr, code);
+				
 				throw Exception("Could not parse input", code_string, frame);
 			}
 		}

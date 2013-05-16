@@ -14,6 +14,8 @@
 #include "SourceCode.h"
 
 namespace Kai {
+
+	typedef Ref<Object> (KaiLoadFn)(Frame * context);
 	
 	class System : public Object {
 	protected:

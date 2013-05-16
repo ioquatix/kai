@@ -11,27 +11,27 @@
 #include <stdio.h>
 #include <signal.h>
 
-#include "Reference.h"
-#include "Memory/Collector.h"
+#include <Kai/Reference.h>
+#include <Kai/Memory/Collector.h>
 
-#include "Object.h"
-#include "Parser/Parser.h"
-#include "Frame.h"
-#include "Function.h"
-#include "Exception.h"
-#include "Terminal.h"
-#include "SourceCode.h"
-#include "Parser/Expressions.h"
-#include "Parser/InterpolationExpression.h"
+#include <Kai/Object.h>
+#include <Kai/Parser/Parser.h>
+#include <Kai/Frame.h>
+#include <Kai/Function.h>
+#include <Kai/Exception.h>
+#include <Kai/Terminal.h>
+#include <Kai/SourceCode.h>
+#include <Kai/Parser/Expressions.h>
+#include <Kai/Parser/InterpolationExpression.h>
 
-#include "Lambda.h"
-#include "Logic.h"
-#include "Table.h"
-#include "Number.h"
-#include "Array.h"
-#include "Symbol.h"
-#include "String.h"
-#include "System.h"
+#include <Kai/Lambda.h>
+#include <Kai/Logic.h>
+#include <Kai/Table.h>
+#include <Kai/Number.h>
+#include <Kai/Array.h>
+#include <Kai/Symbol.h>
+#include <Kai/String.h>
+#include <Kai/System.h>
 
 namespace {
 	

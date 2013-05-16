@@ -5,7 +5,6 @@
 #  Created by Samuel Williams on 30/11/2010.
 #  Copyright 2010 Samuel Williams. All rights reserved.
 #
-#
 
 {
 	[`class = (macro `(name parent body) `{
@@ -43,7 +42,9 @@
 			# (var object [Table new])
 			
 			[object set-prototype class]
-						
+			((call (lookup object `initiaze
+			[object initialize arguments]
+
 			object
 		})
 		

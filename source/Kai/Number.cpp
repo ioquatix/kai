@@ -299,11 +299,39 @@ namespace Kai {
 		
 		return new(frame) Number(total);
 	}
+
+	Ref<Object> Number::sum (Frame * frame)
+	{
+		ValueT total = 0;
+
+		ArgumentExtractor arguments = frame->extract();
+
+		while (arguments) {
+			Number * number;
+
+			arguments = arguments(number, "right-value");
+
+			//total = total + number->value();
+		}
+
+		return new(frame) Number(total);
+	}
+
+	Ref<Object> Number::fraction (Frame * frame)
+	{
+		Number * numerator, * denominator;
+		frame->extract()(numerator, "numerator")(denominator, "denominator");
+
+		//return new(frame) Number(numerator->value() / denominator->value());
+		return nullptr;
+	}
 	
 	void Number::import (Frame * frame) {
 		Table * prototype = new(frame) Table;
 		
 		prototype->update(frame->sym("*"), KAI_BUILTIN_FUNCTION(Number::product));
+		prototype->update(frame->sym("+"), KAI_BUILTIN_FUNCTION(Number::sum));
+		prototype->update(frame->sym("/"), KAI_BUILTIN_FUNCTION(Number::fraction));
 		
 		frame->update(frame->sym("Number"), prototype);
 	}

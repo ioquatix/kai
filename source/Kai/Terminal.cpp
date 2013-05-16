@@ -15,7 +15,7 @@
 #include "Number.h"
 #include "Frame.h"
 #include "Symbol.h"
-#include "Expressions.h"
+#include "Parser/Expressions.h"
 
 // run_code includes garbage collection
 #include "Memory/Collector.h"
@@ -449,9 +449,7 @@ namespace Kai {
 					_history.push_back(current_line());
 
 					_current_line = "";
-
-					if (_history_position > 0)
-						_history_position -= 1;
+					_history_position = 0;
 
 					_cursor_position = column_width(current_line());
 

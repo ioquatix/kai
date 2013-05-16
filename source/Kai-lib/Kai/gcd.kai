@@ -1,0 +1,10 @@
+
+(with Integer {
+	[`gcd = {|a b|
+		(if [b == 0] 
+			a
+			(recurse b [a % b]))
+	}]
+})
+
+[`material = {||}]

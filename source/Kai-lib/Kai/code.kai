@@ -1,0 +1,5 @@
+{
+	[`library = [compiler compile "code.c"]]
+	
+	(return [library call "kai_init"])
+}

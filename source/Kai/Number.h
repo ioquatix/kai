@@ -93,6 +93,8 @@ namespace Kai {
 		virtual void to_code(Frame * frame, StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const;
 		
 		static Ref<Object> product(Frame * frame);
+		static Ref<Object> sum(Frame * frame);
+		static Ref<Object> fraction(Frame * frame);
 		
 		static void import(Frame * frame);
 	};

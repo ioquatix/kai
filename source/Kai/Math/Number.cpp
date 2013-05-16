@@ -103,6 +103,18 @@ namespace Kai {
 			_value.multiply(other._value);
 			_scale += other._scale;
 		}
+
+		void Number::add(const Number & other) {
+			if (!_negative) {
+				if (other._negative) {
+					if (_value > other._value) {
+						_value.subtract(other._value);
+					} else {
+						
+					}
+				}
+			}
+		}
 		
 		Number Number::floor() {
 			std::cerr << "Unimplemented: " << __func__ << std::endl;

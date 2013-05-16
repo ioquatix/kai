@@ -11,7 +11,7 @@
 
 #include <sys/stat.h>
 #include "Frame.h"
-#include "Expressions.h"
+#include "Parser/Expressions.h"
 #include "Function.h"
 #include "Ensure.h"
 #include "Table.h"
@@ -21,6 +21,9 @@
 // getcwd, environ
 #include <unistd.h>
 extern char ** environ;
+
+// dlopen
+#include <dlfcn.h>
 
 namespace Kai {
 	
@@ -65,15 +68,51 @@ namespace Kai {
 	}
 	
 	Ref<Object> System::compile(const PathT & path, Frame * frame) {
-		Ref<Object> config = run(path, frame);
+		/*Ref<Object> config = run(path, frame);
 		
 		if (!config) {
 			throw Exception("Could not read configuration table", frame);
+		}*/
+
+		int pid = fork();
+
+		PathT output_path = path + ".o";
+
+		if (!pid) {
+			const char * arguments[] = {
+				"-std=c++11",
+				"-stdlib=libc++",
+				"-o", output_path.c_str(),
+				"-c", path.c_str(),
+				// A bit of a hack but whatever =)
+				"-I", "lib",
+				NULL
+			};
+
+			execv("/usr/bin/clang++", (char * const *)arguments);
+
+			// Guard - never reached unless the above fails.
+			exit(-1);
 		}
-		
-		//config->call(frame->sym('source-files'));
-		
-		return NULL;
+
+		int status;
+		waitpid(pid, &status, 0);
+
+		if (status == 0) {
+			void * handle = dlopen(output_path.c_str(), RTLD_LAZY | RTLD_LOCAL);
+
+			KaiLoadFn * kai_load = (KaiLoadFn*)dlsym(handle, "kai_load");
+
+			if (kai_load) {
+				return kai_load(frame);
+			} else {
+				std::cerr << "Error finding load function!" << std::endl;
+				
+				return NULL;
+			}
+		} else {
+			return NULL;
+		}
 	}
 	
 	bool path_exists(PathT path) {
@@ -138,7 +177,7 @@ namespace Kai {
 			return system->run(path, frame);
 		}
 		
-		if (system->find(name->value() + ".kdep", path)) {
+		if (system->find(name->value() + ".cpp", path)) {
 			return system->compile(path, frame);
 		}
 		

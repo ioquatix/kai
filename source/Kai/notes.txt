@@ -1,3 +1,5 @@
+[terminal run!]
+
 ((lookup this 'Table 'new) 'name "Samuel" 'age 25)
 
 ((lambda '(object function) '(object)) "Arg1" "Arg2")

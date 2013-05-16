@@ -43,6 +43,7 @@ namespace Kai {
 			Number absolute();
 			
 			void multiply(const Number & other);
+			void add(const Number & other);
 			
 			Number & operator*=(const Number & other) { this->multiply(other); return *this; }
 			

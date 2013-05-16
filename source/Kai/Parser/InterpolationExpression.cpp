@@ -12,8 +12,13 @@
 
 namespace Kai {
 	namespace Parser {
+		
+		// [interpolate parse "Hello <% foo %> World"]
 		void InterpolationExpression::import(Frame * frame) {
 			Ref<Expressions> interpolation = new(frame) Expressions(false);
+
+			Ref<Expression> inner = frame->lookup(frame->sym("expressions"));
+			
 			interpolation->add(new(frame) InterpolationExpression);
 			
 			frame->update(frame->sym("interpolate"), interpolation);
@@ -28,7 +33,7 @@ namespace Kai {
 		}
 		
 		static bool is_not_body_character(Unicode::CodePointT code_point) {
-			return code_point != '<' && code_point != '$';
+			return code_point != '<' && code_point != '%';
 		}
 		
 		static Parser::Token parse_body(StringIteratorT begin, StringIteratorT end) {
@@ -87,11 +92,11 @@ namespace Kai {
 		ParseResult InterpolationExpression::parse(Frame * frame, const ParseState & state) const {
 			// We are parsing text starting from the initial character - while parsing text we can encounter two types of symbols:
 			//		  text-expression := (^ | '%>') text-body* ('<%' | $)
-			//              text-body := '$' expression / text-character
+			//              text-body := '%' expression / text-character
 			
 			Parser::Token top(state.begin);
 			Ref<Expression> inner = frame->lookup(frame->sym("expressions"));
-			
+
 			// Code generation:
 			Ref<Cell> first, list;
 			
@@ -112,7 +117,7 @@ namespace Kai {
 								Ref<String> text_string = new(frame) String(child.value());
 								list = Cell::append(frame, list, text_string, first);
 								
-								//std::cerr << "Text Block: " << child.value() << std::endl;
+								std::cerr << "Text Block: " << child.value() << std::endl;
 							} break;
 							
 							case Parser::EXPRESSION_MARKER: {
@@ -123,7 +128,7 @@ namespace Kai {
 								
 								list = Cell::append(frame, list, inner_result.value, first);
 								
-								//std::cerr << "Expression: " << Object::to_string(frame, inner_result.value) << std::endl;
+								std::cerr << "Expression: " << Object::to_string(frame, inner_result.value) << std::endl;
 								
 								top << inner_result.token;
 								
