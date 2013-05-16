@@ -1,9 +1,4 @@
-Kai
-===
-
-* Author: Samuel G. D. Williams (<http://www.oriontransfer.co.nz>)
-* Copyright (C) 2009, 2011 Samuel G. D. Williams.
-* Released under the MIT license.
+# Kai
 
 Kai is a completely dynamic language stack based on `s-expressions` and `f-expressions`. It is designed to be a complete language with well-defined semantics.
 
@@ -16,8 +11,26 @@ For documentation and examples, please see the main [project page][1].
 
 [1]: http://www.oriontransfer.co.nz/research/kai
 
-Implementation
---------------
+## Installation
+
+Ensure that you already have a working install of Ruby 1.9.3+
+
+    $ gem install teapot
+	$ cd kai
+	$ teapot fetch
+	$ teapot build Library/kai
+
+## Usage
+
+Kai includes a terminal interface, but it isn't currently invoked by default. To access it, simply run kai and call `[terminal run!]`:
+
+	./kai
+	[terminal run!] <Ctrl-D>
+	kai> 
+
+This provides a standard REPL interface.
+
+## Implementation
 
 ### Object Model ###
 
