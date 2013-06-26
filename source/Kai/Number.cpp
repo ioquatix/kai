@@ -228,7 +228,7 @@ namespace Kai {
 		prototype->update(frame->sym("-"), KAI_BUILTIN_FUNCTION(Integer::subtract));
 		prototype->update(frame->sym("*"), KAI_BUILTIN_FUNCTION(Integer::product));
 		prototype->update(frame->sym("%"), KAI_BUILTIN_FUNCTION(Integer::modulus));
-		prototype->update(frame->sym("^"), KAI_BUILTIN_FUNCTION(Integer::power));
+		prototype->update(frame->sym("**"), KAI_BUILTIN_FUNCTION(Integer::power));
 		
 		prototype->update(frame->sym("fractional-part"), KAI_BUILTIN_FUNCTION(Integer::fractional_part));
 		
