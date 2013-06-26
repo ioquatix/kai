@@ -154,6 +154,7 @@ namespace Kai {
 			
 			// Associate the parsed data with the source code index:
 			if (result.is_okay()) {
+				// In some ways, this is a memory leak. Even after an expression is evaluated, the source code index continues to retain a reference to it.
 				SourceCodeIndex::associate(frame, result.value, state.code, result.token.begin(), result.token.end());
 			}
 			
