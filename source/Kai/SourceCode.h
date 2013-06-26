@@ -65,7 +65,7 @@ namespace Kai {
 		
 		StringT input_name() const;
 		
-		std::size_t size() const { return _buffer.size(); }			
+		std::size_t size() const { return _buffer.size(); }
 		std::size_t number_of_lines() const;
 		
 		LineT line_for_offset(std::size_t offset) const; // O(log(N))
@@ -140,6 +140,8 @@ namespace Kai {
 		/// Returns an association if one can be found:
 		const Association * lookup(Object * object);
 		static const Association * lookup(Frame * frame, Object * object);
+		
+		void flush() { _associations.clear(); }
 		
 		using Object::lookup;
 		
