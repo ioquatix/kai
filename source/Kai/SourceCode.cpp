@@ -160,7 +160,7 @@ namespace Kai {
 	
 	void SourceCode::to_code(Frame * frame, StringStreamT & buffer, MarkedT & marks, std::size_t indentation) const
 	{
-		buffer << "<SourceCode@" << this << "input_name=" << input_name() << " number_of_lines=" << number_of_lines() << ">";
+		buffer << "(SourceCode@" << this << " input_name=" << input_name() << " number_of_lines=" << number_of_lines() << ">";
 	}
 	
 	Ref<Object> SourceCode::evaluate (Frame * frame)
