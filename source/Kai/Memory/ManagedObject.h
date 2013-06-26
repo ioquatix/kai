@@ -14,9 +14,12 @@
 namespace Kai {
 	namespace Memory {
 		
-		typedef Memory::PageAllocation ObjectAllocator;
+		typedef PageAllocation ObjectAllocator;
 		
-		class ManagedObject : public Memory::ObjectAllocation {
+		class ManagedObject : public ObjectAllocation {
+		protected:
+			mutable unsigned _reference_count;
+			
 		public:
 			ManagedObject();
 			ManagedObject(ManagedObject & other);
@@ -32,6 +35,11 @@ namespace Kai {
 			void * operator new(std::size_t, ObjectAllocator *);
 			
 			void operator delete(void *);
+			
+			void retain() const;
+			void release() const;
+			
+			unsigned reference_count() const { return _reference_count; }
 		};
 		
 	}

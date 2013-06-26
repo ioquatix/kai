@@ -60,10 +60,10 @@ namespace Kai {
 			friend class Collector;
 			
 			ObjectAllocation * _next;
-			mutable unsigned _flags, _ref_count;
+			mutable unsigned _flags;
 			
-			/// Return the distance in bytes from the strt of this allocation to the start of the next.
-			std::size_t memory_size();
+			/// Return the distance in bytes from the start of this allocation to the start of the next.
+			std::size_t memory_size() const;
 			
 		protected:
 			virtual void mark(Traversal *) const;
@@ -74,11 +74,10 @@ namespace Kai {
 			
 			virtual PageAllocation * allocator() const;
 			
-			void retain() const;
-			void release() const;
+			ObjectAllocation * next_allocation() const { return _next; }
 		};
 		
-		class FreeAllocation : public ObjectAllocation {			
+		class FreeAllocation : public ObjectAllocation {
 		protected:
 			friend class PageAllocation;
 			
@@ -100,6 +99,9 @@ namespace Kai {
 			ObjectAllocation * _back;
 			PageAllocation * _next_page_allocation;
 			
+			void prepend(FreeAllocation * free_allocation);
+			void check() const;
+			
 		public:
 			static PageAllocation * create(std::size_t size);
 			
@@ -112,7 +114,8 @@ namespace Kai {
 			bool includes(const ObjectAllocation * allocation);
 			PageAllocation * base_of(const ObjectAllocation * allocation);
 			
-			void debug();
+			void debug() const;
+			std::size_t allocation_count() const;
 		};
 		
 		class PageBoundary : public FreeAllocation {

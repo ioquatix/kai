@@ -12,11 +12,11 @@
 namespace Kai {
 	namespace Memory {
 	
-		ManagedObject::ManagedObject() {
+		ManagedObject::ManagedObject() : _reference_count(0) {
 		}
 		
 		ManagedObject::ManagedObject(ManagedObject & other) {
-			// Don't copy memory management meta-data.			
+			// Don't copy memory management meta-data.
 		}
 		
 		ManagedObject & ManagedObject::operator=(ManagedObject & other) {
@@ -59,6 +59,18 @@ namespace Kai {
 			ObjectAllocation * object = (ObjectAllocation *)pointer;
 			
 			object->_flags |= Memory::DELETED;
+		}
+		
+		void ManagedObject::retain() const {
+			_reference_count += 1;
+			
+			if (_reference_count != 0) this->_flags |= PINNED;
+		}
+		
+		void ManagedObject::release() const {
+			_reference_count -= 1;
+			
+			if (_reference_count == 0) this->_flags &= ~PINNED;
 		}
 	}
 }

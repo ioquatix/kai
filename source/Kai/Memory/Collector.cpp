@@ -36,21 +36,27 @@ namespace Kai {
 					return;
 				}
 				
+				//std::cerr << ">> Marking " << object << std::endl;
+				
 				// Mark the object:
 				object->_flags |= MARKED;
 				
 				// Traverse any children/edges:
 				object->mark(this);
+				
+				//std::cerr << "<< Marking " << object << std::endl;
 			}
 		}
 		
-		void Collector::collect() {
+		std::size_t Collector::collect() {
+			std::size_t deallocation_count = 0;
+			
 			ObjectAllocation * allocation = _start;
 			
 			// Mark all root objects and their descendants:
 			while (allocation) {
-				// A ref_count of 1 or more marks a root object.
-				if (allocation->_ref_count) {
+				// Root objects are pinned:
+				if (allocation->_flags & PINNED) {
 					traverse(allocation);
 				}
 				
@@ -88,17 +94,31 @@ namespace Kai {
 					// Jump back to the top...
 					continue;
 				} else {
+					// It is impossible to take this approach with the current memory allocator as it can't recombine free blocks.
+					
+					// If we've already started to free a block of memory, include any free blocks too. This ensures we deallocate the maximum possible range of memory which needs to be freed and possibly interleaved free blocks.
+					//if (start) {
+					//	finish = allocation;
+					//}
+					
 					// Block was free memory
 					allocation = allocation->_next;
+					
+					// Jump back to the top...
+					// continue;
 				}
 				
-				// We have encountered a discontinuity in the memory heap, so now we should free all unneeded allocations:
+				// We have encountered a discontinuity (i.e. non-free and non-unused) in the memory heap, so now we should free all unneeded allocations if there were any previously recorded:
 				if (start) {
 					_start->deallocate(start, finish);
 					
 					start = NULL;
+					
+					deallocation_count += 1;
 				}
 			}
+			
+			return deallocation_count;
 		}
 		
 	}

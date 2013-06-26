@@ -24,7 +24,7 @@ namespace Kai {
 			
 			virtual void traverse(const ObjectAllocation * object);
 			
-			void collect();
+			std::size_t collect();
 		};
 		
 	}
