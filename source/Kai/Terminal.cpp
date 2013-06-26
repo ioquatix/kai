@@ -548,17 +548,19 @@ namespace Kai {
 	
 	bool XTerminalSession::read_input (StringT & buffer, ICommandLineEditor & editor)
 	{
-		// Lock the terminal into raw mode for the duration of this call:
-		Terminal::RawModeLock raw_mode_lock(_terminal);
-
 		// Copy the existing buffer, if any, into the edit buffer:
 		set_buffer(buffer);
 
 		StringT prompt = editor.first_prompt();
 		
 		do {
-			if (!read_input(prompt))
-				return false;
+			{
+				// Lock the terminal into raw mode for the duration of this call:
+				Terminal::RawModeLock raw_mode_lock(_terminal);
+				
+				if (!read_input(prompt))
+					return false;
+			}
 
 			buffer = _buffer.str();
 		} while (!editor.is_complete(buffer, prompt));
