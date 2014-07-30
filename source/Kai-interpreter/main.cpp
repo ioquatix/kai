@@ -43,7 +43,36 @@ namespace {
 	// ["Möbius Frequency" each (lambda `(chr) `[chr size])]
 	
 	Ref<Object> managed_memory_debug(Frame * frame) {
-		frame->allocator()->debug();
+		std::cerr << "===== Managed Memory Debug Trace =====" << std::endl;
+		
+		//frame->allocator()->debug();
+		
+		std::vector<Ref<Object>> objects;
+		
+		Memory::ObjectAllocation * current = frame->allocator();
+		
+		while (current)
+		{
+			if (auto object = dynamic_cast<Object*>(current))
+			{
+				objects.push_back(object);
+			}
+			
+			current = current->next_allocation();
+		}
+		
+		std::cerr << "-- Object dump -- " << std::endl;
+		
+		for (auto object : objects)
+		{
+			std::cerr << object << " : " << object->identity(frame)->value() << std::endl;
+			
+			if (Ref<Symbol> symbol = object)
+			{
+				std::cerr << Object::to_string(frame, object) << std::endl;
+			}
+		}
+		
 		return NULL;
 	}
 	
