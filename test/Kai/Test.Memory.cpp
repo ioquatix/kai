@@ -1,5 +1,5 @@
 
-#include <UnitTest/UnitTest.h>
+#include <UnitTest/UnitTest.hpp>
 
 #include <Kai/Memory/ManagedObject.h>
 #include <Kai/Memory/Collector.h>
@@ -15,8 +15,6 @@ namespace Kai
 			{"Allocation",
 				[](UnitTest::Examiner & examiner) {
 					Memory::PageAllocation * allocator = Memory::PageAllocation::create(128 * Memory::page_size());
-					
-					//allocator->debug();
 					
 					{
 						Ref<ManagedObject> object = new(allocator) ManagedObject;
