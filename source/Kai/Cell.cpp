@@ -6,10 +6,10 @@
 //  Copyright (c) 2011 Orion Transfer Ltd. All rights reserved.
 //
 
-#include "Cell.h"
-#include "Frame.h"
-#include "Function.h"
-#include "Symbol.h"
+#include "Cell.hpp"
+#include "Frame.hpp"
+#include "Function.hpp"
+#include "Symbol.hpp"
 
 namespace Kai {
 	

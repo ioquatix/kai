@@ -7,8 +7,8 @@
 //
 //
 
-#include "Parser.h"
-#include "../SourceCode.h"
+#include "Parser.hpp"
+#include "../SourceCode.hpp"
 
 /*
 	operator(:binary, ':', "High Precidence Member")

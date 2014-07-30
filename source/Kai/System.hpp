@@ -10,8 +10,8 @@
 #ifndef _KAI_SYSTEM_H
 #define _KAI_SYSTEM_H
 
-#include "Array.h"
-#include "SourceCode.h"
+#include "Array.hpp"
+#include "SourceCode.hpp"
 
 namespace Kai {
 

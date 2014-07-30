@@ -10,7 +10,7 @@
 #ifndef _KAI_FRAME_H
 #define _KAI_FRAME_H
 
-#include "Object.h"
+#include "Object.hpp"
 #include <map>
 
 // #define KAI_TRACE

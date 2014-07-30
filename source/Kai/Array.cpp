@@ -7,13 +7,13 @@
 //
 //
 
-#include "Array.h"
-#include "Cell.h"
-#include "Frame.h"
-#include "Number.h"
-#include "Table.h"
-#include "Symbol.h"
-#include "Function.h"
+#include "Array.hpp"
+#include "Cell.hpp"
+#include "Frame.hpp"
+#include "Number.hpp"
+#include "Table.hpp"
+#include "Symbol.hpp"
+#include "Function.hpp"
 
 namespace Kai {
 	

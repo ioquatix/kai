@@ -1,9 +1,9 @@
 
 #include <UnitTest/UnitTest.hpp>
 
-#include <Kai/Memory/ManagedObject.h>
-#include <Kai/Memory/Collector.h>
-#include <Kai/Reference.h>
+#include <Kai/Memory/ManagedObject.hpp>
+#include <Kai/Memory/Collector.hpp>
+#include <Kai/Reference.hpp>
 
 namespace Kai
 {

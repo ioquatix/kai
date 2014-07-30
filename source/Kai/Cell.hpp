@@ -9,10 +9,10 @@
 #ifndef _KAI_CELL_H
 #define _KAI_CELL_H
 
-#include "Object.h"
-#include "Table.h"
-#include "Exception.h"
-#include "Frame.h"
+#include "Object.hpp"
+#include "Table.hpp"
+#include "Exception.hpp"
+#include "Frame.hpp"
 
 namespace Kai {
 	

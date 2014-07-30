@@ -11,27 +11,27 @@
 #include <stdio.h>
 #include <signal.h>
 
-#include <Kai/Reference.h>
-#include <Kai/Memory/Collector.h>
+#include <Kai/Reference.hpp>
+#include <Kai/Memory/Collector.hpp>
 
-#include <Kai/Object.h>
-#include <Kai/Parser/Parser.h>
-#include <Kai/Frame.h>
-#include <Kai/Function.h>
-#include <Kai/Exception.h>
-#include <Kai/Terminal.h>
-#include <Kai/SourceCode.h>
-#include <Kai/Parser/Expressions.h>
-#include <Kai/Parser/InterpolationExpression.h>
+#include <Kai/Object.hpp>
+#include <Kai/Parser/Parser.hpp>
+#include <Kai/Frame.hpp>
+#include <Kai/Function.hpp>
+#include <Kai/Exception.hpp>
+#include <Kai/Terminal.hpp>
+#include <Kai/SourceCode.hpp>
+#include <Kai/Parser/Expressions.hpp>
+#include <Kai/Parser/InterpolationExpression.hpp>
 
-#include <Kai/Lambda.h>
-#include <Kai/Logic.h>
-#include <Kai/Table.h>
-#include <Kai/Number.h>
-#include <Kai/Array.h>
-#include <Kai/Symbol.h>
-#include <Kai/String.h>
-#include <Kai/System.h>
+#include <Kai/Lambda.hpp>
+#include <Kai/Logic.hpp>
+#include <Kai/Table.hpp>
+#include <Kai/Number.hpp>
+#include <Kai/Array.hpp>
+#include <Kai/Symbol.hpp>
+#include <Kai/String.hpp>
+#include <Kai/System.hpp>
 
 namespace {
 	

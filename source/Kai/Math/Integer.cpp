@@ -7,7 +7,7 @@
 //
 //
 
-#include "Integer.h"
+#include "Integer.hpp"
 #include <stdexcept>
 #include <sstream>
 #include <cassert>

@@ -9,9 +9,9 @@
 #ifndef _KAI_OBJECT_H
 #define _KAI_OBJECT_H
 
-#include "Kai.h"
-#include "Reference.h"
-#include "Memory/ManagedObject.h"
+#include "Kai.hpp"
+#include "Reference.hpp"
+#include "Memory/ManagedObject.hpp"
 
 #include <set>
 

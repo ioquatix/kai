@@ -6,8 +6,8 @@
 //  Copyright (c) 2011 Orion Transfer Ltd. All rights reserved.
 //
 
-#include "ManagedObject.h"
-#include "../Ensure.h"
+#include "ManagedObject.hpp"
+#include "../Ensure.hpp"
 
 namespace Kai {
 	namespace Memory {

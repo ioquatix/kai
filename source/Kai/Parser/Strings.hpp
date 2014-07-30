@@ -7,7 +7,7 @@
 //
 //
  
-#include "Token.h"
+#include "Token.hpp"
 
 namespace Kai {
 	namespace Parser {

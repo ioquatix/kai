@@ -7,10 +7,10 @@
 //
 //
 
-#include "Exception.h"
-#include "Object.h"
-#include "Symbol.h"
-#include "Frame.h"
+#include "Exception.hpp"
+#include "Object.hpp"
+#include "Symbol.hpp"
+#include "Frame.hpp"
 
 namespace Kai {
 	

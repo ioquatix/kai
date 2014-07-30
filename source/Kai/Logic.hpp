@@ -9,7 +9,7 @@
 #ifndef _KAI_LOGIC_H
 #define _KAI_LOGIC_H
 
-#include "Object.h"
+#include "Object.hpp"
 
 namespace Kai {
 	

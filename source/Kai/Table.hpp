@@ -9,7 +9,7 @@
 #ifndef _KAI_TABLE_H
 #define _KAI_TABLE_H
 
-#include "Object.h"
+#include "Object.hpp"
 
 namespace Kai {
 	

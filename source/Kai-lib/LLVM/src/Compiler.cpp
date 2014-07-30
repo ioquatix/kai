@@ -7,10 +7,10 @@
 //
 //
 
-#include "Compiler.h"
+#include "Compiler.hpp"
 
-#include "Frame.h"
-#include "Function.h"
+#include "Frame.hpp"
+#include "Function.hpp"
 
 #include <string>
 #include <memory>

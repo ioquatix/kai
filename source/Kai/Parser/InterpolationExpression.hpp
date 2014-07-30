@@ -9,7 +9,7 @@
 #ifndef _KAI_EXPRESSIONS_INTERPOLATION_EXPRESSION_H
 #define _KAI_EXPRESSIONS_INTERPOLATION_EXPRESSION_H
 
-#include "Expressions.h"
+#include "Expressions.hpp"
 
 namespace Kai {
 	namespace Parser {

@@ -7,9 +7,9 @@
 //
 //
 
-#include "Ensure.h"
+#include "Ensure.hpp"
 
-#include "Kai.h"
+#include "Kai.hpp"
 
 namespace Kai {
 	

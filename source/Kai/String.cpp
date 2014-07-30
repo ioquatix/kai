@@ -6,18 +6,18 @@
 //  Copyright (c) 2011 Orion Transfer Ltd. All rights reserved.
 //
 
-#include "String.h"
+#include "String.hpp"
 
-#include "Unicode/Unicode.h"
+#include "Unicode/Unicode.hpp"
 
 // For String constructor
-#include "Parser/Strings.h"
+#include "Parser/Strings.hpp"
 
-#include "Cell.h"
-#include "Frame.h"
-#include "Function.h"
-#include "Number.h"
-#include "Symbol.h"
+#include "Cell.hpp"
+#include "Frame.hpp"
+#include "Function.hpp"
+#include "Number.hpp"
+#include "Symbol.hpp"
 
 namespace Kai {
 	

@@ -10,7 +10,7 @@
 #ifndef _KAI_REFERENCE_H
 #define _KAI_REFERENCE_H
 
-#include "Ensure.h"
+#include "Ensure.hpp"
 
 #include <cstddef>
 #include <algorithm>

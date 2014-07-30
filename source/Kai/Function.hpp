@@ -10,7 +10,7 @@
 #ifndef _KFUNCTION_H
 #define _KFUNCTION_H
 
-#include "Object.h"
+#include "Object.hpp"
 
 #define KAI_BUILTIN_FUNCTION(function) (builtin_function<&function>(#function))
 

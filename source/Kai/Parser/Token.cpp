@@ -7,8 +7,8 @@
 //
 //
 
-#include "Token.h"
-#include "../SourceCode.h"
+#include "Token.hpp"
+#include "../SourceCode.hpp"
 
 namespace Kai {
 	namespace Parser {

@@ -7,15 +7,15 @@
 //
 //
 
-#include "SourceCode.h"
-#include "Cell.h"
-#include "Frame.h"
-#include "Number.h"
-#include "Function.h"
-#include "Table.h"
-#include "String.h"
-#include "Symbol.h"
-#include "Unicode/Unicode.h"
+#include "SourceCode.hpp"
+#include "Cell.hpp"
+#include "Frame.hpp"
+#include "Number.hpp"
+#include "Function.hpp"
+#include "Table.hpp"
+#include "String.hpp"
+#include "Symbol.hpp"
+#include "Unicode/Unicode.hpp"
 #include <fstream>
 
 namespace Kai {

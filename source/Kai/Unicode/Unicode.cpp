@@ -6,7 +6,7 @@
 //  Copyright (c) 2011 Orion Transfer Ltd. All rights reserved.
 //
 
-#include "Unicode.h"
+#include "Unicode.hpp"
 
 namespace Kai {
 	namespace Unicode {

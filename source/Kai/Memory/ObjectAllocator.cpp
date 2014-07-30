@@ -6,12 +6,12 @@
 //  Copyright (c) 2011 Orion Transfer Ltd. All rights reserved.
 //
 
-#include "ObjectAllocator.h"
+#include "ObjectAllocator.hpp"
 
 #include <iostream>
-#include "../Ensure.h"
+#include "../Ensure.hpp"
 
-#include "../Object.h"
+#include "../Object.hpp"
 
 // sysconf
 #include <unistd.h>

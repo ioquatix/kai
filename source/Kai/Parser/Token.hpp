@@ -10,8 +10,8 @@
 #ifndef _KAI_PARSER_TOKEN_H
 #define _KAI_PARSER_TOKEN_H
 
-#include "../Kai.h"
-#include "../Unicode/Unicode.h"
+#include "../Kai.hpp"
+#include "../Unicode/Unicode.hpp"
 
 namespace Kai {
 	class SourceCode;

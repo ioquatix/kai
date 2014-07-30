@@ -7,16 +7,16 @@
 //
 //
 
-#include "System.h"
+#include "System.hpp"
 
 #include <sys/stat.h>
-#include "Frame.h"
-#include "Parser/Expressions.h"
-#include "Function.h"
-#include "Ensure.h"
-#include "Table.h"
-#include "Symbol.h"
-#include "String.h"
+#include "Frame.hpp"
+#include "Parser/Expressions.hpp"
+#include "Function.hpp"
+#include "Ensure.hpp"
+#include "Table.hpp"
+#include "Symbol.hpp"
+#include "String.hpp"
 
 // getcwd, environ
 #include <unistd.h>

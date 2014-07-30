@@ -10,8 +10,8 @@
 #ifndef _KAI_PARSER_H
 #define _KAI_PARSER_H
 
-#include "Kai.h"
-#include "Object.h"
+#include "Kai.hpp"
+#include "Object.hpp"
 #include <vector>
 #include <map>
 

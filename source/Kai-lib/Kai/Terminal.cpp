@@ -1,5 +1,5 @@
 
-#include <Kai/Frame.h>
+#include <Kai/Frame.hpp>
 
 namespace Kai {
 	class Terminal {

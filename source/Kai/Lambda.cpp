@@ -6,13 +6,13 @@
 //  Copyright 2011 Orion Transfer Ltd. All rights reserved.
 //
 
-#include "Lambda.h"
-#include "Frame.h"
-#include "Table.h"
-#include "Symbol.h"
-#include "Function.h"
-#include "Array.h"
-#include "Logic.h"
+#include "Lambda.hpp"
+#include "Frame.hpp"
+#include "Table.hpp"
+#include "Symbol.hpp"
+#include "Function.hpp"
+#include "Array.hpp"
+#include "Logic.hpp"
 
 namespace Kai {
 	

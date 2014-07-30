@@ -6,7 +6,7 @@
 //  Copyright (c) 2011 Orion Transfer Ltd. All rights reserved.
 //
 
-#include "Number.h"
+#include "Number.hpp"
 #include <sstream>
 
 namespace Kai {

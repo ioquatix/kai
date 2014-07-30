@@ -9,9 +9,9 @@
 #ifndef Kai_Integer_h
 #define Kai_Integer_h
 
-#include "Object.h"
-#include "Math/Integer.h"
-#include "Math/Number.h"
+#include "Object.hpp"
+#include "Math/Integer.hpp"
+#include "Math/Number.hpp"
 
 namespace Kai {
 	class Integral {

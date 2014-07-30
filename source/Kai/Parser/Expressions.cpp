@@ -7,14 +7,14 @@
 //
 //
 
-#include "Expressions.h"
-#include "../Frame.h"
-#include "../Function.h"
-#include "../Lambda.h"
-#include "../Table.h"
-#include "../String.h"
-#include "../Symbol.h"
-#include "../Number.h"
+#include "Expressions.hpp"
+#include "../Frame.hpp"
+#include "../Function.hpp"
+#include "../Lambda.hpp"
+#include "../Table.hpp"
+#include "../String.hpp"
+#include "../Symbol.hpp"
+#include "../Number.hpp"
 
 namespace Kai {
 	namespace Parser {

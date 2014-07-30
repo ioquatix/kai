@@ -9,7 +9,7 @@
 #ifndef _KAI_MEMORY_COLLECTOR_H
 #define _KAI_MEMORY_COLLECTOR_H
 
-#include "ObjectAllocator.h"
+#include "ObjectAllocator.hpp"
 
 namespace Kai {
 	namespace Memory {

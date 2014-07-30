@@ -10,7 +10,7 @@
 #ifndef _KAI_ARRAY_H
 #define _KAI_ARRAY_H
 
-#include "Object.h"
+#include "Object.hpp"
 #include <deque>
 
 namespace Kai {

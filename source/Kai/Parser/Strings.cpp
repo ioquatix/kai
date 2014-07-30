@@ -7,8 +7,8 @@
 //
 //
 
-#include "Strings.h"
-#include "../Math/Integer.h"
+#include "Strings.hpp"
+#include "../Math/Integer.hpp"
 #include <stdexcept>
 
 namespace Kai {

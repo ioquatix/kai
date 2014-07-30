@@ -8,8 +8,8 @@
 //
 
 #include <llvm/Value.h>
-#include "Frame.h"
-#include "Value.h"
+#include "Frame.hpp"
+#include "Value.hpp"
 
 extern "C" {
 	void test ();

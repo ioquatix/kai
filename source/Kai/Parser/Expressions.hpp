@@ -10,10 +10,10 @@
 #ifndef _KAI_PARSER_EXPRESSIONS_H
 #define _KAI_PARSER_EXPRESSIONS_H
 
-#include "../Parser/Parser.h"
-#include "../Object.h"
-#include "../Cell.h"
-#include "../SourceCode.h"
+#include "../Parser/Parser.hpp"
+#include "../Object.hpp"
+#include "../Cell.hpp"
+#include "../SourceCode.hpp"
 
 #include <list>
 

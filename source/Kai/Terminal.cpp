@@ -7,18 +7,18 @@
 //
 //
 
-#include "Terminal.h"
-#include "Ensure.h"
+#include "Terminal.hpp"
+#include "Ensure.hpp"
 
-#include "Object.h"
-#include "Function.h"
-#include "Number.h"
-#include "Frame.h"
-#include "Symbol.h"
-#include "Parser/Expressions.h"
+#include "Object.hpp"
+#include "Function.hpp"
+#include "Number.hpp"
+#include "Frame.hpp"
+#include "Symbol.hpp"
+#include "Parser/Expressions.hpp"
 
 // run_code includes garbage collection
-#include "Memory/Collector.h"
+#include "Memory/Collector.hpp"
 
 // class Process { ... }
 #include <unistd.h>

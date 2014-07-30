@@ -6,9 +6,9 @@
 //  Copyright (c) 2012 Orion Transfer Ltd. All rights reserved.
 //
 
-#include "InterpolationExpression.h"
+#include "InterpolationExpression.hpp"
 
-#include "../String.h"
+#include "../String.hpp"
 
 namespace Kai {
 	namespace Parser {

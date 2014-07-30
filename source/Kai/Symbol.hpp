@@ -9,7 +9,7 @@
 #ifndef _KAI_SYMBOL_H
 #define _KAI_SYMBOL_H
 
-#include "Object.h"
+#include "Object.hpp"
 
 namespace Kai {
 	

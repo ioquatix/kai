@@ -10,7 +10,7 @@
 #ifndef _KAI_TERMINAL_H
 #define _KAI_TERMINAL_H
 
-#include "Kai.h"
+#include "Kai.hpp"
 
 #include <sys/types.h>
 #include <unistd.h>
@@ -18,8 +18,8 @@
 #include <string>
 #include <iostream>
 
-#include "Object.h"
-#include "Parser/Expressions.h"
+#include "Object.hpp"
+#include "Parser/Expressions.hpp"
 
 namespace Kai {
 	

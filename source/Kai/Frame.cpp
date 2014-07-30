@@ -7,14 +7,14 @@
 //
 //
 
-#include "Frame.h"
-#include "Function.h"
-#include "Table.h"
-#include "Cell.h"
-#include "Number.h"
-#include "String.h"
-#include "Symbol.h"
-#include "SourceCode.h"
+#include "Frame.hpp"
+#include "Function.hpp"
+#include "Table.hpp"
+#include "Cell.hpp"
+#include "Number.hpp"
+#include "String.hpp"
+#include "Symbol.hpp"
+#include "SourceCode.hpp"
 
 //#define KAI_DEBUG
 

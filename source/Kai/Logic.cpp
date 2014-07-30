@@ -6,12 +6,12 @@
 //  Copyright (c) 2011 Orion Transfer Ltd. All rights reserved.
 //
 
-#include "Logic.h"
-#include "Cell.h"
-#include "Frame.h"
-#include "Table.h"
-#include "Symbol.h"
-#include "Function.h"
+#include "Logic.hpp"
+#include "Cell.hpp"
+#include "Frame.hpp"
+#include "Table.hpp"
+#include "Symbol.hpp"
+#include "Function.hpp"
 
 namespace Kai {
 	// Builtin Logical Operations

@@ -10,7 +10,7 @@
 #define Kai_Number_h
 
 
-#include "Integer.h"
+#include "Integer.hpp"
 
 namespace Kai {
 	namespace Math {

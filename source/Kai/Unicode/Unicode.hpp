@@ -11,7 +11,7 @@
 
 #include <cstdint>
 #include <string>
-#include "utf8.h"
+#include "utf8.hpp"
 
 namespace Kai {
 	namespace Unicode {

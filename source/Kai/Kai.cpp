@@ -7,12 +7,12 @@
 //
 //
 
-#include "Kai.h"
+#include "Kai.hpp"
 
 #include <ctime>
 #include <sys/time.h>
 #include <cmath>
-#include "Ensure.h"
+#include "Ensure.hpp"
 
 namespace Kai {
 	

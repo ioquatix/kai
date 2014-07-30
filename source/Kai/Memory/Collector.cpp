@@ -6,8 +6,8 @@
 //  Copyright (c) 2011 Orion Transfer Ltd. All rights reserved.
 //
 
-#include "Collector.h"
-#include "../Ensure.h"
+#include "Collector.hpp"
+#include "../Ensure.hpp"
 
 namespace Kai {
 	namespace Memory {

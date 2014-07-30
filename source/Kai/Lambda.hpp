@@ -10,8 +10,8 @@
 #ifndef _KAI_LAMBDA_H
 #define _KAI_LAMBDA_H
 
-#include "Object.h"
-#include "Cell.h"
+#include "Object.hpp"
+#include "Cell.hpp"
 
 namespace Kai {
 	

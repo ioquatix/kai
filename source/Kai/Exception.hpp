@@ -10,8 +10,8 @@
 #ifndef _KAI_EXCEPTION_H
 #define _KAI_EXCEPTION_H
 
-#include "Kai.h"
-#include "Reference.h"
+#include "Kai.hpp"
+#include "Reference.hpp"
 
 namespace Kai {
 	
