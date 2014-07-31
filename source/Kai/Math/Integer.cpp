@@ -273,10 +273,14 @@ namespace Kai {
 			return (*this) == z;
 		}
 		
+		std::size_t find_last_set(DigitT digit) {
+			return DIGIT_BITS - __builtin_clz(digit);
+		}
+		
 		std::size_t Integer::bit_size() const
 		{
 			// The value needs to be normalized for this to work correctly.
-			return (_value.size() - 1) * DIGIT_BITS + fls(_value.back());
+			return (_value.size() - 1) * DIGIT_BITS + find_last_set(_value.back());
 		}
 		
 		bool Integer::operator!= (const Integer & other) const {

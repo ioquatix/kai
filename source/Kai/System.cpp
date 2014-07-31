@@ -10,6 +10,8 @@
 #include "System.hpp"
 
 #include <sys/stat.h>
+#include <sys/wait.h>
+
 #include "Frame.hpp"
 #include "Parser/Expressions.hpp"
 #include "Function.hpp"
