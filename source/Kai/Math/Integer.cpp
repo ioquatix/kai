@@ -857,7 +857,7 @@ namespace Kai {
 		}
 		
 		// Returns a large random number. Digits is in multiple of 32 bits.
-		void Integer::generate_rando_number (DigitT length) {
+		void Integer::generate_random_number (DigitT length) {
 			static std::ifstream * random_device = NULL;
 			
 			if (!random_device) {
@@ -869,8 +869,8 @@ namespace Kai {
 		}
 		
 		// Returns a large random number between min and max.
-		void Integer::generate_rando_number (Integer min, Integer max) {
-			generate_rando_number(max.value().size());
+		void Integer::generate_random_number (Integer min, Integer max) {
+			generate_random_number(max.value().size());
 			
 			Integer diff = max;
 			diff.subtract(min);
@@ -978,7 +978,7 @@ namespace Kai {
 			
 			while (tests-- > 0) {
 				Integer a = 0;
-				a.generate_rando_number(2, p);
+				a.generate_random_number(2, p);
 				
 				Integer gcd = 0;
 				gcd.calculate_greatest_common_divisor(a, p);
@@ -1011,7 +1011,7 @@ namespace Kai {
 		void Integer::generate_prime (DigitT length) {
 			while (true) {
 				//std::cout << "." << std::flush;
-				this->generate_rando_number(length);
+				this->generate_random_number(length);
 				this->_value[0] |= 1; // Ensure odd number
 				
 				if (is_probably_prime()) {
@@ -1024,7 +1024,7 @@ namespace Kai {
 		void Integer::generate_prime (Integer min, Integer max) {
 			while (true) {
 				//std::cout << "." << std::flush;
-				this->generate_rando_number(min, max);
+				this->generate_random_number(min, max);
 				this->_value[0] |= 1; // Ensure odd number
 				
 				if (is_probably_prime()) {

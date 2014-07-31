@@ -59,7 +59,7 @@ namespace Kai {
 		const char * prefix_for_base(BaseT base);
 		
 		class Integer {
-		public:			
+		public:
 			// The data type used to store numbers.
 			typedef std::vector<DigitT> ValueT;
 			
@@ -67,7 +67,7 @@ namespace Kai {
 			static IntermediateT single_precision_base(BaseT base, DigitT & k);
 			
 			// Given a number of digits in a given base, what is the maximum number of digits in a given output base.
-			static DigitT maximu_length_of_conversion(BaseT in_base, DigitT in_length, BaseT out_base);
+			static DigitT maximum_length_of_conversion(BaseT in_base, DigitT in_length, BaseT out_base);
 			
 			static std::size_t single_precision_to_buffer(IntermediateT value, BaseT base, DigitT width, char * buffer);
 			
@@ -164,10 +164,10 @@ namespace Kai {
 			void binary_not();
 			
 			// Returns a large random number. Length is in multiple of 32 bits.
-			void generate_rando_number(DigitT length);
+			void generate_random_number(DigitT length);
 			
 			// Returns a large random number between min and max.
-			void generate_rando_number(Integer min, Integer max);
+			void generate_random_number(Integer min, Integer max);
 			
 			// Returns the greatest common divisor of a and b.
 			void calculate_greatest_common_divisor(Integer a, Integer b);
