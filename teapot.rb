@@ -21,6 +21,7 @@ define_target "kai" do |target|
 	target.depends :platform
 	target.depends "Language/C++11"
 	
+	target.depends "Library/dynamic-linker"
 	target.depends "Library/llvm-engine"
 	
 	target.provides "Library/Kai" do
@@ -61,6 +62,10 @@ define_configuration "kai" do |configuration|
 	configuration[:source] = "https://github.com/dream-framework/"
 	
 	configuration.require "platforms"
+	
+	host /linux/ do
+		configuration.require "linux-dynamic-linker"
+	end
 	
 	configuration.require "build-files"
 	configuration.require "unit-test"
