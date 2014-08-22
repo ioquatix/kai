@@ -65,7 +65,7 @@ namespace Kai {
 		
 // MARK: -
 		
-		DigitT Integer::maximu_length_of_conversion(BaseT in_base, DigitT in_length, BaseT out_base)
+		DigitT Integer::maximum_length_of_conversion(BaseT in_base, DigitT in_length, BaseT out_base)
 		{
 			// For in_base = 2, this is the number of digits required for a column in out_base, e.g. in base 10, ~3.3 bits are required.
 			return ceil(in_length / (log(out_base) / log(in_base)));
@@ -273,7 +273,7 @@ namespace Kai {
 			return (*this) == z;
 		}
 		
-		std::size_t find_last_set(DigitT digit) {
+		static std::size_t find_last_set(DigitT digit) {
 			return DIGIT_BITS - __builtin_clz(digit);
 		}
 		
@@ -937,7 +937,7 @@ namespace Kai {
 		}
 		
 		// This function implements simple jacobi test.
-		int jacobi (Integer m, Integer n) {
+		static int jacobi (Integer m, Integer n) {
 			int i = 1;
 			Integer t;
 			
@@ -1070,7 +1070,7 @@ namespace Kai {
 		
 		std::string Integer::to_string(BaseT base, bool prefix) const
 		{
-			std::size_t length = maximu_length_of_conversion(2, size() * DIGIT_BITS, base);
+			std::size_t length = maximum_length_of_conversion(2, size() * DIGIT_BITS, base);
 			
 			// This will leak if there is an exception... =)1
 			char * buffer = (char *)alloca(length + 1);
