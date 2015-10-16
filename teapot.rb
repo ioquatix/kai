@@ -22,7 +22,7 @@ define_target "kai" do |target|
 	target.depends "Language/C++11"
 	
 	target.depends "Library/dynamic-linker"
-	target.depends "Library/llvm-engine"
+	#target.depends "Library/llvm-engine"
 	
 	target.provides "Library/Kai" do
 		ldflags ["-lKai"]
@@ -39,7 +39,7 @@ define_target "kai-interpreter" do |target|
 			source_files: source_root.glob('Kai-interpreter/**/*.cpp')
 	end
 	
-	target.provides "Interpreter/Kai"
+	target.provides "Executable/Kai"
 end
 
 define_target "kai-tests" do |target|
