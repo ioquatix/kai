@@ -547,7 +547,7 @@ namespace Kai {
 		ParseResult HeredocExpression::parse(Frame * frame, const ParseState & state) const {
 			Parser::Token result = Parser::parse_heredoc(state.current, state.end);
 			
-			if (result) {			
+			if (result) {
 				Parser::Token identifier = result.children().at(0);
 				Parser::Token body = result.children().at(1);
 				Parser::Token indentation = result.children().at(2).children().at(0);
