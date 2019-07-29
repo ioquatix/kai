@@ -3,7 +3,7 @@
 #  This file is part of the "Teapot" project, and is released under the MIT license.
 #
 
-teapot_version "2.0"
+teapot_version "3.0"
 
 # Project Metadata
 
@@ -14,7 +14,6 @@ define_project "kai" do |project|
 	project.license = 'MIT License'
 	
 	project.add_author 'Samuel Williams', email: 'samuel.williams@oriontransfer.co.nz'
-	# project.website = 'http://Kai.com/'
 	
 	project.version = '0.1.0'
 end
@@ -22,69 +21,56 @@ end
 # Build Targets
 
 define_target "kai-library" do |target|
-	target.build do
-		source_root = target.package.path + 'source'
-		
-		copy headers: source_root.glob('Kai/**/*.{h,hpp}')
-		
-		build static_library: 'Kai', source_files: source_root.glob('Kai/**/*.cpp')
-	end
-	
-	target.depends "Build/Files"
-	target.depends "Build/Clang"
-	
-	target.depends :platform
 	target.depends 'Language/C++14', private: true
-	
-	# target.depends "Library/dynamic-linker"
 	target.depends "Library/llvm-engine"
 	
 	target.provides "Library/Kai" do
-		append linkflags [
-			->{install_prefix + 'lib/libKai.a'},
-		]
+		source_root = target.package.path + 'source'
+		
+		library_path = build static_library: "Kai", source_files: source_root.glob('Kai/**/*.{cpp,c}')
+		
+		append linkflags library_path
+		append header_search_paths source_root
 	end
 end
 
 define_target "kai-tests" do |target|
-	target.build do |*arguments|
-		test_root = target.package.path + 'test'
-		
-		run tests: 'Kai', source_files: test_root.glob('Kai/**/*.cpp'), arguments: arguments
-	end
-	
-	target.depends :platform
 	target.depends "Language/C++14"
+	
 	target.depends "Library/UnitTest"
 	target.depends "Library/Kai"
 	
-	target.provides "Test/Kai"
-end
-
-define_target "kai-executable" do |target|
-	target.build do
-		source_root = target.package.path + 'source'
-
-		build executable: "Kai",
-			source_files: source_root.glob('Kai-interpreter/**/*.cpp')
+	target.provides "Test/Kai" do |*arguments|
+		test_root = target.package.path
+		
+		run tests: 'Kai', source_files: test_root.glob('test/Kai/**/*.cpp'), arguments: arguments
 	end
-	
-	target.depends "Language/C++14", private: true
-	
-	target.depends "Library/Kai"
-	
-	target.provides "Executable/Kai"
 end
 
-define_target "kai-run" do |target|
-	target.build do |*arguments|
-		run executable: "Kai", arguments: arguments
+define_target 'kai-executable' do |target|
+	target.depends 'Library/Kai'
+	
+	target.depends 'Language/C++14'
+	
+	target.provides 'Executable/Kai' do
+		source_root = target.package.path + 'source/Kai-interpreter'
+		
+		executable_path = build executable: 'Kai', source_files: source_root.glob('main.cpp')
+		
+		kai_executable executable_path
 	end
-	
-	target.depends "Executable/Kai"
-	
-	target.provides "Run/Kai"
 end
+
+define_target 'kai-run' do |target|
+	target.depends 'Executable/Kai'
+	
+	target.depends :executor
+	
+	target.provides 'Run/Kai' do |*arguments|
+		run executable_file: environment[:kai_executable], arguments: arguments
+	end
+end
+
 
 # Configurations
 
@@ -100,6 +86,8 @@ define_configuration 'development' do |configuration|
 		configuration.require "linux-dynamic-linker"
 	end
 	
+	configuration.require 'https://github.com/me/myfork-of-build-files'
+	
 	# Provides unit testing infrastructure and generators:
 	configuration.require 'unit-test'
 	
@@ -110,7 +98,6 @@ define_configuration 'development' do |configuration|
 	configuration.require "generate-travis"
 	
 	configuration.require "build-files"
-	configuration.require "unit-test"
 end
 
 define_configuration 'kai' do |configuration|
